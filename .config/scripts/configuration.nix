@@ -72,7 +72,7 @@
   users.users.ben = {
     isNormalUser = true;
     description = "Ben";
-    extraGroups = [ "networkmanager" "wheel" "docker" ];
+    extraGroups = [ "networkmanager" "wheel" "podman" ];
   };
 
   # ────────────────────────────────────────────────
@@ -87,7 +87,17 @@
     optimise.automatic = true;
   };
 
-  virtualisation.docker.enable = true;
+  # ────────────────────────────────────────────────
+  # Podman
+  # ────────────────────────────────────────────────
+  virtualisation = {
+    containers.enable = true;
+    podman = {
+      enable = true;
+      dockerCompat = true;
+      defaultNetwork.settings.dns_enabled = true;
+    };
+  };
 
   # ────────────────────────────────────────────────
   # Packages
@@ -108,9 +118,10 @@
 
     # Editors & dev
     neovim
+    helix
     vscode
-    nodejs_24
-    dotnet-sdk_10
+    nodejs_26
+    podman-compose
     
     # Browsers
     librewolf
@@ -120,14 +131,13 @@
     spotify
     vesktop
     ffmpeg
+    mpv
     ani-cli
 
     # Office & tools
     libreoffice
     filezilla
-    mysql-workbench
     github-desktop
-    teams-for-linux
 
     # DE extras
     cosmic-ext-tweaks
