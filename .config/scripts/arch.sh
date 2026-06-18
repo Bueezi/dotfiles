@@ -79,8 +79,8 @@ apps="helix zed chromium steam discord spotify-launcher baobab libreoffice-still
 aur="librewolf-bin $wm_packages_aur"
 dev="github-cli nodejs npm rust gdb python python-pip python-virtualenv podman podman-compose"
 game="openrgb"
-aur_slow="protonplus ani-cli" # stremio
-others="lmstudio-bin godot-mono dotnet-sdk omnisharp-roslyn-bin"
+aur_slow="protonplus ani-cli"
+others=""
 package_list="$hardware $wm_packages $audio $bash_tools $fonts $apps $dev $game"
 
 base="linux-firmware base base-devel git efibootmgr networkmanager sudo vi vim bluez bluez-utils ufw cryptsetup reflector qt5-wayland qt6-wayland gnome-keyring xdg-user-dirs"
