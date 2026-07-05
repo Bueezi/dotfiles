@@ -35,36 +35,43 @@
   # ────────────────────────────────────────────────
   # Desktop Environment
   # ────────────────────────────────────────────────
-  services.displayManager.cosmic-greeter.enable = true;
-  services.desktopManager.cosmic.enable = true;
+  #services.displayManager.cosmic-greeter.enable = true;
+  #services.desktopManager.cosmic.enable = true;
+
+  services.displayManager.gdm.enable = true;
+  services.desktopManager.gnome.enable = true;
+
+  environment.gnome.excludePackages = with pkgs; [
+    gnome-tour
+    gnome-connections
+    epiphany
+    geary
+    gnome-maps
+    gnome-music
+    gnome-contacts
+    yelp
+  ];
+
+  # Audio
+  security.rtkit.enable = true;
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    pulse.enable = true;
+  };
+
+  hardware.graphics.enable = true;
+  hardware.bluetooth.enable = true;
 
   # ────────────────────────────────────────────────
   # Power Management & Battery Saving
   # ────────────────────────────────────────────────
-  powerManagement.enable = true;
 
   services = {
     upower.enable = true;
     power-profiles-daemon.enable = true;
-    thermald.enable = true;
-
-    logind.settings = {
-      Login = {
-        HandleLidSwitch = "suspend-then-hibernate";
-        HandlePowerKey = "hibernate";
-        HandlePowerKeyLongPress = "poweroff";
-        IdleAction = "suspend-then-hibernate";
-        IdleActionSec = "5min";
-      };
-    };
+    #thermald.enable = true;
   };
-
-  boot.kernelParams = [ "mem_sleep_default=deep" ];
-
-  systemd.sleep.extraConfig = ''
-    HibernateDelaySec=10m
-    SuspendState=mem
-  '';
 
   # ────────────────────────────────────────────────
   # User
@@ -72,7 +79,7 @@
   users.users.ben = {
     isNormalUser = true;
     description = "Ben";
-    extraGroups = [ "networkmanager" "wheel" "podman" ];
+    extraGroups = [ "networkmanager" "wheel" "video" "render" ];
   };
 
   # ────────────────────────────────────────────────
@@ -91,7 +98,6 @@
   # Podman
   # ────────────────────────────────────────────────
   virtualisation = {
-    containers.enable = true;
     podman = {
       enable = true;
       dockerCompat = true;
@@ -105,12 +111,11 @@
   environment.systemPackages = with pkgs; [
     alacritty
     htop
-    btop
+    btop-rocm
     fastfetch
     cowsay
     less
     wl-clipboard
-    powertop
     git
     gcc
     zip
@@ -120,7 +125,7 @@
     neovim
     helix
     vscode
-    nodejs_26
+    nodejs
     podman-compose
     
     # Browsers
@@ -128,11 +133,8 @@
     ungoogled-chromium
 
     # Media & entertainment
-    spotify
-    vesktop
     ffmpeg
     mpv
-    ani-cli
 
     # Office & tools
     libreoffice
@@ -140,19 +142,11 @@
     github-desktop
 
     # DE extras
-    cosmic-ext-tweaks
-    cosmic-ext-calculator
-    baobab
-    nomacs
+    #cosmic-ext-tweaks
+    #cosmic-ext-calculator
+    #baobab
+    #nomacs
   ];
-
-  programs.steam = {
-    enable = true;
-    extraCompatPackages = with pkgs; [
-      proton-ge-bin
-    ];
-    gamescopeSession.enable = true;
-  };
 
   nixpkgs.config.allowUnfree = true;
   system.stateVersion = "26.05";
