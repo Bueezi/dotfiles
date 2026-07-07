@@ -50,6 +50,9 @@
     gnome-music
     gnome-contacts
     yelp
+    gnome-console
+    simple-scan
+    gnome-weather
   ];
 
   # Audio
@@ -63,6 +66,25 @@
   hardware.graphics.enable = true;
   hardware.bluetooth.enable = true;
 
+  # Openrgb
+  services.hardware.openrgb = {
+    enable = true;
+    motherboard = "amd";
+  };
+
+  boot.kernelParams = [ "acpi_enforce_resources=lax" ];
+
+  systemd.services.openrgb-off = {
+    description = "Turn off RGB via OpenRGB on boot";
+    after = [ "multi-user.target" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.openrgb}/bin/openrgb --noautoconnect --mode off";
+      RemainAfterExit = true;
+    };
+  };
+  
   # ────────────────────────────────────────────────
   # Power Management & Battery Saving
   # ────────────────────────────────────────────────
@@ -112,6 +134,8 @@
     alacritty
     htop
     btop-rocm
+    rocmPackages.rocm-smi
+    openrgb
     fastfetch
     cowsay
     less
@@ -137,7 +161,7 @@
     mpv
 
     # Office & tools
-    libreoffice
+    #libreoffice
     filezilla
     github-desktop
 
