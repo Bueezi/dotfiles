@@ -1,5 +1,13 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
+let
+  # ────────────────────────────────────────────────
+  # Per-machine toggles — flip these two when deploying
+  # to the other machine, everything else adapts.
+  # ────────────────────────────────────────────────
+  hostName = "nixos";      # e.g. "laptop" / "desktop"
+  isLaptop = true;         # true = 7430U laptop, false = 7500F + RX 9070 XT desktop
+in
 {
   imports = [
     ./hardware-configuration.nix
@@ -13,13 +21,18 @@
     efi.canTouchEfiVariables = true;
   };
   boot.loader.systemd-boot.configurationLimit = 3;
+
+  # RDNA4 (RX 9070 XT) needs a recent kernel; also fine on the laptop's iGPU.
   boot.kernelPackages = pkgs.linuxPackages_latest;
+
+  # Laptop-only: deeper sleep state for suspend.
+  boot.kernelParams = lib.mkIf isLaptop [ "mem_sleep_default=deep" ];
 
   # ────────────────────────────────────────────────
   # Networking & Basics
   # ────────────────────────────────────────────────
   networking = {
-    hostName = "nixos";
+    inherit hostName;
     networkmanager.enable = true;
   };
 
@@ -33,67 +46,85 @@
   };
 
   # ────────────────────────────────────────────────
+  # Graphics
+  # ────────────────────────────────────────────────
+  # Covers both the 7430U's integrated Radeon graphics and the
+  # RX 9070 XT — amdgpu picks up whichever is present automatically.
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
+  };
+
+  # ────────────────────────────────────────────────
+  # CPU
+  # ────────────────────────────────────────────────
+  hardware.cpu.amd.updateMicrocode = true;
+
+  # ────────────────────────────────────────────────
   # Desktop Environment
   # ────────────────────────────────────────────────
-  #services.displayManager.cosmic-greeter.enable = true;
-  #services.desktopManager.cosmic.enable = true;
+  services.displayManager.cosmic-greeter.enable = true;
+  services.desktopManager.cosmic.enable = true;
 
-  services.displayManager.gdm.enable = true;
-  services.desktopManager.gnome.enable = true;
-
-  environment.gnome.excludePackages = with pkgs; [
-    gnome-tour
-    gnome-connections
-    epiphany
-    geary
-    gnome-maps
-    gnome-music
-    gnome-contacts
-    yelp
-    gnome-console
-    simple-scan
-    gnome-weather
-  ];
-
+  # ────────────────────────────────────────────────
   # Audio
+  # ────────────────────────────────────────────────
   security.rtkit.enable = true;
+  hardware.pulseaudio.enable = false;
   services.pipewire = {
     enable = true;
     alsa.enable = true;
+    alsa.support32Bit = true;
     pulse.enable = true;
   };
 
-  hardware.graphics.enable = true;
+  # ────────────────────────────────────────────────
+  # Bluetooth
+  # ────────────────────────────────────────────────
   hardware.bluetooth.enable = true;
 
-  # Openrgb
-  services.hardware.openrgb = {
-    enable = true;
-    motherboard = "amd";
-  };
+  # ────────────────────────────────────────────────
+  # Firmware updates (BIOS, peripherals) — useful on both machines
+  # ────────────────────────────────────────────────
+  services.fwupd.enable = true;
 
-  boot.kernelParams = [ "acpi_enforce_resources=lax" ];
-
-  systemd.services.openrgb-off = {
-    description = "Turn off RGB via OpenRGB on boot";
-    after = [ "multi-user.target" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = "${pkgs.openrgb}/bin/openrgb --noautoconnect --mode off";
-      RemainAfterExit = true;
-    };
-  };
-  
   # ────────────────────────────────────────────────
   # Power Management & Battery Saving
   # ────────────────────────────────────────────────
+  powerManagement.enable = true;
 
-  services = {
-    upower.enable = true;
-    power-profiles-daemon.enable = true;
-    #thermald.enable = true;
-  };
+  services.upower.enable = true;
+  services.power-profiles-daemon.enable = true;
+
+  services.logind.settings.Login = lib.mkMerge [
+    {
+      # Shared: hard power button always shuts down.
+      HandlePowerKey = "poweroff";
+    }
+    (lib.mkIf isLaptop {
+      HandlePowerKeyLongPress = "poweroff";
+
+      # lid close -> hibernate directly
+      HandleLidSwitch = "hibernate";
+
+      # AFK -> sleep after 5 min, then hibernate after 10 more
+      # (see HibernateDelaySec below for the second stage)
+      IdleAction = "suspend-then-hibernate";
+      IdleActionSec = "5min";
+    })
+  ];
+
+  # NOTE: hibernate (both lid-close and the idle suspend-then-hibernate path)
+  # requires a resume target: either a swap partition >= RAM size with
+  # `boot.resumeDevice`, or a swapfile with `resume_offset=` set via
+  # boot.kernelParams. Verify this exists in hardware-configuration.nix /
+  # your swapDevices config, or hibernate will silently fail to fire.
+  # systemd.sleep.extraConfig = ''
+  #   HibernateDelaySec=10min
+  # '';
+
+  # zram swap — mainly helps the laptop, harmless on desktop.
+  zramSwap.enable = true;
 
   # ────────────────────────────────────────────────
   # User
@@ -101,7 +132,7 @@
   users.users.ben = {
     isNormalUser = true;
     description = "Ben";
-    extraGroups = [ "networkmanager" "wheel" "video" "render" ];
+    extraGroups = [ "networkmanager" "wheel" ];
   };
 
   # ────────────────────────────────────────────────
@@ -120,6 +151,7 @@
   # Podman
   # ────────────────────────────────────────────────
   virtualisation = {
+    containers.enable = true;
     podman = {
       enable = true;
       dockerCompat = true;
@@ -131,15 +163,14 @@
   # Packages
   # ────────────────────────────────────────────────
   environment.systemPackages = with pkgs; [
-    alacritty
+    #alacritty
     htop
-    btop-rocm
-    rocmPackages.rocm-smi
-    openrgb
+    btop
     fastfetch
     cowsay
     less
     wl-clipboard
+    powertop
     git
     gcc
     zip
@@ -151,25 +182,28 @@
     vscode
     nodejs
     podman-compose
-    
+
     # Browsers
     librewolf
     ungoogled-chromium
 
-    # Media & entertainment
+    # Media
     ffmpeg
     mpv
 
     # Office & tools
-    #libreoffice
     filezilla
     github-desktop
 
+    # Distrobox
+    distrobox
+    distroshelf
+
     # DE extras
-    #cosmic-ext-tweaks
-    #cosmic-ext-calculator
-    #baobab
-    #nomacs
+    cosmic-ext-tweaks
+    cosmic-ext-calculator
+    baobab
+    eog
   ];
 
   nixpkgs.config.allowUnfree = true;
