@@ -1,12 +1,11 @@
 { config, lib, pkgs, ... }:
-
 let
   # ────────────────────────────────────────────────
   # Per-machine toggles — flip these two when deploying
   # to the other machine, everything else adapts.
   # ────────────────────────────────────────────────
-  hostName = "nixos";      # e.g. "laptop" / "desktop"
-  isLaptop = true;         # true = 7430U laptop, false = 7500F + RX 9070 XT desktop
+  hostName = "nixos"; # e.g. "laptop" / "desktop"
+  isLaptop = true; # true = 7430U laptop, false = 7500F + RX 9070 XT desktop
 in
 {
   imports = [
@@ -46,21 +45,10 @@ in
   };
 
   # ────────────────────────────────────────────────
-  # Desktop Environment — KDE Plasma 6
+  # Desktop Environment — COSMIC
   # ────────────────────────────────────────────────
-
-  services.displayManager.sddm = {
-    enable = true;
-    wayland.enable = true;
-  };
-
-  services.desktopManager.plasma6.enable = true;
-
-  # X11 keyboard layout (still read by Plasma/SDDM even under Wayland)
-  services.xserver.xkb = {
-    layout = "us";
-    variant = "";
-  };
+  services.displayManager.cosmic-greeter.enable = true;
+  services.desktopManager.cosmic.enable = true;
 
   # ────────────────────────────────────────────────
   # Graphics
@@ -101,7 +89,6 @@ in
   # Power Management & Battery Saving
   # ────────────────────────────────────────────────
   powerManagement.enable = true;
-
   services.upower.enable = true;
   services.power-profiles-daemon.enable = true;
 
@@ -196,15 +183,9 @@ in
     distrobox
     distroshelf
 
-    # Base DE utilities
-    kdePackages.filelight  # KDE equivalent of baobab (disk usage)
-    kdePackages.gwenview   # KDE equivalent of eog (image viewer)
-  ];
-
-  # KDE apps live under a top-level attribute set; not everything needs `with pkgs`
-  environment.plasma6.excludePackages = with pkgs.kdePackages; [
-    #elisa      # example: drop the default music player if unwanted
-    #khelpcenter
+    # Useful extras
+    baobab
+    eog
   ];
 
   nixpkgs.config.allowUnfree = true;
