@@ -46,10 +46,25 @@ in
   };
 
   # ────────────────────────────────────────────────
+  # Desktop Environment — KDE Plasma 6
+  # ────────────────────────────────────────────────
+
+  services.displayManager.sddm = {
+    enable = true;
+    wayland.enable = true;
+  };
+
+  services.desktopManager.plasma6.enable = true;
+
+  # X11 keyboard layout (still read by Plasma/SDDM even under Wayland)
+  services.xserver.xkb = {
+    layout = "us";
+    variant = "";
+  };
+
+  # ────────────────────────────────────────────────
   # Graphics
   # ────────────────────────────────────────────────
-  # Covers both the 7430U's integrated Radeon graphics and the
-  # RX 9070 XT — amdgpu picks up whichever is present automatically.
   hardware.graphics = {
     enable = true;
     enable32Bit = true;
@@ -61,16 +76,10 @@ in
   hardware.cpu.amd.updateMicrocode = true;
 
   # ────────────────────────────────────────────────
-  # Desktop Environment
-  # ────────────────────────────────────────────────
-  services.displayManager.cosmic-greeter.enable = true;
-  services.desktopManager.cosmic.enable = true;
-
-  # ────────────────────────────────────────────────
   # Audio
   # ────────────────────────────────────────────────
   security.rtkit.enable = true;
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -84,7 +93,7 @@ in
   hardware.bluetooth.enable = true;
 
   # ────────────────────────────────────────────────
-  # Firmware updates (BIOS, peripherals) — useful on both machines
+  # Firmware updates
   # ────────────────────────────────────────────────
   services.fwupd.enable = true;
 
@@ -98,32 +107,16 @@ in
 
   services.logind.settings.Login = lib.mkMerge [
     {
-      # Shared: hard power button always shuts down.
       HandlePowerKey = "poweroff";
     }
     (lib.mkIf isLaptop {
       HandlePowerKeyLongPress = "poweroff";
-
-      # lid close -> hibernate directly
       HandleLidSwitch = "hibernate";
-
-      # AFK -> sleep after 5 min, then hibernate after 10 more
-      # (see HibernateDelaySec below for the second stage)
       IdleAction = "suspend-then-hibernate";
       IdleActionSec = "5min";
     })
   ];
 
-  # NOTE: hibernate (both lid-close and the idle suspend-then-hibernate path)
-  # requires a resume target: either a swap partition >= RAM size with
-  # `boot.resumeDevice`, or a swapfile with `resume_offset=` set via
-  # boot.kernelParams. Verify this exists in hardware-configuration.nix /
-  # your swapDevices config, or hibernate will silently fail to fire.
-  # systemd.sleep.extraConfig = ''
-  #   HibernateDelaySec=10min
-  # '';
-
-  # zram swap — mainly helps the laptop, harmless on desktop.
   zramSwap.enable = true;
 
   # ────────────────────────────────────────────────
@@ -175,6 +168,8 @@ in
     gcc
     zip
     unzip
+    p7zip
+    telegram-desktop
 
     # Editors & dev
     neovim
@@ -188,22 +183,28 @@ in
     ungoogled-chromium
 
     # Media
+    stremio-linux-shell
     ffmpeg
     mpv
 
     # Office & tools
     filezilla
     github-desktop
+    orca-slicer
 
     # Distrobox
     distrobox
     distroshelf
 
-    # DE extras
-    cosmic-ext-tweaks
-    cosmic-ext-calculator
-    baobab
-    eog
+    # Base DE utilities
+    kdePackages.filelight  # KDE equivalent of baobab (disk usage)
+    kdePackages.gwenview   # KDE equivalent of eog (image viewer)
+  ];
+
+  # KDE apps live under a top-level attribute set; not everything needs `with pkgs`
+  environment.plasma6.excludePackages = with pkgs.kdePackages; [
+    #elisa      # example: drop the default music player if unwanted
+    #khelpcenter
   ];
 
   nixpkgs.config.allowUnfree = true;
