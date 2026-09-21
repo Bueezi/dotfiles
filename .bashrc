@@ -12,12 +12,12 @@ alias grep='grep --color=auto'
 
 PS1='[\u@\h \W]\$ '
 
-alias config='/usr/bin/git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
+alias config='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
 alias configup='config add -u && config commit -m "update" && config push'
 
 alias gc='gcc -std=c99 -Wall -Wextra -pedantic'
 
-alias hx='helix'
+#alias hx='helix'
 alias gitu='git commit -m "update" && git push'
 
 if [ "$(tty)" = "/dev/tty1" ] && [ -z "$WAYLAND_DISPLAY" ]; then

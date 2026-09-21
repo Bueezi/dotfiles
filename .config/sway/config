@@ -39,6 +39,9 @@ smart_borders on
 smart_gaps on
 
 font pango:Noto Sans 10
+seat * xcursor_theme Adwaita 24
+exec gsettings set org.gnome.desktop.interface cursor-theme Adwaita
+exec gsettings set org.gnome.desktop.interface cursor-size 24
 
 # Autostart - System
 exec sh -c 'rm -f ~/.cache/cliphist/db && exec wl-paste --watch cliphist store'
