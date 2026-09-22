@@ -1,4 +1,3 @@
-#!/bin/bash
 # GTK Theme Switcher using fuzzel
 
 THEMES=(

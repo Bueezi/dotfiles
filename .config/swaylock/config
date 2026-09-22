@@ -1,11 +1,23 @@
-# ~/.config/swaylock/config
-
-image=~/Documents/wp/car.jpg
-indicator-radius=120
-indicator-thickness=15
-ring-color=4c7899
-inside-color=00000000
+color=000000
+font=JetBrainsMono Nerd Font
+indicator-radius=80
+indicator-thickness=6
+inside-color=000000
+inside-clear-color=000000
+inside-ver-color=000000
+inside-wrong-color=000000
+ring-color=ffffff
+ring-clear-color=ffffff
+ring-ver-color=aaaaaa
+ring-wrong-color=555555
+key-hl-color=888888
+bs-hl-color=444444
 line-color=00000000
-key-hl-color=e24b4b
-bs-hl-color=ebcb8b
-text-color=ffffffff
+line-clear-color=00000000
+line-ver-color=00000000
+line-wrong-color=00000000
+separator-color=00000000
+text-color=ffffff
+text-clear-color=ffffff
+text-ver-color=ffffff
+text-wrong-color=ffffff

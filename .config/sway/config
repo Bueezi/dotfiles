@@ -1,12 +1,27 @@
+set $bg     #000000
+set $fg     #ffffff
+set $dim    #777777
+set $subtle #333333
+
+font pango:JetBrainsMono Nerd Font 10
+
+# class                 border   bg    text   indicator child_border
+client.focused          $fg      $bg   $fg    $fg       $fg
+client.focused_inactive $subtle  $bg   $dim   $subtle   $subtle
+client.unfocused        $subtle  $bg   $dim   $subtle   $subtle
+client.urgent           $fg      $fg   $bg    $fg       $fg
+
+default_floating_border pixel 2
+
 # SwayFX settings
 
 # animation_duration_ms 400
 
-# blur enable
-# blur_xray enables wallpaper blurring without blurring windows below
+blur enable
+blur_xray enable
 # blur_xray disable
-# blur_passes 1
-# blur_radius 4
+blur_passes 3
+blur_radius 4
 # blur_noise <float value 0 - 1>
 # blur_brightness <float value 0 - 2>
 # blur_contrast <float value 0 - 2>
@@ -14,12 +29,12 @@
 
 # Window corners can be rounded in SwayFX
 # corner_radius can be any number of pixels
-# corner_radius 10
+corner_radius 6
 gaps inner 5
 # corner radius needs gaps to be visible
 
 # SwayFX also features window drop shadows, which, of course, can be enabled at any time
-# shadows disable
+shadows enable
 # shadows_on_csd enable
 
 # You can also offset the shadow's position, make unfocused windows have different shadows, give shadows a nondefault color, and blur shadows
@@ -38,7 +53,8 @@ default_border pixel 2
 smart_borders on
 smart_gaps on
 
-font pango:Noto Sans 10
+exec gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+exec gsettings set org.gnome.desktop.interface gtk-theme 'Adwaita-dark'
 seat * xcursor_theme Adwaita 24
 exec gsettings set org.gnome.desktop.interface cursor-theme Adwaita
 exec gsettings set org.gnome.desktop.interface cursor-size 24
@@ -46,16 +62,13 @@ exec gsettings set org.gnome.desktop.interface cursor-size 24
 # Autostart - System
 exec sh -c 'rm -f ~/.cache/cliphist/db && exec wl-paste --watch cliphist store'
 exec ~/.config/sway/scripts/battery-notify.sh
-exec mako --background-color "#000000" --text-color "#ffffff" --border-color "#555555" --border-radius 6 --padding 10 --margin 10 --default-timeout 4000 --anchor top-right
-exec swayidle timeout 180 'swaylock' timeout 190 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' before-sleep 'swaylock -f -c 000000'
-
-# keyring
-exec eval $(gnome-keyring-daemon --start --components=secrets)
+exec mako
+exec swayidle -w timeout 10 'pgrep swaylock && swaymsg "output * power off"' resume 'swaymsg "output * power on"' timeout 180 'swaylock -f' timeout 190 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' before-sleep 'swaylock -f'
+exec lxqt-policykit-agent
 # screensharing
 exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway DISPLAY XAUTHORITY
 
-exec openrgb -m off
-exec test -d /sys/class/power_supply/BAT0 && pactl set-sink-volume @default@ 0%
+exec sh -c 'test -d /sys/class/power_supply/BAT0 && sleep 2 && pactl set-sink-volume @DEFAULT_SINK@ 0%'
 
 ### Variables
 set $mod Mod4
@@ -68,21 +81,19 @@ set $fm thunar
 set $menu fuzzel
 
 ### Output configuration
-output * bg ~/Documents/wp/linux-rocks-2560x.jpg stretch
+output * bg ~/Documents/wp/linux-rocks-2560x.jpg fill
 
 output eDP-1 {
     scale 1.35
     render_bit_depth 10
-    hdr off
 }
 output DP-2 {
     mode 2560x1440@180.000Hz
     allow_tearing yes
     render_bit_depth 10
-    hdr off
 }
 
-bindsym $mod+Shift+x exec swaymsg output DP-2 hdr toggle
+bindsym $mod+Shift+x exec ~/.config/sway/scripts/hdr.sh
 
 # You can get the names of your outputs by running: swaymsg -t get_outputs
 
@@ -111,7 +122,7 @@ bindsym $mod+d exec $menu
 bindsym $mod+shift+v exec cliphist list | fuzzel --dmenu | cliphist decode | wl-copy
 bindsym $mod+shift+d exec ~/.config/sway/scripts/discord.sh
 bindsym $mod+shift+a exec ~/.config/sway/scripts/audio_switch.sh
-bindsym $mod+Shift+s exec grim -g "$(slurp)" - | wl-copy && notify-send "Screenshot in clipboard"
+bindsym $mod+Shift+s exec sh -c 'g=$(slurp) && grim -g "$g" - | wl-copy && notify-send "Screenshot in clipboard"'
 bindsym $mod+Shift+n exec networkmanager_dmenu
 bindsym $mod+Shift+p exec ~/.config/sway/scripts/power.sh
 bindsym $mod+Shift+t exec ~/.config/sway/scripts/theme.sh
@@ -256,24 +267,22 @@ bindsym $mod+r mode "resize"
 
 bar {
     position top
-    height 25
+    height 20
     workspace_min_width 30
     status_command i3status-rs ~/.config/sway/i3status.toml
-
-    font pango:Noto Sans 9
-
+    font pango:JetBrainsMono Nerd Font 9
     tray_output *
 
     colors {
-        background         #101010
-        statusline         #f6f1ea
-        separator          #101010
+        background         #000000
+        statusline         #ffffff
+        separator          #333333
 
-        focused_workspace  #101010 #101010 #afa193
-        active_workspace   #101010 #101010 #f6f1ea
-        inactive_workspace #101010 #101010 #f6f1ea
-        urgent_workspace   #101010 #101010 #ff0000
+        focused_workspace  #ffffff #ffffff #000000
+        active_workspace   #000000 #000000 #ffffff
+        inactive_workspace #000000 #000000 #777777
+        urgent_workspace   #ffffff #555555 #ffffff
     }
 }
 
-include @sysconfdir@/sway/config.d/*
+include /etc/sway/config.d/*

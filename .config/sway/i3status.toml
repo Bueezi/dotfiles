@@ -1,21 +1,22 @@
 [theme]
 theme = "plain"
-
 [theme.overrides]
-idle_bg      = "#101010"
-idle_fg      = "#f6f1ea"
-info_bg      = "#101010"
-info_fg      = "#f6f1ea"
-good_bg      = "#101010"
-good_fg      = "#f6f1ea"
-warning_bg   = "#101010"
-warning_fg   = "#afa193"
-critical_bg  = "#101010"
-critical_fg  = "#f6f1ea"
-separator    = "|"
-separator_bg = "#101010"
-# separator_fg = "#101010"
-separator_fg = "#888888"
+idle_bg = "#000000"
+idle_fg = "#ffffff"
+info_bg = "#000000"
+info_fg = "#ffffff"
+good_bg = "#000000"
+good_fg = "#ffffff"
+warning_bg = "#000000"
+warning_fg = "#aaaaaa"
+critical_bg = "#ffffff"
+critical_fg = "#000000"
+separator = " "
+separator_bg = "#000000"
+separator_fg = "#333333"
+
+[icons]
+icons = "material-nf"
 
 [[block]]
 block = "sound"
