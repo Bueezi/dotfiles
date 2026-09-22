@@ -11,19 +11,31 @@ in
   # ── Boot ────────────────────────────────────────────
   boot = {
     loader = {
+      timeout = 0;
       systemd-boot.enable = true;
       systemd-boot.configurationLimit = 3;
       efi.canTouchEfiVariables = true;
     };
     kernelPackages = pkgs.linuxPackages_latest; # RDNA4 needs a recent kernel
-    kernelParams = lib.mkIf isLaptop [ "mem_sleep_default=deep" ];
   };
+
+  # Switch profile automatically on AC/battery
+  services.udev.extraRules = lib.mkIf isLaptop ''
+    SUBSYSTEM=="power_supply", ATTR{type}=="Mains", ATTR{online}=="0", RUN+="${pkgs.power-profiles-daemon}/bin/powerprofilesctl set power-saver"
+    SUBSYSTEM=="power_supply", ATTR{type}=="Mains", ATTR{online}=="1", RUN+="${pkgs.power-profiles-daemon}/bin/powerprofilesctl set balanced"
+  '';
+
+  # Don't power the Bluetooth radio until you need it
+  hardware.bluetooth.powerOnBoot = !isLaptop;
 
   # ── System basics ───────────────────────────────────
   networking = {
     inherit hostName;
     networkmanager.enable = true;
   };
+
+  services.printing.enable = true;
+  services.avahi = { enable = true; nssmdns4 = true; openFirewall = true; };
 
   time.timeZone = "Europe/Brussels";
   i18n.defaultLocale = "en_US.UTF-8";
@@ -79,6 +91,7 @@ in
 
   # Laptop: how long to sleep before switching to hibernate
   systemd.sleep.settings.Sleep.HibernateDelaySec = lib.mkIf isLaptop "30min";
+  boot.resumeDevice = lib.mkIf isLaptop "/dev/disk/by-uuid/8ac0d876-3d7b-485a-8948-4ccd737b8d5f";
 
   # ── Desktop: Sway ───────────────────────────────────
   programs.sway = {
@@ -106,6 +119,7 @@ in
   };
 
   environment.sessionVariables = {
+    GTK_THEME = "Adwaita:dark";
     XCURSOR_THEME = "Adwaita";
     XCURSOR_SIZE = "24";
     NIXOS_OZONE_WL = "1";    # Electron/Chromium on Wayland
@@ -130,7 +144,24 @@ in
   };
 
   security.polkit.enable = true;
-  programs.dconf.enable = true;
+  programs.dconf = {
+    enable = true;
+    profiles.user.databases = [{
+      settings."org/gnome/desktop/interface" = {
+        color-scheme = "prefer-dark";
+        gtk-theme = "Adwaita-dark";
+        cursor-theme = "Adwaita";
+        cursor-size = lib.gvariant.mkInt32 24;
+      };
+    }];
+  };
+  environment.etc."xdg/gtk-3.0/settings.ini".text = ''
+    [Settings]
+    gtk-theme-name=Adwaita-dark
+    gtk-application-prefer-dark-theme=1
+    gtk-cursor-theme-name=Adwaita
+    gtk-cursor-theme-size=24
+  '';
 
   # Keyring unlocked at login via PAM
   services.gnome.gnome-keyring.enable = true;
@@ -153,6 +184,7 @@ in
 
   # ── Nix & containers ────────────────────────────────
   nix = {
+    settings.experimental-features = [ "nix-command" "flakes" ];
     gc = {
       automatic = true;
       dates = "daily";
@@ -172,7 +204,6 @@ in
 
   programs.appimage = { enable = true; binfmt = true; };
   services.flatpak.enable = true;
-  programs.kdeconnect.enable = true;
 
   # ── Packages ────────────────────────────────────────
   nixpkgs.config.allowUnfree = true;

@@ -7,6 +7,8 @@ set $right   l
 set $term    foot
 set $fm      thunar
 set $menu    fuzzel
+set $browser librewolf
+set $discord vesktop
 set $scripts ~/.config/sway/scripts
 
 set $bg      #000000
@@ -31,18 +33,14 @@ smart_gaps on
 
 # SwayFX (rounded corners need gaps to be visible)
 corner_radius 6
-shadows enable
+# shadows enable
 blur enable
 blur_xray enable
 blur_passes 3
 blur_radius 4
 
-# Dark theme + cursor
+# cursor
 seat * xcursor_theme Adwaita 24
-exec gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
-exec gsettings set org.gnome.desktop.interface gtk-theme 'Adwaita-dark'
-exec gsettings set org.gnome.desktop.interface cursor-theme Adwaita
-exec gsettings set org.gnome.desktop.interface cursor-size 24
 
 # ── Outputs ─────────────────────────────────────────
 # Output names: swaymsg -t get_outputs
@@ -77,7 +75,6 @@ exec lxqt-policykit-agent
 exec wlsunset -l 50.8 -L 4.7
 exec $scripts/battery-notify.sh
 exec sh -c 'rm -f ~/.cache/cliphist/db && exec wl-paste --watch cliphist store'
-exec kdeconnect-indicator
 # Laptop only: start muted
 exec sh -c 'test -d /sys/class/power_supply/BAT0 && sleep 2 && pactl set-sink-volume @DEFAULT_SINK@ 0%'
 
@@ -93,7 +90,7 @@ for_window [app_id=".*"] inhibit_idle fullscreen
 for_window [class=".*"]  inhibit_idle fullscreen
 
 for_window [app_id="^(floating|Thunar|thunar|blueman-manager|org.gnome.FileRoller|org.gnome.eog|xdg-desktop-portal-gtk)$"] floating enable, resize set 900 600, move position center
-for_window [class="Spotify"] floating enable, resize set 900 600, move position center
+# for_window [class="Spotify"] floating enable, resize set 900 600, move position center
 
 # $mod + left drag = move, $mod + right drag = resize
 floating_modifier $mod normal
@@ -109,6 +106,8 @@ bindsym {
     $mod+Shift+v        exec cliphist list | fuzzel --dmenu | cliphist decode | wl-copy
     $mod+Shift+s        exec sh -c 'g=$(slurp) && grim -g "$g" - | wl-copy && notify-send "Screenshot in clipboard"'
     $mod+Shift+n        exec networkmanager_dmenu
+    $mod+b        exec swaymsg '[app_id="librewolf"] focus' || $browser
+    $mod+Shift+b              exec swaymsg '[app_id="vesktop"] focus' || $discord
 
     # Scripts
     $mod+Shift+d        exec $scripts/discord.sh
@@ -122,7 +121,6 @@ bindsym {
     # Session
     $mod+q              kill
     $mod+Escape         exec swaylock
-    Print               exec systemctl sleep
     $mod+Shift+c        reload
     $mod+Shift+m        exec swaynag -t warning -m 'Exit SwayFX? This will end your Wayland session.' -B 'Yes, exit' 'swaymsg exit'
 
@@ -170,8 +168,8 @@ bindsym {
     $mod+Shift+0 move container to workspace number 10
 
     # Layout
-    $mod+b              splith
-    $mod+v              splitv
+    $mod+v              splith
+    $mod+c              splitv
     $mod+s              layout stacking
     $mod+w              layout tabbed
     $mod+e              layout toggle split
