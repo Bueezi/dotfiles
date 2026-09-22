@@ -68,12 +68,17 @@ in
   services.power-profiles-daemon.enable = true;
 
   # Idle is handled by swayidle in the sway config.
-  services.logind.settings.Login = {
-    HandlePowerKey = "poweroff";
-  } // lib.optionalAttrs isLaptop {
-    HandlePowerKeyLongPress = "poweroff";
-    HandleLidSwitch = "hibernate";
-  };
+  services.logind.settings.Login =
+    if isLaptop then {
+      HandlePowerKey = "suspend";
+      HandlePowerKeyLongPress = "poweroff";
+      HandleLidSwitch = "suspend-then-hibernate";
+    } else {
+      HandlePowerKey = "poweroff";
+    };
+
+  # Laptop: how long to sleep before switching to hibernate
+  systemd.sleep.settings.Sleep.HibernateDelaySec = lib.mkIf isLaptop "30min";
 
   # ── Desktop: Sway ───────────────────────────────────
   programs.sway = {
