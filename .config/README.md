@@ -8,7 +8,7 @@ This is a bare Git repository tracking configuration files in`$HOME` via the`con
 
 ```bash
 git clone --bare https://github.com/Bueezi/dotfiles.git $HOME/.dotfiles
-alias config='/usr/bin/git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
+alias config='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
 config config --local status.showUntrackedFiles no
 config checkout
 ```
