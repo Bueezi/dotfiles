@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # List sinks as "ID: description"
 sink=$(pactl list sinks | awk '
   /^Sink #/ { id=substr($2,2) }

@@ -17,3 +17,7 @@ text-color=#aaaaaa
 background-color=#ffffff
 text-color=#000000
 default-timeout=0
+
+[app-name=osd]
+anchor=bottom-center
+width=250

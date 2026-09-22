@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 echo "Setting default applications..."
 
@@ -56,6 +56,6 @@ git config --global user.email "mail@b3n.me"
 git config --global user.name "Bueezi"
 
 # enable audio
-systemctl --user enable --now pipewire pipewire-pulse wireplumber
+# systemctl --user enable --now pipewire pipewire-pulse wireplumber
 
 echo "Done!"

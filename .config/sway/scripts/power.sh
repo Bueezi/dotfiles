@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/usr/bin/env bash
+
 choice=$(printf "  sleep\n  hibernate\n  reboot\n  poweroff" |
   fuzzel --dmenu --width 20 --lines 4)
 

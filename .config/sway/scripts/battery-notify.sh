@@ -1,5 +1,5 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
+ 
 BAT="/sys/class/power_supply/BAT0"
 [ -d "$BAT" ] || BAT="/sys/class/power_supply/BAT1"
 

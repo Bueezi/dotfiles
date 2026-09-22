@@ -20,9 +20,9 @@ alias gc='gcc -std=c99 -Wall -Wextra -pedantic'
 #alias hx='helix'
 alias gitu='git commit -m "update" && git push'
 
-if [ "$(tty)" = "/dev/tty1" ] && [ -z "$WAYLAND_DISPLAY" ]; then
-    WLR_RENDERER=vulkan exec sway
-fi
+# if [ "$(tty)" = "/dev/tty1" ] && [ -z "$WAYLAND_DISPLAY" ]; then
+#     WLR_RENDERER=vulkan exec sway
+# fi
 
 # _host=$(hostname)
 # if [ "$_host" = "void" ]; then

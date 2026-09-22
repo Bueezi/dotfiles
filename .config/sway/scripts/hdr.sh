@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/usr/bin/env bash
+
 state="${XDG_RUNTIME_DIR:-/tmp}/sway-hdr"
 
 if [ -f "$state" ]; then

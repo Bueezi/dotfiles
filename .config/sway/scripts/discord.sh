@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # If Discord window already exists, float and focus it immediately
 if swaymsg '[class="discord"] floating enable, resize set 1400 900, move position center, focus' 2>/dev/null; then

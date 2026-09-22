@@ -1,4 +1,4 @@
-# GTK Theme Switcher using fuzzel
+#!/usr/bin/env bash
 
 THEMES=(
     "Adwaita"
