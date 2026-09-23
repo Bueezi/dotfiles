@@ -13,11 +13,21 @@ alias grep='grep --color=auto'
 PS1='[\u@\h \W]\$ '
 
 alias config='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
-alias configup='config add -u && config commit -m "update" && config push'
+# Sync dotfiles both ways: commit tracked changes, pull the other machine's, push.
+# New files still need an explicit `config add <file>` first.
+cu() {
+    config add -u &&
+    { config diff --cached --quiet || config commit -m "${1:-update}"; } &&
+    config pull --rebase &&
+    config push
+}
 
 alias gc='gcc -std=c99 -Wall -Wextra -pedantic'
 
 #alias hx='helix'
+alias hc='hx ~/.configuration.nix'
+alias hs='hx ~/.config/sway/config'
+alias rb="sudo nixos-rebuild switch"
 alias gitu='git commit -m "update" && git push'
 
 # if [ "$(tty)" = "/dev/tty1" ] && [ -z "$WAYLAND_DISPLAY" ]; then
