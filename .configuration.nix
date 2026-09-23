@@ -3,19 +3,6 @@
 # machine); per-machine settings (hostName, isLaptop) are set there.
 { config, lib, pkgs, isLaptop, ... }:
 
-let
-  # ── Per-machine apps ────────────────────────────────
-  # Packages installed on only one machine. (Apps that need a NixOS module, like
-  # Steam, go in the "Gaming" section further down instead.)
-  desktopPackages = with pkgs; [
-    upscayl               # AI image upscaler
-    openrgb               # RGB control (also installed by services.hardware.openrgb)
-    rocmPackages.rocm-smi # GPU monitoring
-    mangohud              # in-game FPS/temps overlay: `mangohud %command%` in Steam
-  ];
-  laptopPackages = with pkgs; [
-  ];
-in
 {
   # ── Boot ────────────────────────────────────────────
   boot = {
@@ -233,7 +220,22 @@ in
     # Apps
     librewolf ungoogled-chromium mpv vesktop qbittorrent
     libreoffice filezilla github-desktop bazaar gearlever
-  ] ++ (if isLaptop then laptopPackages else desktopPackages);
+    # Claude Desktop (community build; updates to the latest version on rebuild)
+    (builtins.getFlake "github:aaddrick/claude-desktop-debian").packages.${stdenv.hostPlatform.system}.default
+  ]
+  # ── Per-machine apps ────────────────────────────────
+  # Packages installed on only one machine. (Apps that need a NixOS module, like
+  # Steam, go in the "Gaming" section below instead.)
+  ++ lib.optionals (!isLaptop) [ # desktop only
+    upscayl               # AI image upscaler
+    openrgb               # RGB control (also installed by services.hardware.openrgb)
+    rocmPackages.rocm-smi # GPU monitoring
+    mangohud              # in-game FPS/temps overlay: `mangohud %command%` in Steam
+    protontricks          # Windows fonts/libs into a game's Proton prefix (Content Manager)
+    oversteer             # G920 settings: rotation, force feedback, pedal test
+  ]
+  ++ lib.optionals isLaptop [   # laptop only
+  ];
 
   # ── Gaming (desktop only) ───────────────────────────
   programs.steam = lib.mkIf (!isLaptop) {
@@ -249,6 +251,12 @@ in
     enable = true;
     capSysNice = true;
   };
+  # GPU control (fan curves, power limit, undervolt): LACT app + its daemon
+  services.lact.enable = !isLaptop;
+  # Logitech G920: switch it out of Xbox mode so it shows up as a wheel
+  hardware.usb-modeswitch.enable = !isLaptop;
+  # Let Oversteer change wheel settings without root
+  services.udev.packages = lib.mkIf (!isLaptop) [ pkgs.oversteer ];
 
   system.stateVersion = "26.05";
 }
