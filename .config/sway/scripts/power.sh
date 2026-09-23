@@ -11,6 +11,8 @@ update() {
             echo "    New kernel installed, reboot to use it."
         fi
     fi
+    echo; echo "==> Nix profile"
+    nix profile upgrade --all --refresh
     echo; echo "==> Flatpak"
     flatpak update -y
     echo; echo "==> Firmware"
@@ -19,17 +21,34 @@ update() {
     echo; read -rp "Done. Press Enter to close."
 }
 
+# Rebuild the NixOS config (no channel upgrade) and report the result as a notification.
+rebuild() {
+    echo "==> nixos-rebuild switch"
+    if sudo nixos-rebuild switch; then
+        notify-send -a rebuild -i emblem-ok-symbolic "Rebuild" "nixos-rebuild switch succeeded"
+        sleep 1
+    else
+        notify-send -u critical -a rebuild -i dialog-error-symbolic "Rebuild" "nixos-rebuild switch failed"
+        echo; read -rp "Failed. Press Enter to close."
+    fi
+}
+
 if [ "$1" = "update" ]; then
     update
     exit
 fi
+if [ "$1" = "rebuild" ]; then
+    rebuild
+    exit
+fi
 
-choice=$(printf "󰋊  hibernate\n󰜉  reboot\n󰒲  sleep\n󰐥  power off\n󰚰  update" |
-  fuzzel --dmenu --width 20 --lines 5)
+choice=$(printf "󰋊  hibernate\n󰜉  reboot\n󰒲  sleep\n󰐥  power off\n󰚰  update\n󱄅  rebuild" |
+  fuzzel --dmenu --width 20 --lines 6)
 
 [ "$choice" ] || exit 0
 case "$choice" in
-    *update) exec foot --app-id=floating "$0" update ;;
+    *update)  exec foot --app-id=floating "$0" update ;;
+    *rebuild) exec foot --app-id=floating "$0" rebuild ;;
 esac
 
 if [ "$(hostname)" = "void" ]; then

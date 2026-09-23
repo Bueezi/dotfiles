@@ -39,3 +39,14 @@ button = "left"
 block = "time"
 interval = 5
 format = "$timestamp.datetime(f:'%a  %d/%m   %R ')"
+
+[[block]]
+block = "custom"
+command = "~/.config/sway/scripts/caffeine.sh status"
+json = true
+signal = 1
+interval = 5
+hide_when_empty = true
+[[block.click]]
+button = "left"
+cmd = "~/.config/sway/scripts/caffeine.sh"

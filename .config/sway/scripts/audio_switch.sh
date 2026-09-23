@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 # List sinks as "ID: description"
-sink=$(pactl list sinks | awk '
-  /^Sink #/ { id=substr($2,2) }
-  /Description:/ { print id": "substr($0, index($0,$2)) }
-' | fuzzel --dmenu)
+sink=$(pw-dump | jq -r '.[]
+  | select(.type == "PipeWire:Interface:Node" and .info.props."media.class" == "Audio/Sink")
+  | "\(.id): \(.info.props."node.description")"' | fuzzel --dmenu)
 
 [ -z "$sink" ] && exit
 
 id="${sink%%:*}"
-pactl set-default-sink "$id"
+wpctl set-default "$id"

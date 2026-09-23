@@ -35,7 +35,7 @@ smart_gaps on
 corner_radius 6
 # shadows enable
 blur enable
-blur_xray enable
+blur_xray disable
 blur_passes 3
 blur_radius 4
 
@@ -44,7 +44,7 @@ seat * xcursor_theme Adwaita 24
 
 # ── Outputs ─────────────────────────────────────────
 # Output names: swaymsg -t get_outputs
-output * bg ~/Documents/wp/linux-rocks-2560x.jpg fill
+output * bg ~/.local/state/wallpaper fill
 
 output eDP-1 {
     scale 1.35
@@ -74,16 +74,15 @@ exec mako
 exec lxqt-policykit-agent
 exec wlsunset -l 50.8 -L 4.7
 exec $scripts/battery-notify.sh
-exec sh -c 'rm -f ~/.cache/cliphist/db && exec wl-paste --watch cliphist store'
+exec sh -c 'rm -f ~/.cache/cliphist/db && exec wl-paste --watch $scripts/clipstore.sh'
 # Laptop only: start muted
-exec sh -c 'test -d /sys/class/power_supply/BAT0 && sleep 2 && pactl set-sink-volume @DEFAULT_SINK@ 0%'
+exec sh -c 'test -d /sys/class/power_supply/BAT0 && sleep 2 && wpctl set-volume @DEFAULT_AUDIO_SINK@ 0'
 
-# Idle: screen off 10s after manual lock, lock at 3 min, screen off at 3m10s
-exec swayidle -w \
-    timeout 10  'pgrep swaylock && swaymsg "output * power off"' resume 'swaymsg "output * power on"' \
-    timeout 180 'swaylock -f' \
-    timeout 190 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' \
-    before-sleep 'swaylock -f'
+# Idle (swayidle) lives in a script so caffeine.sh can stop/restart it
+exec $scripts/idle.sh
+
+# Window switcher daemon (Alt+Tab)
+exec swayrd
 
 # ── Window rules ────────────────────────────────────
 for_window [app_id=".*"] inhibit_idle fullscreen
@@ -91,6 +90,7 @@ for_window [class=".*"]  inhibit_idle fullscreen
 
 for_window [app_id="^(floating|Thunar|thunar|blueman-manager|org.gnome.FileRoller|org.gnome.eog|xdg-desktop-portal-gtk)$"] floating enable, resize set 900 600, move position center
 # for_window [class="Spotify"] floating enable, resize set 900 600, move position center
+for_window [app_id="^clipboard$"] floating enable, resize set 760 420, move position center
 
 # $mod + left drag = move, $mod + right drag = resize
 floating_modifier $mod normal
@@ -103,24 +103,29 @@ bindsym {
     $mod+Shift+Return   exec $term --app-id=floating
     $mod+d              exec $menu
     $mod+Shift+e        exec $fm
-    $mod+Shift+v        exec cliphist list | fuzzel --dmenu | cliphist decode | wl-copy
+    $mod+Shift+v        exec $scripts/clipboard.sh
     $mod+Shift+s        exec sh -c 'g=$(slurp) && grim -g "$g" - | wl-copy && notify-send "Screenshot in clipboard"'
     $mod+Shift+n        exec networkmanager_dmenu
-    $mod+b        exec swaymsg '[app_id="librewolf"] focus' || $browser
-    $mod+Shift+b              exec swaymsg '[app_id="vesktop"] focus' || $discord
+    $mod+grave          exec swaymsg '[app_id="librewolf"] focus' || $browser
+    $mod+Shift+d        exec swaymsg '[app_id="vesktop"] focus' || $discord
+    $mod+t              exec swaymsg '[app_id="foot"] focus' || $term
+    $mod+Shift+b        exec $scripts/bluetooth.sh
 
     # Scripts
-    $mod+Shift+d        exec $scripts/discord.sh
     $mod+Shift+a        exec $scripts/audio_switch.sh
     $mod+Shift+p        exec $scripts/power.sh
     $mod+p              exec $scripts/display.sh
     $mod+Shift+t        exec $scripts/theme.sh
     $mod+Shift+x        exec $scripts/hdr.sh
     $mod+Shift+r        exec $scripts/record.sh
+    $mod+Shift+w        exec $scripts/wallpaper.sh
+    $mod+Shift+i        exec $scripts/caffeine.sh
+    $mod+slash          exec $scripts/keybinds.sh
 
     # Session
     $mod+q              kill
     $mod+Escape         exec swaylock
+    Print               exec systemctl sleep
     $mod+Shift+c        reload
     $mod+Shift+m        exec swaynag -t warning -m 'Exit SwayFX? This will end your Wayland session.' -B 'Yes, exit' 'swaymsg exit'
 
@@ -133,6 +138,9 @@ bindsym {
     $mod+Down           focus down
     $mod+Up             focus up
     $mod+Right          focus right
+    # Alt+Tab: hold Alt, tap Tab to step back through recent windows
+    Mod1+Tab            exec swayr next-window all-workspaces
+    Mod1+Shift+Tab      exec swayr prev-window all-workspaces
 
     # Move window
     $mod+Shift+$left    move left

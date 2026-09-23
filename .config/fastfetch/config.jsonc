@@ -17,7 +17,12 @@
     { "type": "wm",       "key": "wm" },
     { "type": "terminal", "key": "term" },
     { "type": "packages", "key": "pkgs" },
+    { "type": "uptime",   "key": "up" },
+    "break",
+    { "type": "cpu",      "key": "cpu" },
+    { "type": "gpu",      "key": "gpu" },
+    { "type": "display",  "key": "disp", "format": "{width}x{height}" },
     { "type": "memory",   "key": "mem" },
-    { "type": "uptime",   "key": "up" }
+    { "type": "disk",     "key": "disk" }
   ]
 }

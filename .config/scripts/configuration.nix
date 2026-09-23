@@ -108,10 +108,14 @@ in
       swaylock swayidle swaybg wdisplays kanshi wlsunset lxqt.lxqt-policykit
       # terminal, launcher, bar, notifications
       foot fuzzel i3status-rust mako libnotify
+      # window switcher (Alt+Tab), bluetooth menu
+      swayr bzmenu
+      # clipboard picker (fzf + sixel image preview) and auto-paste
+      fzf chafa wtype
       # screenshots, recording, clipboard
       grim slurp wf-recorder cliphist
-      # hardware controls (pulseaudio only for `pactl`)
-      brightnessctl pulseaudio pavucontrol
+      # hardware controls (volume via wpctl from wireplumber)
+      brightnessctl pavucontrol
       networkmanager_dmenu networkmanagerapplet
       # GUI utilities
       file-roller baobab eog adwaita-icon-theme

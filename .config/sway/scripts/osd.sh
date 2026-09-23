@@ -12,8 +12,9 @@ notify() {
 }
 
 volume() {
-    vol=$(pactl get-sink-volume @DEFAULT_SINK@ | grep -o '[0-9]*%' | head -1 | tr -d %)
-    if pactl get-sink-mute @DEFAULT_SINK@ | grep -q yes; then
+    out=$(wpctl get-volume @DEFAULT_AUDIO_SINK@)   # "Volume: 0.40" or "Volume: 0.40 [MUTED]"
+    vol=$(echo "$out" | awk '{ printf "%d", $2 * 100 + 0.5 }')
+    if echo "$out" | grep -q MUTED; then
         notify audio-volume-muted-symbolic "Muted" "$vol"
     else
         notify audio-volume-high-symbolic "Volume $vol%" "$vol"
@@ -21,12 +22,12 @@ volume() {
 }
 
 case "$1 $2" in
-    "volume up")       pactl set-sink-volume @DEFAULT_SINK@ +5%;    volume ;;
-    "volume down")     pactl set-sink-volume @DEFAULT_SINK@ -5%;    volume ;;
-    "volume mute")     pactl set-sink-mute @DEFAULT_SINK@ toggle;   volume ;;
+    "volume up")       wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+; volume ;;
+    "volume down")     wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-;        volume ;;
+    "volume mute")     wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle;       volume ;;
     "mic mute")
-        pactl set-source-mute @DEFAULT_SOURCE@ toggle
-        if pactl get-source-mute @DEFAULT_SOURCE@ | grep -q yes; then
+        wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle
+        if wpctl get-volume @DEFAULT_AUDIO_SOURCE@ | grep -q MUTED; then
             notify microphone-sensitivity-muted-symbolic "Mic muted"
         else
             notify audio-input-microphone-symbolic "Mic on"

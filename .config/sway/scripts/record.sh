@@ -10,7 +10,8 @@ mkdir -p "$dir"
 file="$dir/recording-$(date +%Y-%m-%d_%H-%M-%S).mp4"
 
 geom=$(slurp -o) || exit 0
-audio="$(pactl get-default-sink).monitor"   # what you hear, not the mic
+# Monitor of the default sink: what you hear, not the mic
+audio="$(wpctl inspect @DEFAULT_AUDIO_SINK@ | awk -F'"' '/ node\.name = / { print $2; exit }').monitor"
 
 notify-send -t 1000 -a screenrec -i media-record-symbolic "Recording" "Super+Shift+R to stop"
 sleep 1   # let the notification vanish before capture starts
