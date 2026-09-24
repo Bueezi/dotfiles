@@ -29,10 +29,10 @@
   # Don't power the Bluetooth radio until you need it
   hardware.bluetooth.powerOnBoot = !isLaptop;
 
-  # wifi card fix
-  networking.networkmanager.wifi.powersave = false;
+  # Laptop's Realtek (rtw89) Wi-Fi card fix
+  networking.networkmanager.wifi.powersave = lib.mkIf isLaptop false;
 
-  boot.extraModprobeConfig = ''
+  boot.extraModprobeConfig = lib.mkIf isLaptop ''
     options rtw89_core disable_ps_mode=y
     options rtw89_pci disable_aspm_l1=y disable_aspm_l1ss=y disable_clkreq=y
   '';
@@ -86,18 +86,11 @@
   };
 
   # ── Power ───────────────────────────────────────────
-  powerManagement.enable = true;
   services.upower.enable = true;
   services.power-profiles-daemon.enable = true;
 
   # Idle is handled by swayidle in the sway config.
-  services.logind.settings.Login =
-    if isLaptop then {
-      HandlePowerKey = "poweroff";
-      HandleLidSwitch = "suspend-then-hibernate";
-    } else {
-      HandlePowerKey = "poweroff";
-    };
+  services.logind.settings.Login.HandleLidSwitch = lib.mkIf isLaptop "suspend-then-hibernate";
 
   # Laptop: how long to sleep before switching to hibernate
   systemd.sleep.settings.Sleep.HibernateDelaySec = lib.mkIf isLaptop "30min";
@@ -150,7 +143,6 @@
     XCURSOR_THEME = "Adwaita";
     XCURSOR_SIZE = "24";
     NIXOS_OZONE_WL = "1";    # Electron/Chromium on Wayland
-    MOZ_ENABLE_WAYLAND = "1";
   };
 
   # Login: greetd + tuigreet
@@ -262,7 +254,7 @@
   # Steam, go in the "Gaming" section below instead.)
   ++ lib.optionals (!isLaptop) [ # desktop only
     upscayl               # AI image upscaler
-    openrgb               # RGB control (also installed by services.hardware.openrgb)
+    openrgb               # RGB control GUI/CLI (rgb-off below uses its own store path)
     rocmPackages.rocm-smi # GPU monitoring
     mangohud              # in-game FPS/temps overlay: `mangohud %command%` in Steam
     protontricks          # Windows fonts/libs into a game's Proton prefix (Content Manager)
