@@ -6,7 +6,6 @@
 {
   # Optional extras from the dotfiles repo, skipped on a fresh install (no dotfiles yet)
   imports = builtins.filter builtins.pathExists [
-    /home/ben/.config/nixos/nuvio_surround.nix
     /home/ben/.config/nixos/librewolf.nix
   ];
 
@@ -210,7 +209,14 @@
     };
   };
 
-  programs.appimage = { enable = true; binfmt = true; };
+  programs.appimage = {
+    enable = true;
+    binfmt = true;
+    # Extra libraries AppImages expect in /usr/lib
+    package = pkgs.appimage-run.override {
+      extraPkgs = pkgs: [ pkgs.mpv-unwrapped ]; # libmpv.so.2 for Nuvio's player
+    };
+  };
   services.flatpak.enable = true;
 
   # ── Packages ────────────────────────────────────────
