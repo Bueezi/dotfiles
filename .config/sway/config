@@ -72,7 +72,8 @@ input "14139:4229:CX_Wireless_mouse_-1k_dongle_Mouse" {
 # ── Autostart ───────────────────────────────────────
 exec mako
 exec lxqt-policykit-agent
-exec wlsunset -l 50.8 -L 4.7
+# Night light (wlsunset) lives in a script so nightlight.sh can stop/restart it
+exec $scripts/sunset.sh
 exec $scripts/battery-notify.sh
 exec sh -c 'rm -f ~/.cache/cliphist/db && exec wl-paste --watch $scripts/clipstore.sh'
 # Laptop only: start muted
@@ -120,6 +121,7 @@ bindsym {
     $mod+Shift+r        exec $scripts/record.sh
     $mod+Shift+w        exec $scripts/wallpaper.sh
     $mod+Shift+i        exec $scripts/caffeine.sh
+    $mod+n              exec $scripts/nightlight.sh
     $mod+slash          exec $scripts/keybinds.sh
 
     # Session

@@ -41,9 +41,6 @@ MimeType=text/plain;
 Categories=Development;TextEditor;
 EOF
 
-# Update desktop database so the system sees the new helix.desktop file immediately
-update-desktop-database ~/.local/share/applications
-
 xdg-mime default helix.desktop text/plain
 xdg-mime default helix.desktop text/x-c
 xdg-mime default helix.desktop text/x-c++

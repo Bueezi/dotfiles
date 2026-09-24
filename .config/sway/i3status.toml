@@ -50,3 +50,14 @@ hide_when_empty = true
 [[block.click]]
 button = "left"
 cmd = "~/.config/sway/scripts/caffeine.sh"
+
+[[block]]
+block = "custom"
+command = "~/.config/sway/scripts/nightlight.sh status"
+json = true
+signal = 2
+interval = 5
+hide_when_empty = true
+[[block.click]]
+button = "left"
+cmd = "~/.config/sway/scripts/nightlight.sh"

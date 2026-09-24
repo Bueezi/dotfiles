@@ -66,9 +66,14 @@
   services.fwupd.enable = true;
   services.blueman.enable = true;
 
-  services.hardware.openrgb = lib.mkIf (!isLaptop) {
-    enable = true;
-    motherboard = "amd";
+  systemd.services.rgb-off = lib.mkIf (!isLaptop) {
+    description = "Turn off RGB lighting";
+    wantedBy = [ "multi-user.target" "suspend.target" ];
+    after = [ "systemd-modules-load.service" "suspend.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.openrgb}/bin/openrgb --noautoconnect -m off";
+    };
   };
 
   # ── Audio ───────────────────────────────────────────
@@ -97,6 +102,21 @@
   # Laptop: how long to sleep before switching to hibernate
   systemd.sleep.settings.Sleep.HibernateDelaySec = lib.mkIf isLaptop "30min";
   boot.resumeDevice = lib.mkIf isLaptop "/dev/disk/by-uuid/8ac0d876-3d7b-485a-8948-4ccd737b8d5f";
+
+  fileSystems."/mnt/nvme" = lib.mkIf (!isLaptop) {
+    device = "/dev/disk/by-uuid/b2eb90c5-7585-4519-83e9-91808d894f17";   # from `blkid /dev/nvme0n1p3`
+    fsType = "ext4";
+    options = [ "nofail" "x-systemd.device-timeout=5s" "x-gvfs-show" "x-gvfs-name=nvme" ];
+  };
+  fileSystems."/mnt/hdd" = lib.mkIf (!isLaptop) {
+    device = "/dev/disk/by-uuid/005AA8F65AA8EA1C";
+    fsType = "ntfs3";   # the kernel's own NTFS driver, faster than ntfs-3g
+    options = [
+      "nofail" "x-systemd.device-timeout=5s"
+      "uid=1000" "gid=100" "umask=022"   # NTFS has no Linux owners: make everything yours
+      "x-gvfs-show" "x-gvfs-name=hdd"
+    ];
+  };
 
   # ── Desktop: Sway ───────────────────────────────────
   programs.sway = {
