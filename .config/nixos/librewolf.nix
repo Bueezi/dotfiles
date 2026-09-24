@@ -19,6 +19,9 @@
           // Settings > Passwords: "Ask to save passwords" + "Save and autofill usernames and passwords"
           defaultPref("signon.rememberSignons", true);
           defaultPref("signon.autofillForms", true);
+          // Settings > Search: "Show search suggestions" (also in the address bar)
+          defaultPref("browser.search.suggest.enabled", true);
+          defaultPref("browser.urlbar.suggest.searches", true);
         '';
 
         extraPolicies.SearchEngines = {
