@@ -1,3 +1,7 @@
 # theme = "gruvbox_light"
 # theme = "adwaita-dark"
 theme = "base16_transparent"
+
+[editor]
+completion-trigger-len = 1   # default is 2
+idle-timeout = 50            # ms before the popup appears, default 250

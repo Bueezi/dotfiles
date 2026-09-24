@@ -1,0 +1,7 @@
+[language-server.basedpyright]
+command = "basedpyright-langserver"
+args = ["--stdio"]
+
+[[language]]
+name = "python"
+language-servers = ["basedpyright"]

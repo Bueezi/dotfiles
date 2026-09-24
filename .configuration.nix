@@ -4,6 +4,12 @@
 { config, lib, pkgs, isLaptop, ... }:
 
 {
+  # Optional extras from the dotfiles repo, skipped on a fresh install (no dotfiles yet)
+  imports = builtins.filter builtins.pathExists [
+    /home/ben/.config/nixos/nuvio_surround.nix
+    /home/ben/.config/nixos/librewolf.nix
+  ];
+
   # ── Boot ────────────────────────────────────────────
   boot = {
     loader = {
@@ -212,11 +218,13 @@
 
   environment.systemPackages = with pkgs; [
     # CLI
-    git gh gcc less htop btop powertop fastfetch cowsay
+    git gh gcc python3 less htop btop powertop fastfetch cowsay
     wl-clipboard zip unzip p7zip ffmpeg jq wl-mirror
     # Dev
     neovim helix vscode nodejs rustc cargo podman-compose sqlite dbeaver-bin
     distrobox distroshelf
+    # LSP
+    basedpyright
     # Apps
     librewolf ungoogled-chromium mpv vesktop qbittorrent
     libreoffice filezilla github-desktop bazaar gearlever

@@ -54,6 +54,7 @@ xdg-mime default helix.desktop application/x-shellscript
 # config git
 git config --global user.email "mail@b3n.me"
 git config --global user.name "Bueezi"
+git config --global core.editor "hx"
 
 # enable audio
 # systemctl --user enable --now pipewire pipewire-pulse wireplumber

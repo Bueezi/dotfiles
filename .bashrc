@@ -22,6 +22,7 @@ cu() {
     config push
 }
 
+alias g="git"
 alias gc='gcc -std=c99 -Wall -Wextra -pedantic'
 
 #alias hx='helix'
