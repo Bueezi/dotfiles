@@ -43,3 +43,4 @@ alias gitu='git commit -m "update" && git push'
 #     alias btop='doas btop --force-utf'
 # fi
 export PATH=$HOME/.local/bin:$PATH
+source "/home/ben/Documents/informatica_werktuigen/setup.sh"  # ctf oefenzitting Linux

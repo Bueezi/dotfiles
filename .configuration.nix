@@ -241,6 +241,8 @@
     # Dev
     neovim helix vscode nodejs rustc cargo podman-compose sqlite dbeaver-bin
     distrobox distroshelf
+    # KUL
+    (texliveBasic.withPackages (ps: with ps; [ collection-latex collection-latexrecommended collection-fontsrecommended collection-fontsextra collection-latexextra collection-langeuropean latexmk ])) ddd gdb openssl
     # LSP
     basedpyright
     # Apps
