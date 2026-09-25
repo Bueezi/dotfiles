@@ -51,7 +51,7 @@
   users.users.ben = {
     isNormalUser = true;
     description = "Ben";
-    extraGroups = [ "networkmanager" "wheel" "video" ];
+    extraGroups = [ "networkmanager" "wheel" "video" ] ++ lib.optional (!isLaptop) "i2c";
   };
 
   zramSwap.enable = true;
@@ -66,6 +66,14 @@
 
   services.fwupd.enable = true;
   services.blueman.enable = true;
+
+  # RAM RGB: OpenRGB reaches the DIMMs over SMBus through /dev/i2c-* (i2c-dev).
+  # spd5118 (DDR5 SPD/temperature driver) claims the sticks' SPD addresses, which makes
+  # OpenRGB skip them, so keep it off (costs the RAM temperature sensor).
+  boot.kernelModules = lib.optionals (!isLaptop) [ "i2c-dev" ];
+  boot.blacklistedKernelModules = lib.optionals (!isLaptop) [ "spd5118" ];
+  # /dev/i2c-* for the i2c group too: ddcutil sets the monitor's brightness over DDC/CI
+  hardware.i2c.enable = !isLaptop;
 
   systemd.services.rgb-off = lib.mkIf (!isLaptop) {
     description = "Turn off RGB lighting";
@@ -115,7 +123,7 @@
   # ── Desktop: Sway ───────────────────────────────────
   programs.sway = {
     enable = true;
-    package = pkgs.swayfx; # lags behind sway; drop `hdr` lines in sway config if they error
+    package = pkgs.swayfx; # latest git via ~/.config/nixos/swayfx (no HDR: scenefx renderer)
     wrapperFeatures.gtk = true;
     extraSessionCommands = ''
       export QT_QPA_PLATFORM="wayland;xcb"
@@ -269,6 +277,7 @@
     mangohud              # in-game FPS/temps overlay: `mangohud %command%` in Steam
     protontricks          # Windows fonts/libs into a game's Proton prefix (Content Manager)
     oversteer             # G920 settings: rotation, force feedback, pedal test
+    ddcutil               # monitor brightness over DDC/CI (osd.sh brightness)
     lmstudio              # local LLMs; data/models live on the nvme (see tmpfiles below)
   ]
   ++ lib.optionals isLaptop [   # laptop only
@@ -292,8 +301,8 @@
   services.lact.enable = !isLaptop;
   # Logitech G920: switch it out of Xbox mode so it shows up as a wheel
   hardware.usb-modeswitch.enable = !isLaptop;
-  # Let Oversteer change wheel settings without root
-  services.udev.packages = lib.mkIf (!isLaptop) [ pkgs.oversteer ];
+  # Let Oversteer and OpenRGB reach the wheel / RGB devices without root
+  services.udev.packages = lib.mkIf (!isLaptop) [ pkgs.oversteer pkgs.openrgb ];
   # LM Studio keeps its models etc. in ~/.lmstudio: point that at the nvme
   systemd.tmpfiles.rules = lib.mkIf (!isLaptop) [
     "L /home/ben/.lmstudio - - - - /mnt/nvme/Documents/lm-studio"

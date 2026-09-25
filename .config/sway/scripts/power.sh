@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Runs in a floating terminal so you can see output and type your sudo password.
+# Runs in a scratchpad terminal (hide/show with $mod+minus) so you can see output and type your sudo password.
 update() {
     if [ "$(hostname)" = "void" ]; then
         sudo xbps-install -Su
@@ -47,8 +47,8 @@ choice=$(printf "󰋊  hibernate\n󰜉  reboot\n󰒲  sleep\n󰐥  power off\n�
 
 [ "$choice" ] || exit 0
 case "$choice" in
-    *update)  exec foot --app-id=floating "$0" update ;;
-    *rebuild) exec foot --app-id=floating "$0" rebuild ;;
+    *update)  exec foot --app-id=scratch-power "$0" update ;;
+    *rebuild) exec foot --app-id=scratch-power "$0" rebuild ;;
 esac
 
 if [ "$(hostname)" = "void" ]; then

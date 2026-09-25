@@ -20,4 +20,9 @@ default-timeout=0
 
 [app-name=osd]
 anchor=bottom-center
-width=250
+# 25-char bar (8px/char at 10pt) + padding + border
+width=226
+text-alignment=center
+# Black and white like the rest: plain white text, the level is a text bar (osd.sh)
+text-color=#ffffff
+border-color=#ffffff

@@ -44,6 +44,6 @@ fi
 
 sleep 0.15   # let focus return to the previous window
 case "$app" in
-    foot|floating) wtype -M ctrl -M shift -k v -m shift -m ctrl ;;
-    *)             wtype -M ctrl -k v -m ctrl ;;
+    foot|floating|scratch-*)    wtype -M ctrl -M shift -k v -m shift -m ctrl ;;
+    *)                          wtype -M ctrl -k v -m ctrl ;;
 esac

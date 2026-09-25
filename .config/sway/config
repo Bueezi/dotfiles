@@ -8,6 +8,7 @@ set $term    foot
 set $fm      thunar
 set $menu    fuzzel
 set $browser librewolf
+set $discord vesktop
 set $scripts ~/.config/sway/scripts
 
 set $bg      #000000
@@ -76,6 +77,11 @@ exec lxqt-policykit-agent
 exec $scripts/sunset.sh
 exec $scripts/battery-notify.sh
 exec sh -c 'rm -f ~/.cache/cliphist/db && exec wl-paste --watch $scripts/clipstore.sh'
+# Browser (a normal window at login)
+exec $browser
+# Desktop only: Vesktop and Steam in the tray
+exec sh -c 'test -d /sys/class/power_supply/BAT0 || exec vesktop --start-minimized'
+exec sh -c 'test -d /sys/class/power_supply/BAT0 || exec steam -silent'
 # Laptop only: start muted
 exec sh -c 'test -d /sys/class/power_supply/BAT0 && sleep 2 && wpctl set-volume @DEFAULT_AUDIO_SINK@ 0'
 
@@ -92,9 +98,13 @@ exec $scripts/tray-menu.sh
 for_window [app_id=".*"] inhibit_idle fullscreen
 for_window [class=".*"]  inhibit_idle fullscreen
 
-for_window [app_id="^(floating|Thunar|thunar|blueman-manager|org.gnome.FileRoller|org.gnome.eog|xdg-desktop-portal-gtk)$"] floating enable, resize set 900 600, move position center
+for_window [app_id="^(floating|blueman-manager|org.gnome.FileRoller|org.gnome.eog|xdg-desktop-portal-gtk)$"] floating enable, resize set 900 600, move position center
 # for_window [class="Spotify"] floating enable, resize set 900 600, move position center
 for_window [app_id="^clipboard$"] floating enable, resize set 760 420, move position center
+# Scratchpad apps ($mod+Shift+Return / e / d, power.sh update/rebuild): open floating in the
+# scratchpad, shown. The same key (or $mod+minus) hides/shows them again.
+for_window [app_id="^(scratch-.*|thunar|Thunar)$"] floating enable, resize set 900 600, move scratchpad, scratchpad show, move position center
+for_window [app_id="^vesktop$"] floating enable, resize set 1200 800, move scratchpad, scratchpad show, move position center
 # Tray right-click menus (Electron: no app_id, no title). Float them before they're drawn and
 # park them off-screen; scripts/tray-menu.sh then moves them to the top-right corner.
 for_window [shell="xdg_shell" app_id="^$" title="^$"] floating enable, move absolute position 20000 0
@@ -109,14 +119,14 @@ focus_on_window_activation focus
 bindsym {
     # Apps
     $mod+Return         exec $term
-    $mod+Shift+Return   exec $term --app-id=floating
+    $mod+Shift+Return   exec swaymsg '[app_id="^scratch-term$"] scratchpad show' || $term --app-id=scratch-term
     $mod+d              exec $menu
-    $mod+Shift+e        exec $fm
+    $mod+Shift+e        exec swaymsg '[app_id="^(thunar|Thunar)$"] scratchpad show' || $fm
     $mod+Shift+v        exec $scripts/clipboard.sh
     $mod+Shift+s        exec sh -c 'g=$(slurp) && grim -g "$g" - | wl-copy && notify-send "Screenshot in clipboard"'
     $mod+Shift+n        exec networkmanager_dmenu
     $mod+grave          exec swaymsg '[app_id="librewolf"] focus' || $browser
-    $mod+Shift+d        exec $scripts/vesktop.sh
+    $mod+Shift+d        exec swaymsg '[app_id="^vesktop$"] scratchpad show' || $discord
     $mod+t              exec swaymsg '[app_id="foot"] focus' || $term
     $mod+Shift+b        exec $scripts/bluetooth.sh
 
@@ -125,7 +135,6 @@ bindsym {
     $mod+Shift+p        exec $scripts/power.sh
     $mod+p              exec $scripts/display.sh
     $mod+Shift+t        exec $scripts/theme.sh
-    $mod+Shift+x        exec $scripts/hdr.sh
     $mod+Shift+r        exec $scripts/record.sh
     $mod+Shift+w        exec $scripts/wallpaper.sh
     $mod+Shift+i        exec $scripts/caffeine.sh
@@ -214,6 +223,9 @@ bindsym --locked {
     XF86AudioPrev          exec $scripts/osd.sh media prev
     XF86MonBrightnessDown  exec $scripts/osd.sh brightness down
     XF86MonBrightnessUp    exec $scripts/osd.sh brightness up
+    # For keyboards without brightness keys (desktop: sets the monitor over DDC/CI)
+    $mod+Next              exec $scripts/osd.sh brightness down
+    $mod+Prior             exec $scripts/osd.sh brightness up
 }
 
 mode "resize" {
