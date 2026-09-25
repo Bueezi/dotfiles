@@ -7,6 +7,7 @@
   # Optional extras from the dotfiles repo, skipped on a fresh install (no dotfiles yet)
   imports = builtins.filter builtins.pathExists [
     /home/ben/.config/nixos/librewolf.nix
+    /home/ben/.config/nixos/swayfx.nix  # latest swayfx from git
   ];
 
   # ── Boot ────────────────────────────────────────────
@@ -158,6 +159,12 @@
   xdg.portal = {
     enable = true;
     wlr.enable = true;
+    # Screen-share picker (screens + windows). Full path: the portal service's PATH doesn't
+    # include the sway packages, and NixOS ignores ~/.config/xdg-desktop-portal-wlr/config.
+    wlr.settings.screencast = {
+      chooser_type = "dmenu";
+      chooser_cmd = "${lib.getExe pkgs.fuzzel} --dmenu --prompt 'share ❯ '";
+    };
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
     config.common.default = [ "wlr" "gtk" ];
   };
@@ -226,7 +233,8 @@
     binfmt = true;
     # Extra libraries AppImages expect in /usr/lib
     package = pkgs.appimage-run.override {
-      extraPkgs = pkgs: [ pkgs.mpv-unwrapped ]; # libmpv.so.2 for Nuvio's player
+      # Nuvio's player bridge (libplayer_bridge.so) needs libmpv.so.2 and webkit2gtk-4.1
+      extraPkgs = pkgs: [ pkgs.mpv-unwrapped pkgs.webkitgtk_4_1 ];
     };
   };
   services.flatpak.enable = true;
@@ -261,6 +269,7 @@
     mangohud              # in-game FPS/temps overlay: `mangohud %command%` in Steam
     protontricks          # Windows fonts/libs into a game's Proton prefix (Content Manager)
     oversteer             # G920 settings: rotation, force feedback, pedal test
+    lmstudio              # local LLMs; data/models live on the nvme (see tmpfiles below)
   ]
   ++ lib.optionals isLaptop [   # laptop only
   ];
@@ -285,6 +294,10 @@
   hardware.usb-modeswitch.enable = !isLaptop;
   # Let Oversteer change wheel settings without root
   services.udev.packages = lib.mkIf (!isLaptop) [ pkgs.oversteer ];
+  # LM Studio keeps its models etc. in ~/.lmstudio: point that at the nvme
+  systemd.tmpfiles.rules = lib.mkIf (!isLaptop) [
+    "L /home/ben/.lmstudio - - - - /mnt/nvme/Documents/lm-studio"
+  ];
 
   system.stateVersion = "26.05";
 }

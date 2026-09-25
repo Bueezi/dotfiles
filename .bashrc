@@ -43,4 +43,8 @@ alias gitu='git commit -m "update" && git push'
 #     alias btop='doas btop --force-utf'
 # fi
 export PATH=$HOME/.local/bin:$PATH
-source "/home/ben/Documents/informatica_werktuigen/setup.sh"  # ctf oefenzitting Linux
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/home/ben/.lmstudio/bin"
+# End of LM Studio CLI section
+

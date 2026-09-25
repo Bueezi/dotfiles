@@ -8,7 +8,6 @@ set $term    foot
 set $fm      thunar
 set $menu    fuzzel
 set $browser librewolf
-set $discord vesktop
 set $scripts ~/.config/sway/scripts
 
 set $bg      #000000
@@ -32,6 +31,7 @@ gaps inner 5
 smart_gaps on
 
 # SwayFX (rounded corners need gaps to be visible)
+animation_duration_ms 350
 corner_radius 6
 # shadows enable
 blur enable
@@ -85,6 +85,9 @@ exec $scripts/idle.sh
 # Window switcher daemon (Alt+Tab)
 exec swayrd
 
+# Put tray right-click menus in the top-right corner (see the for_window rule above)
+exec $scripts/tray-menu.sh
+
 # ── Window rules ────────────────────────────────────
 for_window [app_id=".*"] inhibit_idle fullscreen
 for_window [class=".*"]  inhibit_idle fullscreen
@@ -92,6 +95,11 @@ for_window [class=".*"]  inhibit_idle fullscreen
 for_window [app_id="^(floating|Thunar|thunar|blueman-manager|org.gnome.FileRoller|org.gnome.eog|xdg-desktop-portal-gtk)$"] floating enable, resize set 900 600, move position center
 # for_window [class="Spotify"] floating enable, resize set 900 600, move position center
 for_window [app_id="^clipboard$"] floating enable, resize set 760 420, move position center
+# Tray right-click menus (Electron: no app_id, no title). Float them before they're drawn and
+# park them off-screen; scripts/tray-menu.sh then moves them to the top-right corner.
+for_window [shell="xdg_shell" app_id="^$" title="^$"] floating enable, move absolute position 20000 0
+# Polkit password prompt (lxqt-policykit-agent; wrapped binary's app_id can differ, so match loosely)
+for_window [app_id="policykit"] floating enable, resize set 500 200, move position center
 
 # $mod + left drag = move, $mod + right drag = resize
 floating_modifier $mod normal
@@ -108,7 +116,7 @@ bindsym {
     $mod+Shift+s        exec sh -c 'g=$(slurp) && grim -g "$g" - | wl-copy && notify-send "Screenshot in clipboard"'
     $mod+Shift+n        exec networkmanager_dmenu
     $mod+grave          exec swaymsg '[app_id="librewolf"] focus' || $browser
-    $mod+Shift+d        exec swaymsg '[app_id="vesktop"] focus' || $discord
+    $mod+Shift+d        exec $scripts/vesktop.sh
     $mod+t              exec swaymsg '[app_id="foot"] focus' || $term
     $mod+Shift+b        exec $scripts/bluetooth.sh
 
