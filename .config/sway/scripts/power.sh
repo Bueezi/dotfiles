@@ -33,6 +33,22 @@ rebuild() {
     fi
 }
 
+# Sync dotfiles with `cu` from ~/.bashrc (commit tracked changes, pull, push).
+sync() {
+    echo "==> Dotfiles sync (cu)"
+    if bash -ic cu; then
+        notify-send -a sync -i emblem-ok-symbolic "Sync" "Dotfiles synced"
+        sleep 1
+    else
+        notify-send -u critical -a sync -i dialog-error-symbolic "Sync" "Dotfiles sync failed"
+        echo; read -rp "Failed. Press Enter to close."
+    fi
+}
+
+if [ "$1" = "sync" ]; then
+    sync
+    exit
+fi
 if [ "$1" = "update" ]; then
     update
     exit
@@ -42,13 +58,14 @@ if [ "$1" = "rebuild" ]; then
     exit
 fi
 
-choice=$(printf "󰋊  hibernate\n󰜉  reboot\n󰒲  sleep\n󰐥  power off\n󰚰  update\n󱄅  rebuild" |
-  fuzzel --dmenu --width 20 --lines 6)
+choice=$(printf "󰋊  hibernate\n󰜉  reboot\n󰒲  sleep\n󰐥  power off\n󰚰  update\n󱄅  rebuild\n󰓦  sync" |
+  fuzzel --dmenu --width 20 --lines 7)
 
 [ "$choice" ] || exit 0
 case "$choice" in
     *update)  exec foot --app-id=scratch-power "$0" update ;;
     *rebuild) exec foot --app-id=scratch-power "$0" rebuild ;;
+    *sync)    exec foot --app-id=scratch-power "$0" sync ;;
 esac
 
 if [ "$(hostname)" = "void" ]; then

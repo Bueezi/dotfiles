@@ -35,19 +35,42 @@ brightness() {
     if [ -n "$(ls /sys/class/backlight 2>/dev/null)" ]; then
         b=$(brightnessctl -m set "5%$1" | cut -d, -f4 | tr -d %)
     else
-        # No backlight (desktop): set the monitor itself over DDC/CI, VCP 0x10 = brightness.
-        # Serialised with flock, since overlapping ddcutil calls on one bus fail.
-        exec 9>"${XDG_RUNTIME_DIR:-/tmp}/osd-ddc.lock"
-        flock 9
-        bus_file="${XDG_RUNTIME_DIR:-/tmp}/osd-ddc-bus"   # cache: detect is slow
+        # No backlight (desktop): the monitor's own brightness over DDC/CI (VCP 0x10).
+        # A ddcutil call takes ~0.1s, so the level is kept in a file: the OSD shows at once
+        # and one background job pushes the newest level to the monitor (presses coalesce).
+        dir="${XDG_RUNTIME_DIR:-/tmp}"
+        bus_file="$dir/osd-ddc-bus" level_file="$dir/osd-ddc-level"
         [ -s "$bus_file" ] || ddcutil detect --brief | sed -n 's|.*/dev/i2c-||p' | head -1 > "$bus_file"
         bus=$(cat "$bus_file")
-        cur=$(ddcutil --bus "$bus" -t getvcp 10 | awk '{ print $4 }')
-        [ -n "$cur" ] || { rm -f "$bus_file"; exit 1; }
+
+        exec 8>"$dir/osd-ddc-level.lock"
+        flock 8
+        # Re-read the monitor after 10s idle (it may have been changed with its own buttons)
+        if [ ! -s "$level_file" ] || [ $(( $(date +%s) - $(stat -c %Y "$level_file") )) -gt 10 ]; then
+            ddcutil --bus "$bus" -t getvcp 10 | awk '{ print $4 }' > "$level_file"
+        fi
+        cur=$(cat "$level_file")
+        [ -n "$cur" ] || { rm -f "$bus_file" "$level_file"; exit 1; }
         b=$(( cur $1 5 ))
         [ "$b" -lt 0 ] && b=0
         [ "$b" -gt 100 ] && b=100
-        ddcutil --bus "$bus" --noverify setvcp 10 "$b"
+        echo "$b" > "$level_file"
+        exec 8>&-
+
+        apply() {
+            while :; do
+                flock -n 9 || return 0   # an applier is already running and will send our level
+                sent=
+                while [ "$(cat "$level_file")" != "$sent" ]; do
+                    sent=$(cat "$level_file")
+                    ddcutil --bus "$bus" --noverify setvcp 10 "$sent"
+                done
+                flock -u 9
+                # A press that landed while unlocking couldn't start its own applier
+                [ "$(cat "$level_file")" = "$sent" ] && return 0
+            done
+        }
+        ( apply ) 9>"$dir/osd-ddc.lock" &
     fi
     notify display-brightness-symbolic "Brightness $b%" "$b"
 }
