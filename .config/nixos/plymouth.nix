@@ -7,6 +7,7 @@
 let
   width = 480;  # px, like an OEM logo
   fps = 15;
+  hold = 1.2;   # s on the first frame after the GPU driver is up, while the monitor syncs
 
   theme = pkgs.runCommand "plymouth-penguin" { nativeBuildInputs = [ pkgs.ffmpeg-headless ]; } ''
     dir=$out/share/plymouth/themes/penguin
@@ -17,7 +18,8 @@ let
 
     frames=$(ls $dir/frame-*.png | wc -l)
     substitute ${./plymouth/penguin.script} $dir/penguin.script \
-      --replace-fail @frames@ "$frames" --replace-fail @fps@ ${toString fps}
+      --replace-fail @frames@ "$frames" --replace-fail @fps@ ${toString fps} \
+      --replace-fail @hold@ ${toString hold}
 
     cat > $dir/penguin.plymouth <<EOF
     [Plymouth Theme]
@@ -37,8 +39,9 @@ in
     theme = "penguin";
   };
 
-  # Hold plymouth's exit (and with it greetd) until one full play since the splash started.
-  # Only the splash waits: the rest of the boot carries on in parallel.
+  # Hold plymouth's exit (and with it greetd) until one full play since the splash became
+  # visible: plymouth has nothing to draw on until the GPU driver is up (~2s after it starts
+  # on the RX 9070 XT), so count from that. Only the splash waits, boot carries on in parallel.
   systemd.services.plymouth-play-once = {
     description = "Let the boot splash play through once";
     wantedBy = [ "multi-user.target" ];
@@ -48,10 +51,16 @@ in
     script = ''
       frames=$(ls ${theme}/share/plymouth/themes/penguin/frame-*.png | wc -l)
       clip_ms=$(( frames * 1000 / ${toString fps} ))
-      # plymouthd's start time (clock ticks since boot, 100/s), from before switch-root
-      start_ms=$(( $(${lib.getExe' pkgs.gawk "awk"} '{ print $22 }' /proc/$(cat /run/plymouth/pid)/stat) * 10 ))
-      now_ms=$(${lib.getExe' pkgs.gawk "awk"} '{ printf "%d", $1 * 1000 }' /proc/uptime)
-      left_ms=$(( start_ms + clip_ms + 300 - now_ms ))   # +300ms: loading the frames
+      awk=${lib.getExe' pkgs.gawk "awk"}
+      # The splash is visible from whichever came last: plymouthd starting, or the real GPU
+      # driver coming up (kernel log; simpledrm doesn't count, plymouth ignores it)
+      plymouth_ms=$(( $($awk '{ print $22 }' /proc/$(cat /run/plymouth/pid)/stat) * 10 ))
+      gpu_ms=$(${lib.getExe' pkgs.util-linux "dmesg"} | $awk -F'[][]' \
+        '/\[drm\] Initialized/ && !/simpledrm/ { t = $2 } END { printf "%d", t * 1000 }')
+      start_ms=$(( gpu_ms > plymouth_ms ? gpu_ms : plymouth_ms ))
+      now_ms=$($awk '{ printf "%d", $1 * 1000 }' /proc/uptime)
+      hold_ms=${toString (builtins.floor (hold * 1000))}
+      left_ms=$(( start_ms + hold_ms + clip_ms + 300 - now_ms ))   # +300ms: loading the frames
       if [ "$left_ms" -gt 0 ]; then
         sleep "$(( left_ms / 1000 )).$(printf %03d $(( left_ms % 1000 )))"
       fi
