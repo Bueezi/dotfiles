@@ -8,6 +8,7 @@
   imports = builtins.filter builtins.pathExists [
     /home/ben/.config/nixos/librewolf.nix
     /home/ben/.config/nixos/swayfx.nix  # latest swayfx from git
+    /home/ben/.config/nixos/plymouth.nix  # boot splash (penguin video)
   ];
 
   # ── Boot ────────────────────────────────────────────
@@ -185,6 +186,7 @@
         color-scheme = "prefer-dark";
         gtk-theme = "Adwaita-dark";
         cursor-theme = "Adwaita";
+        icon-theme = "Adwaita";
         cursor-size = lib.gvariant.mkInt32 24;
       };
     }];
@@ -194,6 +196,7 @@
     gtk-theme-name=Adwaita-dark
     gtk-application-prefer-dark-theme=1
     gtk-cursor-theme-name=Adwaita
+    gtk-icon-theme-name=Adwaita
     gtk-cursor-theme-size=24
   '';
 

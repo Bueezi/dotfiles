@@ -1,28 +1,31 @@
 {
   "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
   "logo": {
-    "source": "nixos_small",
+    "source": "nixos",
     "color": { "1": "white", "2": "white" },
     "padding": { "right": 3 }
   },
   "display": {
-    "separator": "  ",
-    "color": { "keys": "bright_black", "title": "white" },
-    "key": { "width": 6 }
+    "separator": ": ",
+    "color": { "keys": "bold_bright_white", "title": "bold_bright_white", "separator": "bright_white", "output": "38;5;248" }
   },
   "modules": [
     "title",
-    { "type": "os",       "key": "os" },
-    { "type": "kernel",   "key": "kern" },
-    { "type": "wm",       "key": "wm" },
-    { "type": "terminal", "key": "term" },
-    { "type": "packages", "key": "pkgs" },
-    { "type": "uptime",   "key": "up" },
-    "break",
-    { "type": "cpu",      "key": "cpu" },
-    { "type": "gpu",      "key": "gpu" },
-    { "type": "display",  "key": "disp", "format": "{width}x{height}" },
-    { "type": "memory",   "key": "mem" },
-    { "type": "disk",     "key": "disk" }
+    "separator",
+    { "type": "os",       "key": "OS" },
+    { "type": "host",     "key": "Host" },
+    { "type": "kernel",   "key": "Kernel" },
+    { "type": "uptime",   "key": "Uptime" },
+    { "type": "packages", "key": "Packages" },
+    { "type": "shell",    "key": "Shell" },
+    { "type": "display",  "key": "Resolution", "format": "{width}x{height}" },
+    { "type": "wm",       "key": "WM", "format": "SwayFX ({protocol-name})" },
+    { "type": "theme",    "key": "Theme" },
+    { "type": "icons",    "key": "Icons" },
+    { "type": "terminal", "key": "Terminal" },
+    { "type": "cpu",      "key": "CPU" },
+    { "type": "gpu",      "key": "GPU" },
+    { "type": "memory",   "key": "Memory", "format": "{used} / {total}" },
+    { "type": "disk",     "key": "Disk ({mountpoint})", "format": "{size-used} / {size-total}" }
   ]
 }

@@ -8,6 +8,8 @@ padding=10
 margin=10
 default-timeout=4000
 anchor=top-right
+# Overlay layer: show above fullscreen video/games too (default "top" is hidden by them)
+layer=overlay
 
 [urgency=low]
 border-color=#555555

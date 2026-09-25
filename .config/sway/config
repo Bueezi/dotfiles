@@ -125,7 +125,7 @@ bindsym {
     $mod+Shift+v        exec $scripts/clipboard.sh
     $mod+Shift+s        exec sh -c 'g=$(slurp) && grim -g "$g" - | wl-copy && notify-send "Screenshot in clipboard"'
     $mod+Shift+n        exec networkmanager_dmenu
-    $mod+grave          exec swaymsg '[app_id="librewolf"] focus' || $browser
+    $mod+x              exec swaymsg '[app_id="librewolf"] focus' || $browser
     $mod+Shift+d        exec swaymsg '[app_id="^vesktop$"] scratchpad show' || $discord
     $mod+t              exec swaymsg '[app_id="foot"] focus' || $term
     $mod+Shift+b        exec $scripts/bluetooth.sh
