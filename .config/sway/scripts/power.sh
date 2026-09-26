@@ -1,7 +1,23 @@
 #!/usr/bin/env bash
 
 # Runs in a scratchpad terminal (hide/show with $mod+minus) so you can see output and type your sudo password.
+# Once the password is in (sudo caches it), the terminal hides itself and comes back only when
+# it needs you: a failure, a firmware prompt, or the end of an update.
+hide() { swaymsg -q '[app_id="^scratch-power$"] move scratchpad'; }
+show() { swaymsg -q '[app_id="^scratch-power$"] focus'; }
+
+# Ask for the sudo password up front, then hide
+auth() {
+    if ! sudo -v; then
+        notify-send -u critical -a power -i dialog-error-symbolic "Authentication failed"
+        read -rp "Press Enter to close."
+        exit 1
+    fi
+    hide
+}
+
 update() {
+    auth
     if [ "$(hostname)" = "void" ]; then
         sudo xbps-install -Su
     else
@@ -17,18 +33,27 @@ update() {
     flatpak update -y
     echo; echo "==> Firmware"
     fwupdmgr refresh >/dev/null 2>&1
-    fwupdmgr update
+    if fwupdmgr get-updates >/dev/null 2>&1; then
+        show   # fwupdmgr asks before flashing
+        fwupdmgr update
+    else
+        echo "No firmware updates."
+    fi
+    notify-send -a update -i emblem-ok-symbolic "Update" "Finished"
+    show
     echo; read -rp "Done. Press Enter to close."
 }
 
 # Rebuild the NixOS config (no channel upgrade) and report the result as a notification.
 rebuild() {
+    auth
     echo "==> nixos-rebuild switch"
     if sudo nixos-rebuild switch; then
         notify-send -a rebuild -i emblem-ok-symbolic "Rebuild" "nixos-rebuild switch succeeded"
         sleep 1
     else
         notify-send -u critical -a rebuild -i dialog-error-symbolic "Rebuild" "nixos-rebuild switch failed"
+        show
         echo; read -rp "Failed. Press Enter to close."
     fi
 }
@@ -36,11 +61,13 @@ rebuild() {
 # Sync dotfiles with `cu` from ~/.bashrc (commit tracked changes, pull, push).
 sync() {
     echo "==> Dotfiles sync (cu)"
+    hide   # no password needed
     if bash -ic cu; then
         notify-send -a sync -i emblem-ok-symbolic "Sync" "Dotfiles synced"
         sleep 1
     else
         notify-send -u critical -a sync -i dialog-error-symbolic "Sync" "Dotfiles sync failed"
+        show
         echo; read -rp "Failed. Press Enter to close."
     fi
 }
