@@ -6,7 +6,7 @@
 hide() { swaymsg -q '[app_id="^scratch-power$"] move scratchpad'; }
 show() { swaymsg -q '[app_id="^scratch-power$"] focus'; }
 
-# Ask for the sudo password up front, then hide
+# Ask for the sudo password up front, then hide and say it started. $1 = name for the notification
 auth() {
     if ! sudo -v; then
         notify-send -u critical -a power -i dialog-error-symbolic "Authentication failed"
@@ -14,10 +14,11 @@ auth() {
         exit 1
     fi
     hide
+    notify-send -a power -i system-run-symbolic "$1" "Started, running in the background"
 }
 
 update() {
-    auth
+    auth Update
     if [ "$(hostname)" = "void" ]; then
         sudo xbps-install -Su
     else
@@ -46,7 +47,7 @@ update() {
 
 # Rebuild the NixOS config (no channel upgrade) and report the result as a notification.
 rebuild() {
-    auth
+    auth Rebuild
     echo "==> nixos-rebuild switch"
     if sudo nixos-rebuild switch; then
         notify-send -a rebuild -i emblem-ok-symbolic "Rebuild" "nixos-rebuild switch succeeded"
@@ -61,13 +62,11 @@ rebuild() {
 # Sync dotfiles with `cu` from ~/.bashrc (commit tracked changes, pull, push).
 sync() {
     echo "==> Dotfiles sync (cu)"
-    hide   # no password needed
     if bash -ic cu; then
         notify-send -a sync -i emblem-ok-symbolic "Sync" "Dotfiles synced"
-        sleep 1
+        echo; read -rp "Done. Press Enter to close."
     else
         notify-send -u critical -a sync -i dialog-error-symbolic "Sync" "Dotfiles sync failed"
-        show
         echo; read -rp "Failed. Press Enter to close."
     fi
 }

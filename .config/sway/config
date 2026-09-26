@@ -101,12 +101,15 @@ for_window [class=".*"]  inhibit_idle fullscreen
 for_window [app_id="^(floating|blueman-manager|org.gnome.FileRoller|org.gnome.eog|xdg-desktop-portal-gtk)$"] floating enable, resize set 900 600, move position center
 # for_window [class="Spotify"] floating enable, resize set 900 600, move position center
 for_window [app_id="^clipboard$"] floating enable, resize set 760 420, move position center
-# Scratchpad apps ($mod+Shift+Return / e / d, power.sh update/rebuild): open floating in the
+# Scratchpad apps ($mod+Shift+Return / e, power.sh update/rebuild/sync): open floating in the
 # scratchpad, shown. The same key (or $mod+minus) hides/shows them again.
 for_window [app_id="^(scratch-.*|thunar|Thunar)$"] floating enable, resize set 900 600, move scratchpad, scratchpad show, move position center
 # Eclipse Music (~/.config/nixos/eclipse): hides to its tray icon on close, $mod+m toggles
 for_window [app_id="^eclipse$"] floating enable, resize set 1100 750, move position center, focus
-for_window [app_id="^vesktop$"] floating enable, resize set 1200 800, move scratchpad, scratchpad show, move position center
+# Steam main window only (dialogs and games have other titles/classes)
+# Marked for scripts/open.sh ($mod+i / $mod+Shift+d): tiled on an empty workspace, else floating
+for_window [class="^steam$" title="^Steam$"] mark --add steam, floating enable, resize set 1400 900, move position center
+for_window [app_id="^vesktop$"] mark --add vesktop, floating enable, resize set 1200 800, move position center
 # Tray right-click menus (Electron: no app_id, no title). Float them before they're drawn and
 # park them off-screen; scripts/tray-menu.sh then moves them to the top-right corner.
 for_window [shell="xdg_shell" app_id="^$" title="^$"] floating enable, move absolute position 20000 0
@@ -120,7 +123,8 @@ focus_on_window_activation focus
 # ── Keybindings ─────────────────────────────────────
 bindsym {
     # Apps
-    $mod+Return         exec $term
+    # Terminal: tiled on an empty workspace, else a floating scratchpad window (scratch-* rule)
+    $mod+Return         exec sh -c '[ "$(swaymsg -t get_workspaces | jq ".[] | select(.focused).representation")" = null ] && exec $term || exec $term --app-id=scratch-float'
     $mod+Shift+Return   exec swaymsg '[app_id="^scratch-term$"] scratchpad show' || $term --app-id=scratch-term
     $mod+d              exec $menu
     $mod+Shift+e        exec swaymsg '[app_id="^(thunar|Thunar)$"] scratchpad show' || $fm
@@ -129,7 +133,8 @@ bindsym {
     $mod+Shift+n        exec networkmanager_dmenu
     $mod+x              exec swaymsg '[app_id="librewolf"] focus' || $browser
     $mod+m              exec eclipse
-    $mod+Shift+d        exec swaymsg '[app_id="^vesktop$"] scratchpad show' || $discord
+    $mod+Shift+d        exec $scripts/open.sh vesktop 1200 800 $discord
+    $mod+i              exec $scripts/open.sh steam 1400 900 steam
     $mod+t              exec swaymsg '[app_id="foot"] focus' || $term
     $mod+Shift+b        exec $scripts/bluetooth.sh
 
