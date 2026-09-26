@@ -9,6 +9,7 @@
     /home/ben/.config/nixos/librewolf.nix
     /home/ben/.config/nixos/swayfx.nix  # latest swayfx from git
     /home/ben/.config/nixos/plymouth.nix  # boot splash (penguin video)
+    /home/ben/.config/nixos/eclipse.nix   # Eclipse Music as a desktop app
   ];
 
   # ── Boot ────────────────────────────────────────────
@@ -139,7 +140,7 @@
       # clipboard picker (fzf + sixel image preview) and auto-paste
       fzf chafa wtype
       # screenshots, recording, clipboard
-      grim slurp wf-recorder cliphist
+      grim slurp wayfreeze wf-recorder cliphist
       # hardware controls (pulseaudio only for `pactl`)
       brightnessctl pulseaudio pavucontrol
       networkmanager_dmenu networkmanagerapplet

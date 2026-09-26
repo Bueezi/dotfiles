@@ -22,6 +22,9 @@
           // Settings > Search: "Show search suggestions" (also in the address bar)
           defaultPref("browser.search.suggest.enabled", true);
           defaultPref("browser.urlbar.suggest.searches", true);
+          // No "Restore Session" crash page after powering off with it open
+          // (History > Restore Previous Session still brings the old tabs back)
+          defaultPref("browser.sessionstore.resume_from_crash", false);
         '';
 
         extraPolicies.SearchEngines = {
@@ -29,6 +32,8 @@
           Add = [{
             Name = "DuckDuckGo";
             URLTemplate = "https://duckduckgo.com/?q={searchTerms}";
+            # Without this the engine offers no suggestions, whatever the settings say
+            SuggestURLTemplate = "https://duckduckgo.com/ac/?q={searchTerms}&type=list";
             IconURL = "https://duckduckgo.com/favicon.ico";
             Alias = "@ddg";
           }];

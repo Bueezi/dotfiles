@@ -1,0 +1,6 @@
+{
+  "name": "eclipse",
+  "productName": "Eclipse",
+  "desktopName": "eclipse.desktop",
+  "main": "main.js"
+}

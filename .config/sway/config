@@ -104,6 +104,8 @@ for_window [app_id="^clipboard$"] floating enable, resize set 760 420, move posi
 # Scratchpad apps ($mod+Shift+Return / e / d, power.sh update/rebuild): open floating in the
 # scratchpad, shown. The same key (or $mod+minus) hides/shows them again.
 for_window [app_id="^(scratch-.*|thunar|Thunar)$"] floating enable, resize set 900 600, move scratchpad, scratchpad show, move position center
+# Eclipse Music (~/.config/nixos/eclipse): hides to its tray icon on close, $mod+m toggles
+for_window [app_id="^eclipse$"] floating enable, resize set 1100 750, move position center, focus
 for_window [app_id="^vesktop$"] floating enable, resize set 1200 800, move scratchpad, scratchpad show, move position center
 # Tray right-click menus (Electron: no app_id, no title). Float them before they're drawn and
 # park them off-screen; scripts/tray-menu.sh then moves them to the top-right corner.
@@ -123,9 +125,10 @@ bindsym {
     $mod+d              exec $menu
     $mod+Shift+e        exec swaymsg '[app_id="^(thunar|Thunar)$"] scratchpad show' || $fm
     $mod+Shift+v        exec $scripts/clipboard.sh
-    $mod+Shift+s        exec sh -c 'g=$(slurp) && grim -g "$g" - | wl-copy && notify-send "Screenshot in clipboard"'
+    $mod+Shift+s        exec $scripts/screenshot.sh
     $mod+Shift+n        exec networkmanager_dmenu
     $mod+x              exec swaymsg '[app_id="librewolf"] focus' || $browser
+    $mod+m              exec eclipse
     $mod+Shift+d        exec swaymsg '[app_id="^vesktop$"] scratchpad show' || $discord
     $mod+t              exec swaymsg '[app_id="foot"] focus' || $term
     $mod+Shift+b        exec $scripts/bluetooth.sh
