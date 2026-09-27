@@ -44,9 +44,10 @@ Both run NixOS 26.05 (channel-based, not a flake system) with the same config. A
 |---|---|
 | `.configuration.nix` | The shared system config: boot, hardware, audio, power, sway, packages, gaming (desktop), and more. |
 | `.config/scripts/configuration.nix` | The stub that lives in `/etc/nixos/` on each machine. It sets `hostName` and `isLaptop`, and imports `~/.configuration.nix`, or fetches it from GitHub on a fresh install. |
-| `.config/nixos/librewolf.nix` | Overlay that bakes prefs and policies into LibreWolf (DuckDuckGo with suggestions, no crash-restore page, Sync, passwords…). |
+| `.config/nixos/librewolf.nix` | Overlay that bakes prefs and policies into LibreWolf (DuckDuckGo with suggestions, no crash-restore page, Sync, passwords…). Rice: vertical tabs, compact density, and the "Dark space" theme installed by policy. `.config/librewolf/chrome/userChrome.css` makes the page float as a rounded panel; a user activation script symlinks that folder into each profile as `chrome` (profile names are random). |
 | `.config/nixos/swayfx.nix` + `swayfx/flake.nix` | swayfx and scenefx built from **git** against the system nixpkgs (pinned in `flake.lock`; update with `nix flake update --flake ~/.config/nixos/swayfx`). |
 | `.config/nixos/plymouth.nix` + `plymouth/` | Boot splash: `boot.mp4` (penguin shooting the Windows logo) cut to frames at build time and looped by `penguin.script`. `plymouth-play-once.service` holds the login screen until it has played once, counting from when amdgpu comes up. Also turns on the quiet boot, systemd initrd and early amdgpu. |
+| `.config/nixos/hyprquickpaper.nix` | HyprQuickPaper wallpaper picker (Quickshell, Classic layout), pinned from GitHub and set up for awww: white border, `any` transition, and it updates `~/.local/state/wallpaper` so the pick survives login. Lists every image under `~/Documents/wp/active/`, subfolders included: `hyprquickpaper/recursive.patch` swaps the layout's one-folder `FolderListModel` for a `find` list (Classic only). Command `hyprquickpaper`, `$mod+Shift+w`. |
 | `.config/nixos/eclipse.nix` + `eclipse/` | Eclipse Music (`eclipsemusic.app/web`) as an Electron app (`main.js`): tray icon, closing hides it, single instance (launching again toggles it). Command `eclipse`. |
 
 The extras are imported with `builtins.pathExists`, so a fresh install without dotfiles still builds.
@@ -67,8 +68,8 @@ Notable system bits:
 - `.config/sway/config`: variables at the top (`$term` foot, `$fm` thunar, `$menu` fuzzel, `$browser` librewolf, `$discord` vesktop), then autostart, window rules and keybinds.
 - **Bar:** swaybar + i3status-rs (`.config/sway/i3status.toml`). The caffeine (signal 1) and nightlight (signal 2) badges are custom blocks that call the scripts' `status` mode.
 - **Notifications:** mako (`.config/mako/config`) on the `overlay` layer, so they show over fullscreen. `app-name=osd` is the volume/brightness OSD.
-- **SwayFX effects:** blur, shadows, 0.15 dimming of unfocused windows, and `layer_effects` blur behind fuzzel (`launcher`), mako (`notifications`) and the bar (`panel`). That blur only shows because their backgrounds are see-through (`#000000b3`; the i3status block backgrounds are `#00000000`).
-- **Wallpaper:** `awww-daemon` (swww's new name) draws it, with an animated transition when `wallpaper.sh` switches. **Don't add `output * bg`:** swaybg restarts on every `swaymsg reload` and covers awww, so wallpaper changes stop showing.
+- **SwayFX effects:** blur, shadows (no dimming of unfocused windows: I found it annoying), and `layer_effects` blur behind fuzzel (`launcher`), mako (`notifications`) and the bar (`panel`). That blur only shows because their backgrounds are see-through (`#000000b3`; the i3status block backgrounds are `#00000000`).
+- **Wallpaper:** `awww-daemon` (swww's new name) draws it, with an animated transition when HyprQuickPaper switches. **Don't add `output * bg`:** swaybg restarts on every `swaymsg reload` and covers awww, so wallpaper changes stop showing.
 - **Lock:** swaylock-effects (`.config/swaylock/config`): a blurred snapshot fading in (0.5s), with the clock in the ring. It's patched in `.configuration.nix` (`swaylockFx`): upstream only starts redrawing on its first clock tick, so the fade stalled on the unblurred screen for ~1s. Plain swaylock refuses these options and exits without locking.
 - **Login:** tuigreet in `.configuration.nix` (a wrapper script): monochrome `--theme`, a big "nixos" greeting (lines padded to one width, since tuigreet centres each line), asterisks, and a clock.
 - **Themes:** cursor Bibata-Modern-Classic and icons Papirus-Dark, set once in the `let` at the top of `.configuration.nix` (plus `seat * xcursor_theme` in the sway config and `icon-theme` in fuzzel). Qt follows the dark theme through `qt.platformTheme = "gnome"` / `style = "adwaita-dark"`.
@@ -92,15 +93,15 @@ Notable system bits:
 | `keybinds.sh` | `$mod+/` | Cheatsheet parsed from the config. |
 | `display.sh` | `$mod+p` | Extend / mirror / single screen. |
 | `audio_switch.sh`, `bluetooth.sh` | `$mod+Shift+a`, `$mod+Shift+b` | Output device picker, Bluetooth menu. |
-| `record.sh`, `wallpaper.sh`, `theme.sh` | `$mod+Shift+r/w/t` | Screen recording to `~/Downloads`, wallpaper from `~/Documents/wp`, GTK theme picker. |
+| `record.sh`, `theme.sh` | `$mod+Shift+r/t` | Screen recording to `~/Downloads`, GTK theme picker. (`$mod+Shift+w`: HyprQuickPaper, see NixOS.) |
 | `default.sh`, `battery-notify.sh` | – | Sets the default xdg apps; low-battery notifications. |
 
 ### Other keys and conventions
 
 - **Apps:**
-  - `$mod+Return`: terminal, tiled on an empty workspace, otherwise floating `scratch-float`.
-  - `$mod+Shift+Return`: the one toggled `scratch-term`.
-  - `$mod+Shift+e`: Thunar in the scratchpad.
+  - `$mod+Return`: terminal (normal, tiled).
+  - `$mod+Shift+Return`: a **new** floating terminal every press (`scratch-float`, in the scratchpad; `$mod+minus` hides it).
+  - `$mod+Shift+e`: a **new** floating Thunar every press (in the scratchpad).
   - `$mod+x`: LibreWolf.
   - `$mod+m`: Eclipse.
   - `$mod+d`: fuzzel.

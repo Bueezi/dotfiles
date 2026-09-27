@@ -6,6 +6,15 @@
 { ... }:
 
 {
+  # userChrome.css lives in ~/.config/librewolf/chrome; link it into each profile (the profile
+  # folder name is random per machine), on every rebuild
+  system.userActivationScripts.librewolf-userchrome = ''
+    for p in "$HOME"/.config/librewolf/librewolf/*.default*/ "$HOME"/.librewolf/*.default*/; do
+      [ -d "$p" ] && [ ! -e "$p/chrome" ] && ln -s "$HOME/.config/librewolf/chrome" "$p/chrome"
+    done
+    true
+  '';
+
   nixpkgs.overlays = [
     (final: prev: {
       librewolf = prev.librewolf.override {
@@ -25,7 +34,28 @@
           // No "Restore Session" crash page after powering off with it open
           // (History > Restore Previous Session still brings the old tabs back)
           defaultPref("browser.sessionstore.resume_from_crash", false);
+
+          // Rice: vertical tabs always shown, compact density, and load chrome/userChrome.css
+          // (the look itself: the Dark space theme below + ~/.config/librewolf/chrome).
+          // pref(), not defaultPref(): these were changed in Settings before, and saved user
+          // values would win over defaults
+          defaultPref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
+          pref("sidebar.revamp", true);
+          pref("sidebar.verticalTabs", true);
+          pref("sidebar.visibility", "always-show");
+          defaultPref("browser.compactmode.show", true);
+          defaultPref("browser.uidensity", 1);
+          // Home / new tab: no search box (the address bar searches anyway)
+          defaultPref("browser.newtabpage.activity-stream.showSearch", false);
+          // Closing the last tab leaves an empty new tab instead of closing the window
+          defaultPref("browser.tabs.closeWindowWithLastTab", false);
         '';
+
+        # "Dark space" theme: black with animated stars (enable it once in Add-ons → Themes)
+        extraPolicies.ExtensionSettings."{22b0eca1-8c02-4c0d-a5d7-6604ddd9836e}" = {
+          installation_mode = "normal_installed";
+          install_url = "https://addons.mozilla.org/firefox/downloads/latest/nicothin-space/latest.xpi";
+        };
 
         extraPolicies.SearchEngines = {
           # LibreWolf's built-in DuckDuckGo is noai.duckduckgo.com; use the regular one

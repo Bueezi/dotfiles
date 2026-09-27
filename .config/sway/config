@@ -42,9 +42,6 @@ shadows enable
 shadow_blur_radius 20
 shadow_color #000000cc
 shadow_inactive_color #00000080
-# Unfocused windows slightly darker, so the focused one stands out
-default_dim_inactive 0.15
-dim_inactive_colors.unfocused #000000ff
 # Frosted glass behind the launcher, notifications and bar (their backgrounds are see-through)
 layer_effects "launcher" {
     blur enable;
@@ -93,6 +90,8 @@ input "14139:4229:CX_Wireless_mouse_-1k_dongle_Mouse" {
 # ── Autostart ───────────────────────────────────────
 exec mako
 exec sh -c 'awww-daemon & until awww query >/dev/null 2>&1; do sleep 0.1; done; awww img ~/.local/state/wallpaper --transition-type none'
+# Wallpaper slideshow, if it was on (power menu → slideshow touches/removes ~/.config/slideshow)
+exec sh -c 'test -e ~/.config/slideshow && systemctl --user start wallpaper-slideshow.timer'
 exec lxqt-policykit-agent
 # Night light (wlsunset) lives in a script so nightlight.sh can stop/restart it
 exec $scripts/sunset.sh
@@ -144,11 +143,12 @@ focus_on_window_activation focus
 # ── Keybindings ─────────────────────────────────────
 bindsym {
     # Apps
-    # Terminal: tiled on an empty workspace, else a floating scratchpad window (scratch-* rule)
-    $mod+Return         exec sh -c '[ "$(swaymsg -t get_workspaces | jq ".[] | select(.focused).representation")" = null ] && exec $term || exec $term --app-id=scratch-float'
-    $mod+Shift+Return   exec swaymsg '[app_id="^scratch-term$"] scratchpad show' || $term --app-id=scratch-term
+    $mod+Return         exec $term
+    # New floating terminal each press (scratch-* rule: floating, in the scratchpad)
+    $mod+Shift+Return   exec $term --app-id=scratch-float
     $mod+d              exec $menu
-    $mod+Shift+e        exec swaymsg '[app_id="^(thunar|Thunar)$"] scratchpad show' || $fm
+    # New floating file manager every press (Thunar rule: floating, in the scratchpad)
+    $mod+Shift+e        exec $fm
     $mod+Shift+v        exec $scripts/clipboard.sh
     $mod+Shift+s        exec $scripts/screenshot.sh
     $mod+Shift+n        exec networkmanager_dmenu
@@ -165,7 +165,7 @@ bindsym {
     $mod+p              exec $scripts/display.sh
     $mod+Shift+t        exec $scripts/theme.sh
     $mod+Shift+r        exec $scripts/record.sh
-    $mod+Shift+w        exec $scripts/wallpaper.sh
+    $mod+Shift+w        exec hyprquickpaper
     $mod+Shift+i        exec $scripts/caffeine.sh
     $mod+n              exec $scripts/nightlight.sh
     $mod+slash          exec $scripts/keybinds.sh
@@ -191,14 +191,15 @@ bindsym {
     Mod1+Shift+Tab      exec swayr prev-window all-workspaces
 
     # Move window
-    $mod+Shift+$left    move left
-    $mod+Shift+$down    move down
-    $mod+Shift+$up      move up
-    $mod+Shift+$right   move right
-    $mod+Shift+Left     move left
-    $mod+Shift+Down     move down
-    $mod+Shift+Up       move up
-    $mod+Shift+Right    move right
+    # 60px per press for floating windows (default 10px); tiled ones just swap places
+    $mod+Shift+$left    move left 60px
+    $mod+Shift+$down    move down 60px
+    $mod+Shift+$up      move up 60px
+    $mod+Shift+$right   move right 60px
+    $mod+Shift+Left     move left 60px
+    $mod+Shift+Down     move down 60px
+    $mod+Shift+Up       move up 60px
+    $mod+Shift+Right    move right 60px
 
     # Workspaces
     $mod+1 workspace number 1

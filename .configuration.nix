@@ -27,6 +27,7 @@ in
     /home/ben/.config/nixos/swayfx.nix  # latest swayfx from git
     /home/ben/.config/nixos/plymouth.nix  # boot splash (penguin video)
     /home/ben/.config/nixos/eclipse.nix   # Eclipse Music as a desktop app
+    /home/ben/.config/nixos/hyprquickpaper.nix  # wallpaper picker ($mod+Shift+w)
   ];
 
   # ── Boot ────────────────────────────────────────────
@@ -350,10 +351,9 @@ in
   # Performance mode while a game runs: launch option `gamemoderun %command%`
   programs.gamemode.enable = !isLaptop;
   # Micro-compositor for games: HDR, frame limiting, upscaling (`gamescope --hdr-enabled -- %command%`)
-  programs.gamescope = lib.mkIf (!isLaptop) {
-    enable = true;
-    capSysNice = true;
-  };
+  # (No capSysNice: its capability wrapper can't run inside Steam's sandbox, so gamescope
+  # fails with "failed to inherit capabilities" and the game exits)
+  programs.gamescope.enable = !isLaptop;
   # GPU control (fan curves, power limit, undervolt): LACT app + its daemon
   services.lact.enable = !isLaptop;
   # Logitech G920: switch it out of Xbox mode so it shows up as a wheel

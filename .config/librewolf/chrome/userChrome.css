@@ -1,0 +1,48 @@
+/* LibreWolf: vertical tabs, compact, content floating as a rounded panel. Black and white.
+   Colours come from the "Dark space" theme (librewolf.nix); this only does the shape.
+   Linked into the profile as <profile>/chrome by librewolf.nix. */
+
+:root {
+  --lw-gap: 6px;
+  --lw-radius: 8px;
+  --lw-line: #333333;
+}
+
+/* Page area floats: gap at the bottom, rounded on the left, thin grey outline. No gap on
+   the right: the page reaches the screen edge, so the scrollbar is there when the cursor
+   is pushed all the way right */
+#tabbrowser-tabbox {
+  margin: 0 0 var(--lw-gap) 0 !important;
+  border-radius: var(--lw-radius) 0 0 var(--lw-radius) !important;
+  outline: 1px solid var(--lw-line) !important;
+  overflow: hidden !important;
+  box-shadow: none !important;
+}
+
+/* No separator lines between toolbar, sidebar and page */
+#navigator-toolbox,
+#nav-bar,
+#sidebar-main,
+#sidebar-box,
+#browser {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Rounded address bar, white outline while typing */
+#urlbar-background {
+  border-radius: var(--lw-radius) !important;
+}
+#urlbar[focused] #urlbar-background {
+  outline: 1px solid #ffffff !important;
+  outline-offset: -1px !important;
+}
+
+/* Tabs in the sidebar: rounded; the current one outlined in white */
+.tabbrowser-tab .tab-background {
+  border-radius: 6px !important;
+}
+.tabbrowser-tab[selected] .tab-background {
+  outline: 1px solid #ffffff !important;
+  outline-offset: -1px !important;
+}

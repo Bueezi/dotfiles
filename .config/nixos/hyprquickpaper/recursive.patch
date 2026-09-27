@@ -1,0 +1,58 @@
+--- a/shell-classic.qml
++++ b/shell-classic.qml
+@@ -78,14 +78,29 @@
+         watchChanges: false
+     }
+ 
+-    FolderListModel {
+-        id: folderModel
+-        folder: "file://" + configs.wallpaper_path.replace("~", Quickshell.env("HOME"))
+-        showDirs: false
+-        nameFilters: ["*.png", "*.jpg", "*.jpeg"].concat(
+-            main.videoExtensions.map(function(ext) { return "*." + ext; })
+-        )
+-        sortField: FolderListModel.Name
++    // Recursive (FolderListModel only lists one folder): every image under wallpaper_path.
++    // Started once the path is in the command: a `running:` binding can fire first and run
++    // find on an empty path.
++    ListModel { id: folderModel }
++
++    Connections {
++        target: configs
++        function onWallpaper_pathChanged() { Qt.callLater(() => findFiles.running = true) }
++    }
++
++    Process {
++        id: findFiles
++        command: ["find", "-L", configs.wallpaper_path.replace("~", Quickshell.env("HOME")), "-type", "f",
++            "(", "-iname", "*.png", "-o", "-iname", "*.jpg", "-o", "-iname", "*.jpeg", ")"]
++        stdout: StdioCollector {
++            id: foundFiles
++            onStreamFinished: {
++                const files = foundFiles.text.split("\n").filter(l => l.length > 0).sort()
++                folderModel.clear()
++                for (const f of files)
++                    folderModel.append({ filePath: f, fileName: f.substring(f.lastIndexOf("/") + 1) })
++            }
++        }
+     }
+ 
+     PathView {
+@@ -204,7 +219,7 @@
+         }
+ 
+         function activateCurrent() {
+-            const path = folderModel.get(currentIndex, "filePath");
++            const path = folderModel.get(currentIndex).filePath;
+             Quickshell.execDetached(["bash", Quickshell.shellPath("commands.sh"), path]);
+             Qt.quit();
+         }
+@@ -222,7 +237,7 @@
+ 
+                 if (activePath.length > 0) {
+                     for (let i = 0; i < folderModel.count; i++) {
+-                        if (folderModel.get(i, "filePath") === activePath) {
++                        if (folderModel.get(i).filePath === activePath) {
+                             matchedIndex = i;
+                             break;
+                         }
