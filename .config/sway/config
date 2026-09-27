@@ -115,6 +115,7 @@ exec swayrd
 exec $scripts/tray-menu.sh
 
 # ── Window rules ────────────────────────────────────
+for_window [app_id="(?i)freerdp"] shortcuts_inhibitor enable
 for_window [app_id=".*"] inhibit_idle fullscreen
 for_window [class=".*"]  inhibit_idle fullscreen
 
