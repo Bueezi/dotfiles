@@ -71,6 +71,24 @@ sync() {
     fi
 }
 
+# Wallpaper slideshow on/off ($mod+Shift+o runs `power.sh slideshow`; timer from hyprquickpaper.nix). The state is kept in
+# ~/.config/slideshow, so sway starts it again at login.
+slideshow() {
+    if systemctl --user is-active -q wallpaper-slideshow.timer; then
+        systemctl --user stop wallpaper-slideshow.timer
+        rm -f ~/.config/slideshow
+        notify-send -a slideshow -i preferences-desktop-wallpaper-symbolic "Slideshow off"
+    else
+        systemctl --user start wallpaper-slideshow.timer
+        touch ~/.config/slideshow
+        notify-send -a slideshow -i preferences-desktop-wallpaper-symbolic "Slideshow on" "New wallpaper every 20s"
+    fi
+}
+
+if [ "$1" = "slideshow" ]; then
+    slideshow
+    exit
+fi
 if [ "$1" = "sync" ]; then
     sync
     exit
@@ -84,27 +102,14 @@ if [ "$1" = "rebuild" ]; then
     exit
 fi
 
-# Wallpaper slideshow (systemd user timer from hyprquickpaper.nix): the entry shows what it'll do
-if systemctl --user is-active -q wallpaper-slideshow.timer; then slideshow="slideshow off"; else slideshow="slideshow on"; fi
-
-choice=$(printf "󰋊  hibernate\n󰜉  reboot\n󰒲  sleep\n󰐥  power off\n󰚰  update\n󱄅  rebuild\n󰓦  sync\n󰸉  %s" "$slideshow" |
-  fuzzel --dmenu --width 20 --lines 8)
+choice=$(printf "󰋊  hibernate\n󰜉  reboot\n󰒲  sleep\n󰐥  power off\n󰚰  update\n󱄅  rebuild\n󰓦  sync" |
+  fuzzel --dmenu --width 20 --lines 7)
 
 [ "$choice" ] || exit 0
 case "$choice" in
     *update)  exec foot --app-id=scratch-power "$0" update ;;
     *rebuild) exec foot --app-id=scratch-power "$0" rebuild ;;
     *sync)    exec foot --app-id=scratch-power "$0" sync ;;
-    *"slideshow on")
-        systemctl --user start wallpaper-slideshow.timer
-        touch ~/.config/slideshow   # remembered: sway starts it again at login
-        notify-send -a slideshow -i preferences-desktop-wallpaper-symbolic "Slideshow on" "New wallpaper every 30s"
-        exit ;;
-    *"slideshow off")
-        systemctl --user stop wallpaper-slideshow.timer
-        rm -f ~/.config/slideshow
-        notify-send -a slideshow -i preferences-desktop-wallpaper-symbolic "Slideshow off"
-        exit ;;
 esac
 
 if [ "$(hostname)" = "void" ]; then

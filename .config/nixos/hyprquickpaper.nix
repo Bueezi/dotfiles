@@ -49,14 +49,21 @@ in
 {
   environment.systemPackages = [ hyprquickpaper ];
 
-  # Slideshow: a random wallpaper from the same folder every 30s, while the timer runs.
+  # Slideshow: a random wallpaper from the same folder every 20s, while the timer runs, and only
+  # while the wallpaper can be seen.
   # Toggled from the power menu (power.sh → slideshow), which touches/removes ~/.config/slideshow;
   # sway starts the timer at login if that file exists.
   systemd.user.services.wallpaper-slideshow = {
     description = "Random wallpaper from ~/Documents/wp/active";
-    path = with pkgs; [ awww findutils coreutils ];
+    path = with pkgs; [ awww findutils coreutils gnugrep jq sway ];
     serviceConfig.Type = "oneshot";
     script = ''
+      # Only while the wallpaper is visible: skip if the focused workspace has a tiled window
+      # (it fills the screen) or anything is fullscreen
+      export SWAYSOCK=''${SWAYSOCK:-$(ls /run/user/$(id -u)/sway-ipc.*.sock 2>/dev/null | head -1)}
+      [ "$(swaymsg -t get_workspaces | jq '.[] | select(.focused) | .representation')" = null ] || exit 0
+      [ "$(swaymsg -t get_tree | jq '[.. | objects | select(.pid? and .fullscreen_mode == 1)] | length')" = 0 ] || exit 0
+
       f=$(find -L "$HOME/Documents/wp/active" -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' \) |
         grep -vxF "$(readlink -f "$HOME/.local/state/wallpaper")" | shuf -n1)
       [ -n "$f" ] || exit 0
@@ -65,8 +72,8 @@ in
     '';
   };
   systemd.user.timers.wallpaper-slideshow.timerConfig = {
-    OnActiveSec = "30s";
-    OnUnitActiveSec = "30s";
+    OnActiveSec = "20s";
+    OnUnitActiveSec = "20s";
     AccuracySec = "1s";
   };
 }

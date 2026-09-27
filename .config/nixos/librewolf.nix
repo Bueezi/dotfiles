@@ -45,8 +45,10 @@
           pref("sidebar.visibility", "always-show");
           defaultPref("browser.compactmode.show", true);
           defaultPref("browser.uidensity", 1);
-          // Home / new tab: no search box (the address bar searches anyway)
-          defaultPref("browser.newtabpage.activity-stream.showSearch", false);
+          // Home / new tab: no search box (the address bar searches anyway). Forced, and kept
+          // out of Firefox Sync: a machine on an older config synced `true` back to the others
+          pref("browser.newtabpage.activity-stream.showSearch", false);
+          pref("services.sync.prefs.sync.browser.newtabpage.activity-stream.showSearch", false);
           // Closing the last tab leaves an empty new tab instead of closing the window
           defaultPref("browser.tabs.closeWindowWithLastTab", false);
         '';

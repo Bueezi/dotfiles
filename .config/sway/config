@@ -167,6 +167,7 @@ bindsym {
     $mod+Shift+t        exec $scripts/theme.sh
     $mod+Shift+r        exec $scripts/record.sh
     $mod+Shift+w        exec hyprquickpaper
+    $mod+Shift+o        exec $scripts/power.sh slideshow
     $mod+Shift+i        exec $scripts/caffeine.sh
     $mod+n              exec $scripts/nightlight.sh
     $mod+slash          exec $scripts/keybinds.sh
