@@ -34,18 +34,38 @@ smart_gaps on
 # SwayFX (rounded corners need gaps to be visible)
 animation_duration_ms 350
 corner_radius 6
-# shadows enable
 blur enable
 blur_xray disable
 blur_passes 3
 blur_radius 4
+shadows enable
+shadow_blur_radius 20
+shadow_color #000000cc
+shadow_inactive_color #00000080
+# Unfocused windows slightly darker, so the focused one stands out
+default_dim_inactive 0.15
+dim_inactive_colors.unfocused #000000ff
+# Frosted glass behind the launcher, notifications and bar (their backgrounds are see-through)
+layer_effects "launcher" {
+    blur enable;
+    shadows enable;
+}
+layer_effects "notifications" {
+    blur enable;
+    blur_ignore_transparent enable;
+    corner_radius 6;
+}
+layer_effects "panel" {
+    blur enable;
+}
 
 # cursor
-seat * xcursor_theme Adwaita 24
+seat * xcursor_theme Bibata-Modern-Classic 20
 
 # ── Outputs ─────────────────────────────────────────
 # Output names: swaymsg -t get_outputs
-output * bg ~/.local/state/wallpaper fill
+# Wallpaper: awww (see autostart and scripts/wallpaper.sh). No `output * bg` here: swaybg is
+# restarted on every reload and then covers awww, hiding all wallpaper changes
 
 output eDP-1 {
     scale 1.35
@@ -72,6 +92,7 @@ input "14139:4229:CX_Wireless_mouse_-1k_dongle_Mouse" {
 
 # ── Autostart ───────────────────────────────────────
 exec mako
+exec sh -c 'awww-daemon & until awww query >/dev/null 2>&1; do sleep 0.1; done; awww img ~/.local/state/wallpaper --transition-type none'
 exec lxqt-policykit-agent
 # Night light (wlsunset) lives in a script so nightlight.sh can stop/restart it
 exec $scripts/sunset.sh
@@ -259,12 +280,12 @@ bar {
     tray_output *
 
     colors {
-        background         $bg
+        background         #000000b3
         statusline         $fg
         separator          $subtle
         focused_workspace  $fg $fg $bg
-        active_workspace   $bg $bg $fg
-        inactive_workspace $bg $bg $dim
+        active_workspace   #00000000 #00000000 $fg
+        inactive_workspace #00000000 #00000000 $dim
         urgent_workspace   $fg #555555 $fg
     }
 }

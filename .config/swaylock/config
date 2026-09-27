@@ -1,11 +1,22 @@
+# swaylock-effects: blurred snapshot of the desktop fading in, clock inside the ring.
+# (The fade used to start ~1s late; patched in .configuration.nix, see swaylockFx)
+screenshots
+effect-blur=9x5
+effect-vignette=0.4:0.9
+fade-in=0.5
+clock
+indicator
+timestr=%H:%M
+datestr=%a %d/%m
+
 color=000000
 font=JetBrainsMono Nerd Font
-indicator-radius=80
+indicator-radius=110
 indicator-thickness=6
-inside-color=000000
-inside-clear-color=000000
-inside-ver-color=000000
-inside-wrong-color=000000
+inside-color=00000088
+inside-clear-color=00000088
+inside-ver-color=00000088
+inside-wrong-color=00000088
 ring-color=ffffff
 ring-clear-color=ffffff
 ring-ver-color=aaaaaa

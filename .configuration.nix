@@ -3,6 +3,23 @@
 # machine); per-machine settings (hostName, isLaptop) are set there.
 { config, lib, pkgs, isLaptop, ... }:
 
+let
+  # Cursor and icon themes for sway (XCURSOR_*), GTK and dconf below. To revert: "Adwaita" for both
+  # (and `seat * xcursor_theme` in the sway config)
+  cursorTheme = "Bibata-Modern-Classic";
+  cursorSize = 20;   # also in `seat * xcursor_theme` in the sway config
+  iconTheme = "Papirus-Dark";
+
+  # swaylock-effects only starts redrawing on its first clock tick (~1s after locking), so the
+  # fade-in sits on the unblurred screenshot until then. Start redrawing once the lock surface
+  # is configured, so the fade begins immediately.
+  swaylockFx = pkgs.swaylock-effects.overrideAttrs (old: {
+    postPatch = (old.postPatch or "") + ''
+      sed -i '/ext_session_lock_surface_v1_ack_configure(lock_surface, serial);/{n;n;s/$/\n\tdamage_surface(surface);/}' main.c
+      grep -A3 'ext_session_lock_surface_v1_ack_configure(lock_surface, serial);' main.c | grep -q damage_surface
+    '';
+  });
+in
 {
   # Optional extras from the dotfiles repo, skipped on a fresh install (no dotfiles yet)
   imports = builtins.filter builtins.pathExists [
@@ -55,6 +72,13 @@
     description = "Ben";
     extraGroups = [ "networkmanager" "wheel" "video" ] ++ lib.optional (!isLaptop) "i2c";
   };
+
+  # Shells: bash stays the login shell (and for scripts); foot starts fish (~/.config/fish)
+  programs.fish.enable = true;
+  # NixOS has no /bin/bash, so scripts with `#!/bin/bash` fail; point it at the system bash
+  systemd.tmpfiles.rules = [ "L+ /bin/bash - - - - ${pkgs.bashInteractive}/bin/bash" ]
+    # LM Studio keeps its models etc. in ~/.lmstudio: point that at the nvme
+    ++ lib.optionals (!isLaptop) [ "L /home/ben/.lmstudio - - - - /mnt/nvme/Documents/lm-studio" ];
 
   zramSwap.enable = true;
 
@@ -134,7 +158,7 @@
     '';
     extraPackages = with pkgs; [
       # session
-      swaylock swayidle swaybg wdisplays kanshi wlsunset lxqt.lxqt-policykit
+      swaylockFx swayidle swaybg awww wdisplays kanshi wlsunset lxqt.lxqt-policykit
       # terminal, launcher, bar, notifications
       foot fuzzel i3status-rust mako libnotify swayr bzmenu 
       # clipboard picker (fzf + sixel image preview) and auto-paste
@@ -146,21 +170,35 @@
       networkmanager_dmenu networkmanagerapplet
       # GUI utilities
       file-roller baobab eog adwaita-icon-theme
+      bibata-cursors papirus-icon-theme
     ];
   };
 
   environment.sessionVariables = {
     GTK_THEME = "Adwaita:dark";
-    XCURSOR_THEME = "Adwaita";
-    XCURSOR_SIZE = "24";
+    XCURSOR_THEME = cursorTheme;
+    XCURSOR_SIZE = toString cursorSize;
     NIXOS_OZONE_WL = "1";    # Electron/Chromium on Wayland
   };
 
-  # Login: greetd + tuigreet
+  # Login: greetd + tuigreet, black and white with a big "nixos" greeting
   services.greetd = {
     enable = true;
     settings.default_session = {
-      command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd sway";
+      command = let
+        greeting = lib.concatStringsSep "\n" [   # lines padded to one width: tuigreet centres each
+        "          _                "
+        "   ____  (_)  ______  _____"
+        "  / __ \\/ / |/_/ __ \\/ ___/"
+        " / / / / />  </ /_/ (__  ) "
+        "/_/ /_/_/_/|_|\\____/____/  "
+        ];
+      in "${pkgs.writeShellScript "tuigreet" ''
+        exec ${pkgs.tuigreet}/bin/tuigreet --cmd sway --remember --asterisks \
+          --time --time-format '%a %d/%m  %H:%M' \
+          --greeting '${greeting}' --window-padding 2 --container-padding 2 \
+          --theme 'border=white;text=gray;prompt=white;time=gray;action=darkgray;button=white;container=black;input=white;greet=white'
+      ''}";
       user = "greeter";
     };
   };
@@ -180,15 +218,21 @@
   };
 
   security.polkit.enable = true;
+  # Qt apps dark like GTK (Adwaita-dark style, GNOME platform theme)
+  qt = {
+    enable = true;
+    platformTheme = "gnome";
+    style = "adwaita-dark";
+  };
   programs.dconf = {
     enable = true;
     profiles.user.databases = [{
       settings."org/gnome/desktop/interface" = {
         color-scheme = "prefer-dark";
         gtk-theme = "Adwaita-dark";
-        cursor-theme = "Adwaita";
-        icon-theme = "Adwaita";
-        cursor-size = lib.gvariant.mkInt32 24;
+        cursor-theme = cursorTheme;
+        icon-theme = iconTheme;
+        cursor-size = lib.gvariant.mkInt32 cursorSize;
       };
     }];
   };
@@ -196,9 +240,9 @@
     [Settings]
     gtk-theme-name=Adwaita-dark
     gtk-application-prefer-dark-theme=1
-    gtk-cursor-theme-name=Adwaita
-    gtk-icon-theme-name=Adwaita
-    gtk-cursor-theme-size=24
+    gtk-cursor-theme-name=${cursorTheme}
+    gtk-icon-theme-name=${iconTheme}
+    gtk-cursor-theme-size=${toString cursorSize}
   '';
 
   # Keyring unlocked at login via PAM
@@ -258,6 +302,9 @@
     # CLI
     git gh gcc python3 less htop btop powertop fastfetch cowsay
     wl-clipboard zip unzip p7zip ffmpeg jq wl-mirror
+    starship  # prompt, ~/.config/starship.toml
+    cava cmatrix pipes  # music visualiser (~/.config/cava/config), eye candy
+    freerdp   # RDP into Windows: sdl-freerdp /v:<ip> /u:<user> /dynamic-resolution
     # Dev
     neovim helix vscode nodejs rustc cargo podman-compose sqlite dbeaver-bin
     distrobox distroshelf
@@ -270,6 +317,12 @@
     libreoffice filezilla github-desktop bazaar gearlever
     # Claude Desktop (community build; updates to the latest version on rebuild)
     (builtins.getFlake "github:aaddrick/claude-desktop-debian").packages.${stdenv.hostPlatform.system}.default
+    # fetch by areofyl: spinning 3D distro logo + system info (not in 26.05 yet; follows main,
+    # built with the system nixpkgs). Black and white: no logo colours, grey usage percentages.
+    ((callPackage "${builtins.fetchTarball "https://github.com/areofyl/fetch/archive/main.tar.gz"}/nix/package.nix" { }).overrideAttrs (old: {
+      postPatch = ''sed -i -E '/(pct|capacity) >=/ s/"(31|32|93)"/"38;5;248"/g' fetch.c'';
+      postInstall = old.postInstall + "wrapProgram $out/bin/fetch --add-flags --no-color";
+    }))
   ]
   # ── Per-machine apps ────────────────────────────────
   # Packages installed on only one machine. (Apps that need a NixOS module, like
@@ -282,7 +335,7 @@
     protontricks          # Windows fonts/libs into a game's Proton prefix (Content Manager)
     oversteer             # G920 settings: rotation, force feedback, pedal test
     ddcutil               # monitor brightness over DDC/CI (osd.sh brightness)
-    lmstudio              # local LLMs; data/models live on the nvme (see tmpfiles below)
+    lmstudio              # local LLMs; data/models live on the nvme (see tmpfiles above)
   ]
   ++ lib.optionals isLaptop [   # laptop only
   ];
@@ -307,10 +360,6 @@
   hardware.usb-modeswitch.enable = !isLaptop;
   # Let Oversteer and OpenRGB reach the wheel / RGB devices without root
   services.udev.packages = lib.mkIf (!isLaptop) [ pkgs.oversteer pkgs.openrgb ];
-  # LM Studio keeps its models etc. in ~/.lmstudio: point that at the nvme
-  systemd.tmpfiles.rules = lib.mkIf (!isLaptop) [
-    "L /home/ben/.lmstudio - - - - /mnt/nvme/Documents/lm-studio"
-  ];
 
   system.stateVersion = "26.05";
 }

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Pick a wallpaper from ~/Documents/wp with fuzzel and apply it to all outputs.
-# The choice is kept as a symlink so it survives reloads/reboots.
+# Pick a wallpaper from ~/Documents/wp with fuzzel and apply it to all outputs with an awww
+# transition. The choice is kept as a symlink so it survives reloads/reboots.
 
 dir="$HOME/Documents/wp"
 state="${XDG_STATE_HOME:-$HOME/.local/state}/wallpaper"
@@ -31,4 +31,7 @@ path="$dir/$choice"
 
 mkdir -p "$(dirname "$state")"
 ln -sfn "$path" "$state"
-swaymsg "output * bg \"$path\" fill" >/dev/null
+# Start the daemon if it isn't running (it's normally started at login)
+awww query >/dev/null 2>&1 || { awww-daemon & until awww query >/dev/null 2>&1; do sleep 0.1; done; }
+# "any": the circle grows from a random point on the screen
+awww img "$path" --transition-type any --transition-duration 1.2 --transition-fps 144

@@ -1,0 +1,35 @@
+# Minimal black and white prompt:  ~/.config/sway  main !  2s
+#                                  ❯
+add_newline = true
+format = "$directory$git_branch$git_status$nix_shell$cmd_duration$line_break$character"
+
+[directory]
+style = "bold white"
+truncation_length = 3
+truncation_symbol = "…/"
+
+[git_branch]
+format = "[$symbol$branch]($style) "
+symbol = " "
+style = "#a8a8a8"
+
+[git_status]
+format = "([$all_status$ahead_behind]($style) )"
+style = "#a8a8a8"
+
+[nix_shell]
+format = "[ $name]($style) "
+style = "#a8a8a8"
+
+[cmd_duration]
+format = "[$duration]($style) "
+style = "#777777"
+
+# ❯ white, grey after a failed command; ❮ in vim normal mode
+[character]
+success_symbol = "[❯](bold white)"
+error_symbol = "[❯](#777777)"
+vimcmd_symbol = "[❮](bold white)"
+vimcmd_replace_one_symbol = "[❮](#a8a8a8)"
+vimcmd_replace_symbol = "[❮](#a8a8a8)"
+vimcmd_visual_symbol = "[❮](#a8a8a8)"

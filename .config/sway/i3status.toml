@@ -1,18 +1,18 @@
 [theme]
 theme = "plain"
 [theme.overrides]
-idle_bg = "#000000"
+idle_bg = "#00000000"   # see-through: the bar behind is blurred
 idle_fg = "#ffffff"
-info_bg = "#000000"
+info_bg = "#00000000"
 info_fg = "#ffffff"
-good_bg = "#000000"
+good_bg = "#00000000"
 good_fg = "#ffffff"
-warning_bg = "#000000"
+warning_bg = "#00000000"
 warning_fg = "#aaaaaa"
 critical_bg = "#ffffff"
 critical_fg = "#000000"
 separator = " "
-separator_bg = "#000000"
+separator_bg = "#00000000"
 separator_fg = "#333333"
 
 [icons]
