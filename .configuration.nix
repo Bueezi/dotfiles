@@ -8,39 +8,26 @@ let
   # (and `seat * xcursor_theme` in the sway config)
   cursorTheme = "Bibata-Modern-Classic";
   cursorSize = 20;   # also in `seat * xcursor_theme` in the sway config
-  # Dark is the default; darkmode.sh ($mod+Shift+t) switches to Mono / Papirus and back
+  # Dark is the default; darkmode.sh ($mod+Shift+t) switches to adw-gtk3 / Papirus and back
   iconTheme = "Papirus-Dark";   # grey folders instead of blue (papirus override below)
   gtkTheme = "Mono-dark";
 
-  # GTK3 themes: adw-gtk3 (GTK3 in libadwaita's look) in black and white, no blue accent.
-  # Dark has pure black backgrounds instead of Adwaita's grey. GTK4/libadwaita gets the same
-  # from ~/.config/gtk-4.0/gtk.css, Qt from the qt6ct palettes in ~/.config/qt6ct/colors.
-  mono = name: base: colors: pkgs.writeTextDir "share/themes/${name}/gtk-3.0/gtk.css" ''
-    @import url("${pkgs.adw-gtk3}/share/themes/${base}/gtk-3.0/gtk.css");
-    ${colors}
+  # GTK3: adw-gtk3 (GTK3 in libadwaita's look); dark mode is adw-gtk3-dark with pure black
+  # backgrounds instead of Adwaita's grey (the blue accent stays: selections, buttons). GTK4/libadwaita
+  # gets the same from ~/.config/gtk-4.0/gtk.css, Qt from the qt6ct palettes in ~/.config/qt6ct/colors.
+  monoDark = pkgs.writeTextDir "share/themes/Mono-dark/gtk-3.0/gtk.css" ''
+    @import url("${pkgs.adw-gtk3}/share/themes/adw-gtk3-dark/gtk-3.0/gtk.css");
+    @define-color window_bg_color black;
+    @define-color view_bg_color black;
+    @define-color headerbar_bg_color black;
+    @define-color headerbar_backdrop_color black;
+    @define-color sidebar_bg_color #0a0a0a;
+    @define-color sidebar_backdrop_color #0a0a0a;
+    @define-color card_bg_color rgba(255, 255, 255, 0.05);
+    @define-color dialog_bg_color #111111;
+    @define-color popover_bg_color #111111;
+    @define-color thumbnail_bg_color #111111;
   '';
-  monoThemes = [
-    (mono "Mono" "adw-gtk3" ''
-      @define-color accent_bg_color #1a1a1a;
-      @define-color accent_fg_color white;
-      @define-color accent_color #1a1a1a;
-    '')
-    (mono "Mono-dark" "adw-gtk3-dark" ''
-      @define-color accent_bg_color white;
-      @define-color accent_fg_color black;
-      @define-color accent_color white;
-      @define-color window_bg_color black;
-      @define-color view_bg_color black;
-      @define-color headerbar_bg_color black;
-      @define-color headerbar_backdrop_color black;
-      @define-color sidebar_bg_color #0a0a0a;
-      @define-color sidebar_backdrop_color #0a0a0a;
-      @define-color card_bg_color rgba(255, 255, 255, 0.05);
-      @define-color dialog_bg_color #111111;
-      @define-color popover_bg_color #111111;
-      @define-color thumbnail_bg_color #111111;
-    '')
-  ];
 
   # swaylock-effects only starts redrawing on its first clock tick (~1s after locking), so the
   # fade-in sits on the unblurred screenshot until then. Start redrawing once the lock surface
@@ -214,7 +201,8 @@ in
       # GUI utilities
       file-roller baobab eog adwaita-icon-theme
       bibata-cursors (papirus-icon-theme.override { color = "grey"; })
-    ] ++ monoThemes;
+      adw-gtk3 monoDark
+    ];
   };
 
   environment.sessionVariables = {

@@ -34,7 +34,7 @@ Both run NixOS 26.05 (channel-based, not a flake system) with the same config. A
   - Bigger boot-level changes (the Plymouth splash, for example) can be tested in a VM with `nix-build '<nixpkgs/nixos>' -A vm`.
   - Looks (themes, prompt): screenshot apps in a throwaway headless sway (`WLR_BACKENDS=headless`, own `dbus-run-session`, `GSETTINGS_BACKEND=keyfile` with its own `XDG_CONFIG_HOME`) so nothing touches my screen or dconf. Apps started without that `XDG_CONFIG_HOME` still write their config into `~/.config`.
 - **Style:**
-  - The look is **black and white** everywhere (bar, mako, OSD, fastfetch, fuzzel). No accent colours.
+  - The look is **black and white** everywhere (bar, mako, OSD, fastfetch, fuzzel). No accent colours there. Apps (GTK, Qt, LibreWolf) keep Adwaita's **blue** accent for selections, buttons and links: a black/white accent was tried and disliked.
   - Match the surrounding code, including its short comments that say *why*.
   - Keep changes small. Don't spread one feature over many new files.
   - The `.nix` extras are self-contained modules imported from `.configuration.nix`.
@@ -74,7 +74,7 @@ Notable system bits:
 - **Lock:** swaylock-effects (`.config/swaylock/config`): a blurred snapshot fading in (0.5s), with the clock in the ring. It's patched in `.configuration.nix` (`swaylockFx`): upstream only starts redrawing on its first clock tick, so the fade stalled on the unblurred screen for ~1s. Plain swaylock refuses these options and exits without locking.
 - **Login:** tuigreet in `.configuration.nix` (a wrapper script): monochrome `--theme`, a big "nixos" greeting (lines padded to one width, since tuigreet centres each line), asterisks, and a clock.
 - **Themes:** dark by default, `$mod+Shift+t` (`darkmode.sh`) toggles light/dark. Dconf's `color-scheme` is the source of truth; the bar, fuzzel, mako and swaylock stay black either way.
-  - GTK3: `Mono` / `Mono-dark`, built in the `let` of `.configuration.nix` on top of adw-gtk3: pure black backgrounds in dark instead of Adwaita's grey, black/white instead of the blue accent. GTK4/libadwaita: the same colours in `.config/gtk-4.0/gtk.css` (`@media (prefers-color-scheme: dark)`). No `GTK_THEME` variable: it would pin one theme.
+  - GTK3: `adw-gtk3` in light mode; `Mono-dark`, built in the `let` of `.configuration.nix` on top of adw-gtk3-dark, in dark: pure black backgrounds instead of Adwaita's grey, blue accent kept. LibreWolf takes its text-selection colour from this theme. GTK4/libadwaita: the same colours in `.config/gtk-4.0/gtk.css` (`@media (prefers-color-scheme: dark)`). No `GTK_THEME` variable: it would pin one theme.
   - Qt (all Qt6): Fusion with the palettes in `.config/qt6ct/colors/` (`mono.conf`, `mono-dark.conf`) through qt6ct. `darkmode.sh` writes `qt6ct.conf` (untracked, rewritten with `mv` so running apps reload). Qt's own `gtk3` platform theme was tried: it ignores the GTK colours and falls back to old Adwaita greys.
   - foot: `[colors-dark]` / `[colors-light]`. `darkmode.sh` signals running foots (SIGUSR1/2); a new window is switched by fish at startup (`config.fish` reads dconf and signals its parent foot). No `include=` of a state file: foot errors when it's missing (it was, on the laptop). `darkmode.sh apply` (sway autostart) writes `qt6ct.conf` from dconf.
   - Icons Papirus (grey folders, `papirus-icon-theme.override`), `Papirus-Dark` in dark mode; cursor Bibata-Modern-Classic. Both in the `let` at the top of `.configuration.nix` (plus `seat * xcursor_theme` in the sway config and `icon-theme` in fuzzel).

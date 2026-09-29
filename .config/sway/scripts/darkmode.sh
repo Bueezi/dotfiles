@@ -1,10 +1,10 @@
 #!/bin/sh
 # Light/dark toggle ($mod+Shift+t). color-scheme reaches libadwaita, LibreWolf and Electron
-# through the portal; the Mono GTK3 themes and Papirus icons are in .configuration.nix, the Qt
+# through the portal; the GTK3 themes and Papirus icons are in .configuration.nix, the Qt
 # palettes in ~/.config/qt6ct/colors. Running foot windows get a signal; new ones are switched
 # by fish (config.fish). The bar, fuzzel, mako and swaylock stay black.
 # Usage: darkmode.sh          toggle
-#        darkmode.sh apply    only write qt6ct's file for the current mode
+#        darkmode.sh apply    only write qt6ct's file and the themes for the current mode
 #                             (sway runs this at login; dconf's color-scheme is the source of truth)
 key=/org/gnome/desktop/interface
 
@@ -18,7 +18,7 @@ fi
 if [ $mode = dark ]; then
     theme=Mono-dark icons=Papirus-Dark palette=mono-dark sig=USR1 icon=weather-clear-night-symbolic
 else
-    theme=Mono icons=Papirus palette=mono sig=USR2 icon=weather-clear-symbolic
+    theme=adw-gtk3 icons=Papirus palette=mono sig=USR2 icon=weather-clear-symbolic
 fi
 
 # qt6ct: replaced with mv, since running Qt apps only reload when a file in its folder is replaced
@@ -32,11 +32,12 @@ icon_theme=$icons
 standard_dialogs=xdgdesktopportal
 EOF
 mv $q/qt6ct.conf.new $q/qt6ct.conf
+# Themes for the mode, also on apply (fixes a saved theme name that no longer exists)
+dconf write $key/gtk-theme "'$theme'"
+dconf write $key/icon-theme "'$icons'"
 [ "$1" = apply ] && exit 0
 
 dconf write $key/color-scheme "'prefer-$mode'"
-dconf write $key/gtk-theme "'$theme'"
-dconf write $key/icon-theme "'$icons'"
 pkill -$sig -x foot
 
 notify-send -t 1500 -a darkmode -i $icon "$mode mode"
