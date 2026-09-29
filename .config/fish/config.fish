@@ -4,6 +4,13 @@
 set -gx PATH ~/.cargo/bin ~/.local/bin $PATH ~/.lmstudio/bin
 
 if status is-interactive
+    # Light mode (darkmode.sh): switch this foot window to its [colors-light] before the first
+    # prompt. foot is fish's parent (foot.ini execs fish); darkmode.sh signals windows already open
+    if test "$(dconf read /org/gnome/desktop/interface/color-scheme 2>/dev/null)" = "'prefer-light'"
+        set -l term (ps -o ppid= -p $fish_pid | string trim)
+        test "$(ps -o comm= -p $term)" = foot; and kill -USR2 $term
+    end
+
     # "welcome ~" in the same pill as the prompt's directory, instead of "Welcome to fish"
     function fish_greeting
         echo -n ''

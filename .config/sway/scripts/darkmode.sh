@@ -1,9 +1,10 @@
 #!/bin/sh
 # Light/dark toggle ($mod+Shift+t). color-scheme reaches libadwaita, LibreWolf and Electron
 # through the portal; the Mono GTK3 themes and Papirus icons are in .configuration.nix, the Qt
-# palettes in ~/.config/qt6ct/colors. The bar, fuzzel, mako and swaylock stay black.
+# palettes in ~/.config/qt6ct/colors. Running foot windows get a signal; new ones are switched
+# by fish (config.fish). The bar, fuzzel, mako and swaylock stay black.
 # Usage: darkmode.sh          toggle
-#        darkmode.sh apply    only write foot's and qt6ct's files for the current mode
+#        darkmode.sh apply    only write qt6ct's file for the current mode
 #                             (sway runs this at login; dconf's color-scheme is the source of truth)
 key=/org/gnome/desktop/interface
 
@@ -20,9 +21,6 @@ else
     theme=Mono icons=Papirus palette=mono sig=USR2 icon=weather-clear-symbolic
 fi
 
-# foot: new windows read this (include in foot.ini)
-mkdir -p ~/.local/state
-echo "initial-color-theme=$mode" > ~/.local/state/foot-theme.ini
 # qt6ct: replaced with mv, since running Qt apps only reload when a file in its folder is replaced
 q=~/.config/qt6ct
 cat > $q/qt6ct.conf.new <<EOF
