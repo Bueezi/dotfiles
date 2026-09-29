@@ -306,13 +306,14 @@ in
     starship  # prompt, ~/.config/starship.toml
     cava cmatrix pipes  # music visualiser (~/.config/cava/config), eye candy
     freerdp   # RDP into Windows: sdl-freerdp /v:<ip> /u:<user> /dynamic-resolution
+    man-pages man-pages-posix # man
     # Dev
-    neovim helix vscode nodejs rustc cargo podman-compose sqlite dbeaver-bin
+    neovim helix vscode nodejs rustc cargo podman-compose sqlite-interactive dbeaver-bin
     distrobox distroshelf
     # KUL
     (texliveBasic.withPackages (ps: with ps; [ collection-latex collection-latexrecommended collection-fontsrecommended collection-fontsextra collection-latexextra collection-langeuropean latexmk ])) ddd gdb openssl
     # LSP
-    basedpyright
+    basedpyright clang-tools
     # Apps
     librewolf ungoogled-chromium mpv vesktop qbittorrent
     libreoffice filezilla github-desktop bazaar gearlever
