@@ -27,6 +27,9 @@ client.urgent           $fg      $fg   $bg   $fg       $fg
 
 default_border          pixel 2
 default_floating_border pixel 2
+# Title bars (tabbed/stacked): centred text, no line under them
+title_align             center
+titlebar_separator      disable
 smart_borders on
 gaps inner 5
 smart_gaps on
@@ -105,6 +108,9 @@ exec sh -c 'test -d /sys/class/power_supply/BAT0 || exec steam -silent'
 # Laptop only: start muted
 exec sh -c 'test -d /sys/class/power_supply/BAT0 && sleep 2 && wpctl set-volume @DEFAULT_AUDIO_SINK@ 0'
 
+# Light/dark: bring foot's and qt6ct's files in line with the saved mode ($mod+Shift+t toggles)
+exec $scripts/darkmode.sh apply
+
 # Idle (swayidle) lives in a script so caffeine.sh can stop/restart it
 exec $scripts/idle.sh
 
@@ -164,7 +170,7 @@ bindsym {
     $mod+Shift+a        exec $scripts/audio_switch.sh
     $mod+Shift+p        exec $scripts/power.sh
     $mod+p              exec $scripts/display.sh
-    $mod+Shift+t        exec $scripts/theme.sh
+    $mod+Shift+t        exec $scripts/darkmode.sh
     $mod+Shift+r        exec $scripts/record.sh
     $mod+Shift+w        exec hyprquickpaper
     $mod+Shift+o        exec $scripts/power.sh slideshow

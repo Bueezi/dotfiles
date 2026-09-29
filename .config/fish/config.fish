@@ -4,7 +4,14 @@
 set -gx PATH ~/.cargo/bin ~/.local/bin $PATH ~/.lmstudio/bin
 
 if status is-interactive
-    set -g fish_greeting   # no "Welcome to fish"
+    # "welcome ~" in the same pill as the prompt's directory, instead of "Welcome to fish"
+    function fish_greeting
+        echo -n ''
+        set_color --reverse --bold; echo -n ' welcome ~ '
+        set_color normal; echo -n ''
+        set_color 555; echo '  '(date '+%a %d/%m  %H:%M')
+        set_color normal
+    end
 
     # Vim keys: Esc for normal mode. Cursor: block in normal, bar in insert
     fish_vi_key_bindings

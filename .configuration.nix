@@ -8,7 +8,39 @@ let
   # (and `seat * xcursor_theme` in the sway config)
   cursorTheme = "Bibata-Modern-Classic";
   cursorSize = 20;   # also in `seat * xcursor_theme` in the sway config
-  iconTheme = "Papirus-Dark";
+  # Dark is the default; darkmode.sh ($mod+Shift+t) switches to Mono / Papirus and back
+  iconTheme = "Papirus-Dark";   # grey folders instead of blue (papirus override below)
+  gtkTheme = "Mono-dark";
+
+  # GTK3 themes: adw-gtk3 (GTK3 in libadwaita's look) in black and white, no blue accent.
+  # Dark has pure black backgrounds instead of Adwaita's grey. GTK4/libadwaita gets the same
+  # from ~/.config/gtk-4.0/gtk.css, Qt from the qt6ct palettes in ~/.config/qt6ct/colors.
+  mono = name: base: colors: pkgs.writeTextDir "share/themes/${name}/gtk-3.0/gtk.css" ''
+    @import url("${pkgs.adw-gtk3}/share/themes/${base}/gtk-3.0/gtk.css");
+    ${colors}
+  '';
+  monoThemes = [
+    (mono "Mono" "adw-gtk3" ''
+      @define-color accent_bg_color #1a1a1a;
+      @define-color accent_fg_color white;
+      @define-color accent_color #1a1a1a;
+    '')
+    (mono "Mono-dark" "adw-gtk3-dark" ''
+      @define-color accent_bg_color white;
+      @define-color accent_fg_color black;
+      @define-color accent_color white;
+      @define-color window_bg_color black;
+      @define-color view_bg_color black;
+      @define-color headerbar_bg_color black;
+      @define-color headerbar_backdrop_color black;
+      @define-color sidebar_bg_color #0a0a0a;
+      @define-color sidebar_backdrop_color #0a0a0a;
+      @define-color card_bg_color rgba(255, 255, 255, 0.05);
+      @define-color dialog_bg_color #111111;
+      @define-color popover_bg_color #111111;
+      @define-color thumbnail_bg_color #111111;
+    '')
+  ];
 
   # swaylock-effects only starts redrawing on its first clock tick (~1s after locking), so the
   # fade-in sits on the unblurred screenshot until then. Start redrawing once the lock surface
@@ -72,6 +104,15 @@ in
     isNormalUser = true;
     description = "Ben";
     extraGroups = [ "networkmanager" "wheel" "video" ] ++ lib.optional (!isLaptop) "i2c";
+  };
+
+  # Git identity, system-wide (/etc/gitconfig)
+  programs.git = {
+    enable = true;
+    config = {
+      user = { name = "Bueezi"; email = "mail@b3n.me"; };
+      core.editor = "hx";
+    };
   };
 
   # Shells: bash stays the login shell (and for scripts); foot starts fish (~/.config/fish)
@@ -154,6 +195,7 @@ in
     wrapperFeatures.gtk = true;
     extraSessionCommands = ''
       export QT_QPA_PLATFORM="wayland;xcb"
+      # Proton: native Wayland and HDR in games
       export PROTON_ENABLE_WAYLAND=1
       export PROTON_ENABLE_HDR=1
     '';
@@ -171,12 +213,11 @@ in
       networkmanager_dmenu networkmanagerapplet
       # GUI utilities
       file-roller baobab eog adwaita-icon-theme
-      bibata-cursors papirus-icon-theme
-    ];
+      bibata-cursors (papirus-icon-theme.override { color = "grey"; })
+    ] ++ monoThemes;
   };
 
   environment.sessionVariables = {
-    GTK_THEME = "Adwaita:dark";
     XCURSOR_THEME = cursorTheme;
     XCURSOR_SIZE = toString cursorSize;
     NIXOS_OZONE_WL = "1";    # Electron/Chromium on Wayland
@@ -219,18 +260,18 @@ in
   };
 
   security.polkit.enable = true;
-  # Qt apps dark like GTK (Adwaita-dark style, GNOME platform theme)
+  # Qt: Fusion with black and white palettes through qt6ct. darkmode.sh writes ~/.config/qt6ct/qt6ct.conf
+  # (Qt's own gtk3 theme ignores the GTK colours and falls back to Adwaita's old greys)
   qt = {
     enable = true;
-    platformTheme = "gnome";
-    style = "adwaita-dark";
+    platformTheme = "qt5ct";   # qt5ct + qt6ct; all Qt apps here are Qt6
   };
   programs.dconf = {
     enable = true;
     profiles.user.databases = [{
       settings."org/gnome/desktop/interface" = {
         color-scheme = "prefer-dark";
-        gtk-theme = "Adwaita-dark";
+        gtk-theme = gtkTheme;
         cursor-theme = cursorTheme;
         icon-theme = iconTheme;
         cursor-size = lib.gvariant.mkInt32 cursorSize;
@@ -239,12 +280,21 @@ in
   };
   environment.etc."xdg/gtk-3.0/settings.ini".text = ''
     [Settings]
-    gtk-theme-name=Adwaita-dark
-    gtk-application-prefer-dark-theme=1
+    gtk-theme-name=${gtkTheme}
     gtk-cursor-theme-name=${cursorTheme}
     gtk-icon-theme-name=${iconTheme}
     gtk-cursor-theme-size=${toString cursorSize}
   '';
+
+  # Default apps (was default.sh). ~/.config/mimeapps.list, which apps write to, still wins.
+  xdg.mime.defaultApplications =
+    let each = app: types: lib.genAttrs types (_: app);
+    in each "thunar.desktop" [ "inode/directory" ]
+      // each "librewolf.desktop" [ "x-scheme-handler/http" "x-scheme-handler/https" "text/html" "application/xhtml+xml" "application/pdf" ]
+      // each "org.gnome.eog.desktop" (map (t: "image/${t}") [ "jpeg" "jpg" "png" "gif" "bmp" "webp" "tiff" ])
+      // each "mpv.desktop" [ "video/mp4" "video/x-matroska" "video/webm" "video/quicktime" "video/x-msvideo"
+                             "audio/mpeg" "audio/x-wav" "audio/flac" "audio/ogg" ]
+      // each "helix.desktop" [ "text/plain" "text/x-c" "text/x-c++" "text/x-java" "text/x-python" "application/x-shellscript" ];
 
   # Keyring unlocked at login via PAM
   services.gnome.gnome-keyring.enable = true;
@@ -308,6 +358,11 @@ in
     freerdp   # RDP into Windows: sdl-freerdp /v:<ip> /u:<user> /dynamic-resolution
     man-pages man-pages-posix # man
     # Dev
+    # Helix opens in foot from file managers (text/* defaults above)
+    (makeDesktopItem {
+      name = "helix"; desktopName = "Helix"; exec = "foot hx %F";
+      mimeTypes = [ "text/plain" ]; categories = [ "Development" "TextEditor" ];
+    })
     neovim helix vscode nodejs rustc cargo podman-compose sqlite-interactive dbeaver-bin
     distrobox distroshelf
     # KUL

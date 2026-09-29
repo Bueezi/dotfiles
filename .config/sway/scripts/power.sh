@@ -19,14 +19,10 @@ auth() {
 
 update() {
     auth Update
-    if [ "$(hostname)" = "void" ]; then
-        sudo xbps-install -Su
-    else
-        echo "==> NixOS"
-        sudo nixos-rebuild switch --upgrade
-        if [ "$(readlink /run/booted-system/kernel)" != "$(readlink /run/current-system/kernel)" ]; then
-            echo "    New kernel installed, reboot to use it."
-        fi
+    echo "==> NixOS"
+    sudo nixos-rebuild switch --upgrade
+    if [ "$(readlink /run/booted-system/kernel)" != "$(readlink /run/current-system/kernel)" ]; then
+        echo "    New kernel installed, reboot to use it."
     fi
     echo; echo "==> Nix profile"
     nix profile upgrade --all --refresh
@@ -71,8 +67,8 @@ sync() {
     fi
 }
 
-# Wallpaper slideshow on/off ($mod+Shift+o runs `power.sh slideshow`; timer from hyprquickpaper.nix). The state is kept in
-# ~/.config/slideshow, so sway starts it again at login.
+# Wallpaper slideshow on/off ($mod+Shift+o runs `power.sh slideshow`; timer from hyprquickpaper.nix).
+# The state is kept in ~/.config/slideshow, so sway starts it again at login.
 slideshow() {
     if systemctl --user is-active -q wallpaper-slideshow.timer; then
         systemctl --user stop wallpaper-slideshow.timer
@@ -81,7 +77,7 @@ slideshow() {
     else
         systemctl --user start wallpaper-slideshow.timer
         touch ~/.config/slideshow
-        notify-send -a slideshow -i preferences-desktop-wallpaper-symbolic "Slideshow on" "New wallpaper every 20s"
+        notify-send -a slideshow -i preferences-desktop-wallpaper-symbolic "Slideshow on" "New wallpaper every 5 minutes"
     fi
 }
 
@@ -112,18 +108,9 @@ case "$choice" in
     *sync)    exec foot --app-id=scratch-power "$0" sync ;;
 esac
 
-if [ "$(hostname)" = "void" ]; then
-    case "$choice" in
-    *sleep)     loginctl suspend ;;
-    *hibernate) loginctl hibernate ;;
-    *reboot)    loginctl reboot ;;
-    *"power off")  loginctl poweroff ;;
-    esac
-else
-    case "$choice" in
-    *sleep)     systemctl suspend ;;
-    *hibernate) systemctl hibernate ;;
-    *reboot)    systemctl reboot ;;
-    *"power off")  systemctl poweroff ;;
-    esac
-fi
+case "$choice" in
+    *sleep)       systemctl suspend ;;
+    *hibernate)   systemctl hibernate ;;
+    *reboot)      systemctl reboot ;;
+    *"power off") systemctl poweroff ;;
+esac

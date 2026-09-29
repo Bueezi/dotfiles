@@ -35,13 +35,6 @@ alias gitu='git commit -m "update" && git push'
 #     WLR_RENDERER=vulkan exec sway
 # fi
 
-# _host=$(hostname)
-# if [ "$_host" = "void" ]; then
-#     alias sudo='doas'
-#     alias xi='doas xbps-install'
-#     alias helix='hx'
-#     alias btop='doas btop --force-utf'
-# fi
 export PATH=$HOME/.local/bin:$PATH
 
 # Added by LM Studio CLI (lms)

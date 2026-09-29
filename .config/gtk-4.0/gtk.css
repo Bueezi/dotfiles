@@ -1,0 +1,28 @@
+/* GTK4/libadwaita in black and white, like the Mono GTK3 themes in .configuration.nix:
+   no blue accent, and pure black backgrounds in dark mode instead of Adwaita's grey.
+   darkmode.sh ($mod+Shift+t) flips color-scheme, which picks the block below. */
+:root {
+  --accent-bg-color: #1a1a1a;
+  --accent-fg-color: #ffffff;
+  --accent-color: #1a1a1a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --accent-bg-color: #ffffff;
+    --accent-fg-color: #000000;
+    --accent-color: #ffffff;
+    --window-bg-color: #000000;
+    --view-bg-color: #000000;
+    --headerbar-bg-color: #000000;
+    --headerbar-backdrop-color: #000000;
+    --sidebar-bg-color: #0a0a0a;
+    --sidebar-backdrop-color: #0a0a0a;
+    --secondary-sidebar-bg-color: #050505;
+    --secondary-sidebar-backdrop-color: #050505;
+    --card-bg-color: rgb(255 255 255 / 5%);
+    --dialog-bg-color: #111111;
+    --popover-bg-color: #111111;
+    --thumbnail-bg-color: #111111;
+  }
+}

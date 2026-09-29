@@ -1,16 +1,30 @@
-# Minimal black and white prompt:  ~/.config/sway  main !  2s
-#                                  ❯
+# Black and white, built around ~:
+#   ╭─ ~/.config/sway   main ! 󰔛 2s
+#   ╰─❯
+# The pill is `inverted` (terminal fg as background), so it's white in dark mode and black in
+# light mode; everything else is plain fg or grey.
 add_newline = true
-format = "$directory$git_branch$git_status$nix_shell$cmd_duration$line_break$character"
+format = """
+[╭─](#555555)$hostname$directory$git_branch$git_status$nix_shell$jobs$cmd_duration
+[╰─](#555555)$character"""
+right_format = "$status$time"
+
+# Only over SSH: which machine
+[hostname]
+format = "[$hostname](#a8a8a8) "
 
 [directory]
-style = "bold white"
-truncation_length = 3
+format = "[](bold)[ $path$read_only ]($style)[](bold) "
+style = "bold inverted"
+home_symbol = "~"
+truncation_length = 4
 truncation_symbol = "…/"
+read_only = " 󰌾"
+read_only_style = "bold inverted"
 
 [git_branch]
 format = "[$symbol$branch]($style) "
-symbol = " "
+symbol = " "
 style = "#a8a8a8"
 
 [git_status]
@@ -18,18 +32,35 @@ format = "([$all_status$ahead_behind]($style) )"
 style = "#a8a8a8"
 
 [nix_shell]
-format = "[ $name]($style) "
+format = "[ $name]($style) "
 style = "#a8a8a8"
 
-[cmd_duration]
-format = "[$duration]($style) "
+[jobs]
+format = "[$symbol$number]($style) "
+symbol = "󰜎 "
 style = "#777777"
 
-# ❯ white, grey after a failed command; ❮ in vim normal mode
+[cmd_duration]
+format = "[󰔛 $duration]($style) "
+style = "#777777"
+
+# Right side: exit code after a failure, and the time
+[status]
+disabled = false
+format = "[✕ $status]($style) "
+style = "#777777"
+
+[time]
+disabled = false
+format = "[$time]($style)"
+time_format = "%H:%M"
+style = "#555555"
+
+# ❯ in fg, grey after a failed command; ❮ in vim normal mode
 [character]
-success_symbol = "[❯](bold white)"
+success_symbol = "[❯](bold)"
 error_symbol = "[❯](#777777)"
-vimcmd_symbol = "[❮](bold white)"
+vimcmd_symbol = "[❮](bold)"
 vimcmd_replace_one_symbol = "[❮](#a8a8a8)"
 vimcmd_replace_symbol = "[❮](#a8a8a8)"
 vimcmd_visual_symbol = "[❮](#a8a8a8)"
