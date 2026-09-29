@@ -221,6 +221,7 @@ in
     XCURSOR_THEME = cursorTheme;
     XCURSOR_SIZE = toString cursorSize;
     NIXOS_OZONE_WL = "1";    # Electron/Chromium on Wayland
+    RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";   # std sources for rust-analyzer
   };
 
   # Login: greetd + tuigreet, black and white with a big "nixos" greeting
@@ -367,8 +368,10 @@ in
     distrobox distroshelf
     # KUL
     (texliveBasic.withPackages (ps: with ps; [ collection-latex collection-latexrecommended collection-fontsrecommended collection-fontsextra collection-latexextra collection-langeuropean latexmk ])) ddd gdb openssl
-    # LSP
-    basedpyright clang-tools
+    # LSP (Helix, ~/.config/helix/languages.toml): Python, C/C++, HTML/CSS/JSON, JS/TS, Tailwind,
+    # Rust, shell (+ shellcheck), PHP, SQL, Nix
+    basedpyright clang-tools vscode-langservers-extracted typescript-language-server typescript
+    tailwindcss-language-server rust-analyzer bash-language-server shellcheck intelephense sqls nil
     # Apps
     librewolf ungoogled-chromium mpv vesktop qbittorrent
     libreoffice filezilla github-desktop bazaar gearlever

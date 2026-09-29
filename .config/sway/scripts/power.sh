@@ -76,6 +76,8 @@ slideshow() {
         notify-send -a slideshow -i preferences-desktop-wallpaper-symbolic "Slideshow off"
     else
         systemctl --user start wallpaper-slideshow.timer
+        # New wallpaper right away (the timer counts its 5 minutes from this run)
+        systemctl --user start --no-block wallpaper-slideshow.service
         touch ~/.config/slideshow
         notify-send -a slideshow -i preferences-desktop-wallpaper-symbolic "Slideshow on" "New wallpaper every 5 minutes"
     fi

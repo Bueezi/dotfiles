@@ -5,3 +5,33 @@ args = ["--stdio"]
 [[language]]
 name = "python"
 language-servers = ["basedpyright"]
+
+# Tailwind class completion next to the usual servers (only kicks in in Tailwind projects)
+[language-server.tailwindcss]
+command = "tailwindcss-language-server"
+args = ["--stdio"]
+
+[[language]]
+name = "html"
+language-servers = ["vscode-html-language-server", "tailwindcss"]
+
+[[language]]
+name = "css"
+language-servers = ["vscode-css-language-server", "tailwindcss"]
+
+[[language]]
+name = "jsx"
+language-servers = ["typescript-language-server", "tailwindcss"]
+
+[[language]]
+name = "tsx"
+language-servers = ["typescript-language-server", "tailwindcss"]
+
+# SQL: Helix has no default. sqls completes keywords; tables/columns need a connection in
+# ~/.config/sqls/config.yml
+[language-server.sqls]
+command = "sqls"
+
+[[language]]
+name = "sql"
+language-servers = ["sqls"]
