@@ -92,7 +92,7 @@ Notable system bits:
 | `power.sh` | `$mod+Shift+p` | fuzzel menu: sleep, hibernate, reboot, power off, **update**, **rebuild**, **sync** (`cu`). Update and rebuild ask for sudo first, then hide their `scratch-power` terminal and send a "started" notification. |
 | `caffeine.sh` | `$mod+Shift+i` | Stops/starts swayidle, with a bar badge. |
 | `nightlight.sh` / `sunset.sh` | `$mod+n` | Toggles wlsunset, with a bar badge. `sunset.sh` holds the coordinates. |
-| `idle.sh` | – | swayidle: lock at 3 min, screen off at 3m10s. The idle lock has a 10s `--grace`: touching the mouse or keyboard dismisses it without the password (manual and before-sleep locks don't). |
+| `idle.sh` | – | swayidle: lock at 3 min, screen off at 3m10s. The idle lock has a 5s `--grace`: touching the mouse or keyboard dismisses it without the password (manual and before-sleep locks don't). |
 | `tray-menu.sh` | – | Electron tray menus open as windows with no app_id and no title. A `for_window` rule floats them off-screen, and this listener moves them to the top-right corner under the bar. |
 | `clipboard.sh` / `clipstore.sh` | `$mod+Shift+v` | cliphist picker (foot + fzf + chafa) and the `wl-paste --watch` store (with timeouts so a dead client can't lock the history db). |
 | `keybinds.sh` | `$mod+/` | Cheatsheet parsed from the config. |
