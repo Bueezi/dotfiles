@@ -3,17 +3,16 @@
    Linked into the profile as <profile>/chrome by librewolf.nix. */
 
 :root {
-  --lw-gap: 6px;
   --lw-radius: 8px;
   --lw-line: #333333;
 }
 
-/* Page area floats: gap at the bottom, rounded on the left, thin grey outline. No gap on
-   the right: the page reaches the screen edge, so the scrollbar is there when the cursor
-   is pushed all the way right */
+/* Page area: rounded top-left corner and a thin grey outline. No gap on the right or at the
+   bottom: the page reaches the screen edges, so scrolling works with the cursor pushed all
+   the way right or down */
 #tabbrowser-tabbox {
-  margin: 0 0 var(--lw-gap) 0 !important;
-  border-radius: var(--lw-radius) 0 0 var(--lw-radius) !important;
+  margin: 0 !important;
+  border-radius: var(--lw-radius) 0 0 0 !important;
   outline: 1px solid var(--lw-line) !important;
   overflow: hidden !important;
   box-shadow: none !important;
