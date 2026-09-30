@@ -54,6 +54,7 @@ Both run NixOS 26.05 (channel-based, not a flake system) with the same config. A
 The extras are imported with `builtins.pathExists`, so a fresh install without dotfiles still builds.
 
 Notable system bits:
+- **Tailscale:** `services.tailscale` (routing features `client`) to reach the homelab from outside. Logged in once per machine with `sudo tailscale up --accept-routes`: that's stored by tailscaled, not in Nix.
 - **AppImages:** run through `programs.appimage`. The `extraPkgs` add `mpv-unwrapped` and `webkitgtk_4_1` for Nuvio (`~/AppImages`, managed by Gear Lever).
 - **Desktop only:**
   - Steam, gamescope, gamemode, LACT, the G920 wheel (usb-modeswitch + oversteer udev).

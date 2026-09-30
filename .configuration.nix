@@ -76,6 +76,10 @@ in
 
   # ── System basics ───────────────────────────────────
   networking.networkmanager.enable = true;
+  # Tailscale: reach the homelab from anywhere. Once per machine: `sudo tailscale up --accept-routes`
+  # (Linux ignores the homelab's advertised subnets without it). "client" loosens reverse-path
+  # filtering, which subnet routes and exit nodes need
+  services.tailscale = { enable = true; useRoutingFeatures = "client"; };
 
   services.printing.enable = true;
   services.avahi = { enable = true; nssmdns4 = true; openFirewall = true; };
