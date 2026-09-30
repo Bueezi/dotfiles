@@ -78,8 +78,12 @@ in
   networking.networkmanager.enable = true;
   # Tailscale: reach the homelab from anywhere. Once per machine: `sudo tailscale up --accept-routes`
   # (Linux ignores the homelab's advertised subnets without it). "client" loosens reverse-path
-  # filtering, which subnet routes and exit nodes need
-  services.tailscale = { enable = true; useRoutingFeatures = "client"; };
+  # filtering, which subnet routes and exit nodes need. openFirewall: its UDP port, so peers can
+  # connect directly instead of through a slow DERP relay
+  services.tailscale = { enable = true; useRoutingFeatures = "client"; openFirewall = true; };
+  # Without resolved, Tailscale takes over /etc/resolv.conf with only its own 100.100.100.100, so
+  # all DNS broke with it. With it, only tailnet names go to Tailscale (NetworkManager uses it too)
+  services.resolved.enable = true;
 
   services.printing.enable = true;
   services.avahi = { enable = true; nssmdns4 = true; openFirewall = true; };
@@ -292,6 +296,9 @@ in
   # Keyring unlocked at login via PAM
   services.gnome.gnome-keyring.enable = true;
   security.pam.services.greetd.enableGnomeKeyring = true;
+  # swaylock: no ~2s pause after a wrong password (pam_unix's default). swaylock ignores keys
+  # while it checks, so you had to wait before retyping; now a wrong one is rejected at once
+  security.pam.services.swaylock.nodelay = true;
 
   # File manager + thumbnails, mounting, trash
   programs.thunar = {

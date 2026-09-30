@@ -54,7 +54,7 @@ Both run NixOS 26.05 (channel-based, not a flake system) with the same config. A
 The extras are imported with `builtins.pathExists`, so a fresh install without dotfiles still builds.
 
 Notable system bits:
-- **Tailscale:** `services.tailscale` (routing features `client`) to reach the homelab from outside. Logged in once per machine with `sudo tailscale up --accept-routes`: that's stored by tailscaled, not in Nix.
+- **Tailscale:** `services.tailscale` (routing features `client`, firewall port open for direct connections) to reach the homelab from outside. Needs `services.resolved`: without it Tailscale takes over all DNS and the internet breaks when it hiccups. Logged in once per machine with `sudo tailscale up --accept-routes`: that's stored by tailscaled, not in Nix.
 - **AppImages:** run through `programs.appimage`. The `extraPkgs` add `mpv-unwrapped` and `webkitgtk_4_1` for Nuvio (`~/AppImages`, managed by Gear Lever).
 - **Desktop only:**
   - Steam, gamescope, gamemode, LACT, the G920 wheel (usb-modeswitch + oversteer udev).
@@ -72,7 +72,7 @@ Notable system bits:
 - **Notifications:** mako (`.config/mako/config`) on the `overlay` layer, so they show over fullscreen. `app-name=osd` is the volume/brightness OSD.
 - **SwayFX effects:** blur, shadows, no dimming of unfocused windows (tried, disliked), centred title bars without the separator line (tabbed/stacked), and `layer_effects` blur behind fuzzel (`launcher`), mako (`notifications`) and the bar (`panel`). That blur only shows because their backgrounds are see-through (`#000000b3`; the i3status block backgrounds are `#00000000`).
 - **Wallpaper:** `awww-daemon` (swww's new name) draws it, with an animated transition when HyprQuickPaper switches. **Don't add `output * bg`:** swaybg restarts on every `swaymsg reload` and covers awww, so wallpaper changes stop showing.
-- **Lock:** swaylock-effects (`.config/swaylock/config`): a blurred snapshot fading in (0.5s), with the clock in the ring. It's patched in `.configuration.nix` (`swaylockFx`): upstream only starts redrawing on its first clock tick, so the fade stalled on the unblurred screen for ~1s. Plain swaylock refuses these options and exits without locking.
+- **Lock:** swaylock-effects (`.config/swaylock/config`): a blurred snapshot fading in (0.5s), with the clock in the ring. It's patched in `.configuration.nix` (`swaylockFx`): upstream only starts redrawing on its first clock tick, so the fade stalled on the unblurred screen for ~1s. Plain swaylock refuses these options and exits without locking. PAM `nodelay` for swaylock: a wrong password is rejected at once instead of after ~2s (keys are ignored while it checks).
 - **Login:** tuigreet in `.configuration.nix` (a wrapper script): monochrome `--theme`, a big "nixos" greeting (lines padded to one width, since tuigreet centres each line), asterisks, and a clock.
 - **Themes:** dark by default, `$mod+Shift+t` (`darkmode.sh`) toggles light/dark. Dconf's `color-scheme` is the source of truth; the bar, fuzzel, mako and swaylock stay black either way.
   - GTK3: `adw-gtk3` in light mode; `Mono-dark`, built in the `let` of `.configuration.nix` on top of adw-gtk3-dark, in dark: pure black backgrounds instead of Adwaita's grey, blue accent kept. LibreWolf takes its text-selection colour from this theme. GTK4/libadwaita: the same colours in `.config/gtk-4.0/gtk.css` (`@media (prefers-color-scheme: dark)`). No `GTK_THEME` variable: it would pin one theme.
