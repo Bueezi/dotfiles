@@ -35,6 +35,17 @@ if_command = "ls /sys/class/power_supply/BAT* 2>/dev/null | grep -q ."
 [[block.click]]
 button = "left"
 
+# Desktop: the monitor's brightness over DDC/CI, from osd.sh's cached level (it sends signal 3
+# on every change; interval: changes made with the monitor's own buttons)
+[[block]]
+block = "custom"
+command = "~/.config/sway/scripts/osd.sh brightness status"
+format = "bl: $text "
+signal = 3
+interval = 60
+hide_when_empty = true
+if_command = "! ls /sys/class/power_supply/BAT* 2>/dev/null | grep -q ."
+
 [[block]]
 block = "time"
 interval = 5
@@ -42,22 +53,22 @@ format = "$timestamp.datetime(f:'%a  %d/%m   %R ')"
 
 [[block]]
 block = "custom"
-command = "~/.config/sway/scripts/caffeine.sh status"
+command = "~/.config/sway/scripts/toggle.sh caffeine status"
 json = true
 signal = 1
 interval = 5
 hide_when_empty = true
 [[block.click]]
 button = "left"
-cmd = "~/.config/sway/scripts/caffeine.sh"
+cmd = "~/.config/sway/scripts/toggle.sh caffeine"
 
 [[block]]
 block = "custom"
-command = "~/.config/sway/scripts/nightlight.sh status"
+command = "~/.config/sway/scripts/toggle.sh nightlight status"
 json = true
 signal = 2
 interval = 5
 hide_when_empty = true
 [[block.click]]
 button = "left"
-cmd = "~/.config/sway/scripts/nightlight.sh"
+cmd = "~/.config/sway/scripts/toggle.sh nightlight"

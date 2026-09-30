@@ -1,7 +1,9 @@
 # Interactive shell. foot starts fish; bash stays the login shell and runs scripts
 # (so .bashrc keeps `cu` for power.sh too).
 
-set -gx PATH ~/.cargo/bin ~/.local/bin $PATH ~/.lmstudio/bin
+# fish_add_path skips entries already there (fish started from fish would add them again)
+fish_add_path -g ~/.cargo/bin ~/.local/bin
+fish_add_path -ga ~/.lmstudio/bin
 
 if status is-interactive
     # Light mode (darkmode.sh): switch this foot window to its [colors-light] before the first
@@ -28,25 +30,14 @@ if status is-interactive
     set -g fish_cursor_visual block
     function fish_mode_prompt; end   # starship's ❯/❮ shows the mode instead of [I]/[N]
 
-    alias config 'git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
-    alias g git
-    alias gc 'gcc -std=c99 -Wall -Wextra -pedantic'
-    alias hc 'hx ~/.configuration.nix'
-    alias hs 'hx ~/.config/sway/config'
-    alias rb 'sudo nixos-rebuild switch'
-    alias gitu 'git commit -m "update" && git push'
+    # Aliases live in ~/.bashrc only (add/edit them there): fish runs its `alias name='...'` lines
+    for line in (string match -r '^alias \S+=.*' < ~/.bashrc)
+        eval $line
+    end
 
-    # Sync dotfiles both ways: commit tracked changes, pull the other machine's, push.
-    # New files still need an explicit `config add <file>` first. (Same as cu in .bashrc)
+    # Dotfiles sync: the one cu, in .bashrc (power.sh's sync uses it too)
     function cu --description 'Sync dotfiles: commit, pull --rebase, push'
-        set -l msg update
-        set -q argv[1]; and set msg $argv[1]
-        config add -u
-        and begin
-            config diff --cached --quiet; or config commit -m $msg
-        end
-        and config pull --rebase
-        and config push
+        bash -ic 'cu "$@"' cu $argv
     end
 
     starship init fish | source

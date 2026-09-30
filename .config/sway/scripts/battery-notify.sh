@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
- 
+# Low-battery notifications at 30/20/10/5%. Exits right away on the desktop (no battery).
+
 BAT="/sys/class/power_supply/BAT0"
 [ -d "$BAT" ] || BAT="/sys/class/power_supply/BAT1"
+[ -d "$BAT" ] || exit 0
 
 last_level=100
 
 while true; do
-    [ -d "$BAT" ] || { sleep 60; continue; }
-
     cap=$(cat "$BAT/capacity")
     status=$(cat "$BAT/status")
 

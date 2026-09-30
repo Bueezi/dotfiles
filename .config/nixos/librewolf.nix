@@ -37,8 +37,8 @@
 
           // Rice: vertical tabs always shown, compact density, and load chrome/userChrome.css
           // (the look itself: the Dark space theme below + ~/.config/librewolf/chrome).
-          // pref(), not defaultPref(): these were changed in Settings before, and saved user
-          // values would win over defaults
+          // The sidebar ones are pref(), not defaultPref(): they were changed in Settings before,
+          // and saved user values would win over defaults
           defaultPref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
           pref("sidebar.revamp", true);
           pref("sidebar.verticalTabs", true);

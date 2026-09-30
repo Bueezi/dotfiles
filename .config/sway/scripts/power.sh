@@ -83,24 +83,11 @@ slideshow() {
     fi
 }
 
-if [ "$1" = "slideshow" ]; then
-    slideshow
-    exit
-fi
-if [ "$1" = "sync" ]; then
-    sync
-    exit
-fi
-if [ "$1" = "update" ]; then
-    update
-    exit
-fi
-if [ "$1" = "rebuild" ]; then
-    rebuild
-    exit
-fi
+case "$1" in slideshow|sync|update|rebuild) "$1"; exit ;; esac
 
-choice=$(printf "󰋊  hibernate\n󰜉  reboot\n󰒲  sleep\n󰐥  power off\n󰚰  update\n󱄅  rebuild\n󰓦  sync" |
+# Hibernate only on the laptop: the desktop has no swap partition to resume from (zram only)
+hibernate=; [ -d /sys/class/power_supply/BAT0 ] && hibernate="󰋊  hibernate\n"
+choice=$(printf "${hibernate}󰜉  reboot\n󰒲  sleep\n󰐥  power off\n󰚰  update\n󱄅  rebuild\n󰓦  sync" |
   fuzzel --dmenu --width 20 --lines 7)
 
 [ "$choice" ] || exit 0

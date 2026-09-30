@@ -2,7 +2,7 @@
 # ~/.bashrc
 #
 
-export PATH="/home/ben/.cargo/bin:$PATH"
+export PATH="$HOME/.cargo/bin:$PATH"
 
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
@@ -25,15 +25,10 @@ cu() {
 alias g="git"
 alias gc='gcc -std=c99 -Wall -Wextra -pedantic'
 
-#alias hx='helix'
 alias hc='hx ~/.configuration.nix'
 alias hs='hx ~/.config/sway/config'
 alias rb="sudo nixos-rebuild switch"
 alias gitu='git commit -m "update" && git push'
-
-# if [ "$(tty)" = "/dev/tty1" ] && [ -z "$WAYLAND_DISPLAY" ]; then
-#     WLR_RENDERER=vulkan exec sway
-# fi
 
 export PATH=$HOME/.local/bin:$PATH
 

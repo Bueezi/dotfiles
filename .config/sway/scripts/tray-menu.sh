@@ -8,9 +8,6 @@ bar=20      # bar height (bar { height } in the sway config)
 gap=5
 border=2    # default_border pixel 2
 
-log="${XDG_RUNTIME_DIR:-/tmp}/tray-menu.log"
-: > "$log"
-
 swaymsg -m -t subscribe '["window"]' \
     | jq --unbuffered -r '
         select(.change == "new") | .container
@@ -29,6 +26,5 @@ swaymsg -m -t subscribe '["window"]' \
         set -- $(swaymsg -t get_outputs | jq -r '.[] | select(.focused) | "\(.rect.x) \(.rect.y) \(.rect.width)"')
         x=$(( $1 + $3 - w - 2 * border - gap ))
         y=$(( $2 + bar + gap ))
-        echo "con $id: ${w}x$h at $x,$y" >> "$log"
         swaymsg -q "[con_id=$id] resize set $w $h, move absolute position $x $y"
     done

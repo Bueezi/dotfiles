@@ -62,12 +62,12 @@ Notable system bits:
   - LM Studio, whose `~/.lmstudio` is a symlink to `/mnt/nvme/Documents/lm-studio`.
   - The `/mnt/nvme` and `/mnt/hdd` mounts.
 - **Laptop only:** power-profile switching on AC/battery, lid → suspend-then-hibernate, and the Realtek rtw89 Wi-Fi fixes.
-- **Screen sharing:** the xdg-desktop-portal-wlr picker is set in Nix (`xdg.portal.wlr.settings`, fuzzel by full path). `.config/xdg-desktop-portal-wlr/config` is **ignored** on NixOS.
+- **Screen sharing:** the xdg-desktop-portal-wlr picker is set in Nix (`xdg.portal.wlr.settings`, fuzzel by full path). The portal gets that file via `--config`, so a `~/.config/xdg-desktop-portal-wlr/config` would be ignored.
 
 ## Sway (SwayFX)
 
 - `.config/sway/config`: variables at the top (`$term` foot, `$fm` thunar, `$menu` fuzzel, `$browser` librewolf, `$discord` vesktop), then autostart, window rules and keybinds.
-- **Bar:** swaybar + i3status-rs (`.config/sway/i3status.toml`). The caffeine (signal 1) and nightlight (signal 2) badges are custom blocks that call the scripts' `status` mode.
+- **Bar:** swaybar + i3status-rs (`.config/sway/i3status.toml`). The caffeine (signal 1) and nightlight (signal 2) badges are custom blocks that call `toggle.sh <name> status`. Brightness: the `backlight` block on the laptop; on the desktop a custom block (signal 3) that shows the monitor's DDC/CI level from `osd.sh brightness status`.
 - **Notifications:** mako (`.config/mako/config`) on the `overlay` layer, so they show over fullscreen. `app-name=osd` is the volume/brightness OSD.
 - **SwayFX effects:** blur, shadows, no dimming of unfocused windows (tried, disliked), centred title bars without the separator line (tabbed/stacked), and `layer_effects` blur behind fuzzel (`launcher`), mako (`notifications`) and the bar (`panel`). That blur only shows because their backgrounds are see-through (`#000000b3`; the i3status block backgrounds are `#00000000`).
 - **Wallpaper:** `awww-daemon` (swww's new name) draws it, with an animated transition when HyprQuickPaper switches. **Don't add `output * bg`:** swaybg restarts on every `swaymsg reload` and covers awww, so wallpaper changes stop showing.
@@ -87,11 +87,11 @@ Notable system bits:
 | Script | Key | What |
 |---|---|---|
 | `open.sh <mark> <w> <h> <cmd>` | `$mod+Shift+d` Vesktop, `$mod+i` Steam | Opens or toggles an app: tiled on an empty workspace, otherwise a floating scratchpad window. The same key hides it. Finds the window by a sway mark set in a `for_window` rule, and always moves it to the current workspace. |
-| `screenshot.sh` | `$mod+Shift+s` | Freezes the screen (wayfreeze), region select (slurp), grim, clipboard. |
-| `osd.sh` | media/brightness keys, `$mod+PageUp/PageDown` | Volume in 2% steps, brightness in 5% steps. The mako OSD shows a 25-block text bar. On the desktop, brightness goes over **DDC/CI** (ddcutil), cached with a background applier so it feels instant. |
-| `power.sh` | `$mod+Shift+p` | fuzzel menu: sleep, hibernate, reboot, power off, **update**, **rebuild**, **sync** (`cu`). Update and rebuild ask for sudo first, then hide their `scratch-power` terminal and send a "started" notification. |
-| `caffeine.sh` | `$mod+Shift+i` | Stops/starts swayidle, with a bar badge. |
-| `nightlight.sh` / `sunset.sh` | `$mod+n` | Toggles wlsunset, with a bar badge. `sunset.sh` holds the coordinates. |
+| `screenshot.sh` | `$mod+Shift+s`, `$mod+Shift+x` | Freezes the screen (wayfreeze), region select (slurp), grim, clipboard. `$mod+Shift+x` (`ocr`): the region's **text** to the clipboard instead (tesseract, eng/fra/nld; grabbed at 2x for accuracy). |
+| `osd.sh` | media/brightness keys, `$mod+PageUp/PageDown` | Volume in 2% steps, brightness in 5% steps, media keys through playerctl. The mako OSD shows a 25-block text bar. On the desktop, brightness goes over **DDC/CI** (ddcutil), cached with a background applier so it feels instant; `brightness status` prints that level for the bar. |
+| `power.sh` | `$mod+Shift+p` | fuzzel menu: sleep, hibernate (laptop only: the desktop has only zram swap), reboot, power off, **update**, **rebuild**, **sync** (`cu`). Update and rebuild ask for sudo first, then hide their `scratch-power` terminal and send a "started" notification. |
+| `toggle.sh caffeine` | `$mod+Shift+i` | Stops/starts swayidle (`idle.sh`), with a bar badge. |
+| `toggle.sh nightlight` / `sunset.sh` | `$mod+n` | Stops/starts wlsunset, with a bar badge. `sunset.sh` holds the coordinates. |
 | `idle.sh` | – | swayidle: lock at 3 min, screen off at 3m10s. The idle lock has a 5s `--grace`: touching the mouse or keyboard dismisses it without the password (manual and before-sleep locks don't). |
 | `tray-menu.sh` | – | Electron tray menus open as windows with no app_id and no title. A `for_window` rule floats them off-screen, and this listener moves them to the top-right corner under the bar. |
 | `clipboard.sh` / `clipstore.sh` | `$mod+Shift+v` | cliphist picker (foot + fzf + chafa) and the `wl-paste --watch` store (with timeouts so a dead client can't lock the history db). |
@@ -125,7 +125,7 @@ Notable system bits:
 
 - **Shell:** bash stays the login shell and runs scripts (and keeps `cu` for `power.sh`).
   - foot starts **fish** (`shell=` in `foot.ini`, falling back to bash if fish is missing).
-  - `.config/fish/config.fish` has vi key bindings, the aliases and `cu`, and loads starship.
+  - `.config/fish/config.fish` has vi key bindings and loads starship. **Aliases and `cu` live in `.bashrc` only:** fish runs `.bashrc`'s `alias` lines at startup, and its `cu` calls the bash one. Add or edit aliases in `.bashrc`, never in `config.fish`.
   - `.config/starship.toml`: two-line prompt, the directory in an `inverted` pill (white in dark mode, black in light), git/nix/duration in grey, exit code and time on the right. ❯ grey after an error, ❮ in vi normal mode. fish greets with a matching `welcome ~` pill.
   - The Nerd Font glyphs (pill caps U+E0B6/E0B4, git U+E0A0, nix U+F313) are private-use characters that some editing tools drop silently: check them with a codepoint dump after editing.
   - `/bin/bash` is a tmpfiles symlink to the system bash, so `#!/bin/bash` scripts work.

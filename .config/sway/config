@@ -64,7 +64,7 @@ seat * xcursor_theme Bibata-Modern-Classic 20
 
 # ── Outputs ─────────────────────────────────────────
 # Output names: swaymsg -t get_outputs
-# Wallpaper: awww (see autostart and scripts/wallpaper.sh). No `output * bg` here: swaybg is
+# Wallpaper: awww (see autostart, and hyprquickpaper.nix). No `output * bg` here: swaybg is
 # restarted on every reload and then covers awww, hiding all wallpaper changes
 
 output eDP-1 {
@@ -96,7 +96,7 @@ exec sh -c 'awww-daemon & until awww query >/dev/null 2>&1; do sleep 0.1; done; 
 # Wallpaper slideshow, if it was on (power menu → slideshow touches/removes ~/.config/slideshow)
 exec sh -c 'test -e ~/.config/slideshow && systemctl --user start wallpaper-slideshow.timer'
 exec lxqt-policykit-agent
-# Night light (wlsunset) lives in a script so nightlight.sh can stop/restart it
+# Night light (wlsunset) lives in a script so `toggle.sh nightlight` can stop/restart it
 exec $scripts/sunset.sh
 exec $scripts/battery-notify.sh
 exec sh -c 'rm -f ~/.cache/cliphist/db && exec wl-paste --watch $scripts/clipstore.sh'
@@ -111,13 +111,13 @@ exec sh -c 'test -d /sys/class/power_supply/BAT0 && sleep 2 && wpctl set-volume 
 # Light/dark: bring foot's and qt6ct's files in line with the saved mode ($mod+Shift+t toggles)
 exec $scripts/darkmode.sh apply
 
-# Idle (swayidle) lives in a script so caffeine.sh can stop/restart it
+# Idle (swayidle) lives in a script so `toggle.sh caffeine` can stop/restart it
 exec $scripts/idle.sh
 
 # Window switcher daemon (Alt+Tab)
 exec swayrd
 
-# Put tray right-click menus in the top-right corner (see the for_window rule above)
+# Put tray right-click menus in the top-right corner (see the for_window rule below)
 exec $scripts/tray-menu.sh
 
 # ── Window rules ────────────────────────────────────
@@ -125,8 +125,7 @@ for_window [app_id="(?i)freerdp"] shortcuts_inhibitor enable
 for_window [app_id=".*"] inhibit_idle fullscreen
 for_window [class=".*"]  inhibit_idle fullscreen
 
-for_window [app_id="^(floating|blueman-manager|org.gnome.FileRoller|org.gnome.eog|xdg-desktop-portal-gtk)$"] floating enable, resize set 900 600, move position center
-# for_window [class="Spotify"] floating enable, resize set 900 600, move position center
+for_window [app_id="^(blueman-manager|org.gnome.FileRoller|org.gnome.eog|xdg-desktop-portal-gtk)$"] floating enable, resize set 900 600, move position center
 for_window [app_id="^clipboard$"] floating enable, resize set 760 420, move position center
 # Scratchpad apps ($mod+Shift+Return / e, power.sh update/rebuild/sync): open floating in the
 # scratchpad, shown. The same key (or $mod+minus) hides/shows them again.
@@ -158,6 +157,7 @@ bindsym {
     $mod+Shift+e        exec $fm
     $mod+Shift+v        exec $scripts/clipboard.sh
     $mod+Shift+s        exec $scripts/screenshot.sh
+    $mod+Shift+x        exec $scripts/screenshot.sh ocr
     $mod+Shift+n        exec networkmanager_dmenu
     $mod+x              exec swaymsg '[app_id="librewolf"] focus' || $browser
     $mod+m              exec eclipse
@@ -174,8 +174,8 @@ bindsym {
     $mod+Shift+r        exec $scripts/record.sh
     $mod+Shift+w        exec hyprquickpaper
     $mod+Shift+o        exec $scripts/power.sh slideshow
-    $mod+Shift+i        exec $scripts/caffeine.sh
-    $mod+n              exec $scripts/nightlight.sh
+    $mod+Shift+i        exec $scripts/toggle.sh caffeine
+    $mod+n              exec $scripts/toggle.sh nightlight
     $mod+slash          exec $scripts/keybinds.sh
 
     # Session

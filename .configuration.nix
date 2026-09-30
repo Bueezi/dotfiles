@@ -66,9 +66,6 @@ in
     SUBSYSTEM=="power_supply", ATTR{type}=="Mains", ATTR{online}=="1", RUN+="${pkgs.power-profiles-daemon}/bin/powerprofilesctl set balanced"
   '';
 
-  # Don't power the Bluetooth radio until you need it
-  hardware.bluetooth.powerOnBoot = !isLaptop;
-
   # Laptop's Realtek (rtw89) Wi-Fi card fix
   networking.networkmanager.wifi.powersave = lib.mkIf isLaptop false;
 
@@ -117,6 +114,7 @@ in
     enableRedistributableFirmware = true;
     cpu.amd.updateMicrocode = true;
     bluetooth.enable = true;
+    bluetooth.powerOnBoot = !isLaptop;   # laptop: radio off until you need it (bluetooth.sh)
   };
 
   services.fwupd.enable = true;
@@ -182,21 +180,23 @@ in
     wrapperFeatures.gtk = true;
     extraSessionCommands = ''
       export QT_QPA_PLATFORM="wayland;xcb"
-      # Proton: native Wayland and HDR in games
+      # Proton: native Wayland in games. HDR does nothing yet: swayfx has no HDR output
       export PROTON_ENABLE_WAYLAND=1
       export PROTON_ENABLE_HDR=1
     '';
     extraPackages = with pkgs; [
       # session
-      swaylockFx swayidle swaybg awww wdisplays kanshi wlsunset lxqt.lxqt-policykit
+      swaylockFx swayidle awww wdisplays wlsunset lxqt.lxqt-policykit
       # terminal, launcher, bar, notifications
-      foot fuzzel i3status-rust mako libnotify swayr bzmenu 
+      foot fuzzel i3status-rust mako libnotify swayr bzmenu
       # clipboard picker (fzf + sixel image preview) and auto-paste
       fzf chafa wtype
       # screenshots, recording, clipboard
       grim slurp wayfreeze wf-recorder cliphist
-      # hardware controls (pulseaudio only for `pactl`)
-      brightnessctl pulseaudio pavucontrol
+      # OCR ($mod+Shift+x, screenshot.sh ocr): only these languages, all of them is huge
+      (tesseract.override { enableLanguages = [ "eng" "fra" "nld" ]; })
+      # hardware controls, media keys (osd.sh)
+      brightnessctl playerctl pavucontrol
       networkmanager_dmenu networkmanagerapplet
       # GUI utilities
       file-roller baobab eog adwaita-icon-theme
@@ -352,7 +352,10 @@ in
       name = "helix"; desktopName = "Helix"; exec = "foot hx %F";
       mimeTypes = [ "text/plain" ]; categories = [ "Development" "TextEditor" ];
     })
-    neovim helix vscode nodejs rustc cargo podman-compose sqlite-interactive dbeaver-bin
+    # Zed (`zeditor`), FHS variant: the language servers and extensions it downloads are generic
+    # Linux binaries that need a normal /usr/lib
+    zed-editor.fhs
+    neovim helix nodejs rustc cargo podman-compose sqlite-interactive dbeaver-bin
     distrobox distroshelf
     # KUL
     (texliveBasic.withPackages (ps: with ps; [ collection-latex collection-latexrecommended collection-fontsrecommended collection-fontsextra collection-latexextra collection-langeuropean latexmk ])) ddd gdb openssl
