@@ -7,7 +7,9 @@ id_file="${XDG_RUNTIME_DIR:-/tmp}/osd-notify-id"
 # notify <icon> <text> [percent]
 # The level is drawn as a 25-char text bar (█ filled, ░ empty, 4% each) instead of mako's coloured progress bar
 notify() {
-    id=$(cat "$id_file" 2>/dev/null || echo 0)
+    # Empty or garbage (a half-written file, a failed run): start a new popup instead of failing
+    id=$(cat "$id_file" 2>/dev/null)
+    case "$id" in ''|*[!0-9]*) id=0 ;; esac
     bar=
     if [ -n "$3" ]; then
         filled=$(( ($3 + 2) / 4 ))
@@ -17,7 +19,10 @@ notify() {
             i=$((i + 1))
         done
     fi
-    notify-send -p -r "$id" -t 1000 -u low -a osd -i "$1" "$2" "$bar" > "$id_file"
+    # Written via a temp file + mv: a plain `> "$id_file"` empties it first, and another press
+    # reading it at that moment got "" and broke the OSD for good
+    new=$(notify-send -p -r "$id" -t 1000 -u low -a osd -i "$1" "$2" "$bar") &&
+        printf '%s\n' "$new" > "$id_file.$$" && mv -f "$id_file.$$" "$id_file"
 }
 
 volume() {
