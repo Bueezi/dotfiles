@@ -58,6 +58,7 @@ Notable system bits:
 - **AppImages:** run through `programs.appimage`. The `extraPkgs` add `mpv-unwrapped` and `webkitgtk_4_1` for Nuvio (`~/AppImages`, managed by Gear Lever).
 - **Desktop only:**
   - Steam, gamescope, gamemode, LACT, the G920 wheel (usb-modeswitch + oversteer udev).
+  - **Assetto Corsa** (Content Manager + CSP): runs on **GE-Proton9-20** (added next to the latest GE in `extraCompatPackages`), because Wine 10+ blocks CSP from patching `acs.exe` ("Failed to tweak Assetto Corsa: Can't find …"). Launch options `WINEDLLOVERRIDES="dwrite=n,b" %command%`, no gamescope, so Content Manager is a floating window (sway rule on its title). `acmanager://` links (NoHesi "Join") go to Content Manager through `acmanagerLinks` in `.configuration.nix`: `steam -applaunch 244210 <link>`, so only while Content Manager is closed (Steam's sandbox has a private `/tmp`, so nothing outside can reach a running CM; protontricks-launch started hidden copies). Hidden CSP caches (`CACHE_ACS`, `CACHING_LOADING2`) are off in the prefix's `Documents/Assetto Corsa/cfg/extension/general.ini`. The prefix's `Steam/config/loginusers.vdf` is a symlink to Steam's real one, or Content Manager finds no Steam ID.
   - `rgb-off.service`: OpenRGB turns the RGB off. Needs `i2c-dev`, with `spd5118` blacklisted so OpenRGB can see the DDR5 sticks.
   - `hardware.i2c` + `ddcutil`: monitor brightness over DDC/CI.
   - LM Studio, whose `~/.lmstudio` is a symlink to `/mnt/nvme/Documents/lm-studio`.

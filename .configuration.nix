@@ -29,6 +29,27 @@ let
     @define-color thumbnail_bg_color #111111;
   '';
 
+  # Assetto Corsa: acmanager:// links on websites (NoHesi "Join", server lists) open in Content
+  # Manager. CM registers them only inside its Proton prefix, so the browser had no handler. The link
+  # goes through Steam (-applaunch), which starts AC normally (its Proton, launch options) with the
+  # link as argument, like CM's own Windows handler. Only while CM is closed: Steam won't start a
+  # running game twice, and nothing outside Steam's sandbox can reach a running CM (its wineserver
+  # socket is in the sandbox's private /tmp; protontricks-launch started hidden copies instead)
+  acmanagerLinks = pkgs.makeDesktopItem {
+    name = "acmanager";
+    desktopName = "Content Manager link";
+    noDisplay = true;
+    mimeTypes = [ "x-scheme-handler/acmanager" ];
+    exec = "${pkgs.writeShellScript "acmanager" ''
+      if ${pkgs.procps}/bin/pgrep -f 'AssettoCorsa\.exe' >/dev/null; then
+        ${pkgs.libnotify}/bin/notify-send -a acmanager -i dialog-information-symbolic "Content Manager is open" \
+          "Close it and click the link again, or join from its Online tab"
+        exit 0
+      fi
+      exec ${config.programs.steam.package}/bin/steam -applaunch 244210 "$1"
+    ''} %u";
+  };
+
   # swaylock-effects only starts redrawing on its first clock tick (~1s after locking), so the
   # fade-in sits on the unblurred screenshot until then. Start redrawing once the lock surface
   # is configured, so the fade begins immediately.
@@ -291,7 +312,8 @@ in
       // each "org.gnome.eog.desktop" (map (t: "image/${t}") [ "jpeg" "jpg" "png" "gif" "bmp" "webp" "tiff" ])
       // each "mpv.desktop" [ "video/mp4" "video/x-matroska" "video/webm" "video/quicktime" "video/x-msvideo"
                              "audio/mpeg" "audio/x-wav" "audio/flac" "audio/ogg" ]
-      // each "helix.desktop" [ "text/plain" "text/x-c" "text/x-c++" "text/x-java" "text/x-python" "application/x-shellscript" ];
+      // each "helix.desktop" [ "text/plain" "text/x-c" "text/x-c++" "text/x-java" "text/x-python" "application/x-shellscript" ]
+      // lib.optionalAttrs (!isLaptop) (each "acmanager.desktop" [ "x-scheme-handler/acmanager" ]);  # see acmanagerLinks
 
   # Keyring unlocked at login via PAM
   services.gnome.gnome-keyring.enable = true;
@@ -395,6 +417,7 @@ in
     rocmPackages.rocm-smi # GPU monitoring
     mangohud              # in-game FPS/temps overlay: `mangohud %command%` in Steam
     protontricks          # Windows fonts/libs into a game's Proton prefix (Content Manager)
+    acmanagerLinks        # acmanager:// links (NoHesi "Join") → Content Manager, see the let
     oversteer             # G920 settings: rotation, force feedback, pedal test
     ddcutil               # monitor brightness over DDC/CI (osd.sh brightness)
     lmstudio              # local LLMs; data/models live on the nvme (see tmpfiles above)
@@ -407,7 +430,18 @@ in
     enable = true;
     remotePlay.openFirewall = true;               # Steam Remote Play
     localNetworkGameTransfers.openFirewall = true; # copy games between PCs on the LAN
-    extraCompatPackages = [ pkgs.proton-ge-bin ];  # Proton-GE, pick it per game in Properties > Compatibility
+    extraCompatPackages = [
+      pkgs.proton-ge-bin   # Proton-GE, pick it per game in Properties > Compatibility
+      # Assetto Corsa only: Wine 10+ blocks writing to executable memory (W^X), so Custom Shaders
+      # Patch can't patch acs.exe ("Failed to tweak Assetto Corsa: Can't find ..."). The last Wine 9 GE
+      ((pkgs.proton-ge-bin.override { steamDisplayName = "GE-Proton9-20"; }).overrideAttrs {
+        version = "GE-Proton9-20";
+        src = pkgs.fetchzip {
+          url = "https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton9-20/GE-Proton9-20.tar.gz";
+          hash = "sha256-1twCv81KO1fcRcIb4H7VtAjtcKrX+DymsYdf885eOWo=";
+        };
+      })
+    ];
   };
   # Performance mode while a game runs: launch option `gamemoderun %command%`
   programs.gamemode.enable = !isLaptop;

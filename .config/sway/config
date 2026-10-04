@@ -132,6 +132,8 @@ for_window [app_id="^clipboard$"] floating enable, resize set 760 420, move posi
 for_window [app_id="^(scratch-.*|thunar|Thunar)$"] floating enable, resize set 900 600, move scratchpad, scratchpad show, move position center
 # Eclipse Music (~/.config/nixos/eclipse): hides to its tray icon on close, $mod+m toggles
 for_window [app_id="^eclipse$"] floating enable, resize set 1100 750, move position center, focus
+# Assetto Corsa's Content Manager floats like on Windows; the race (acs.exe, same Proton class) doesn't
+for_window [class="(?i)^(steam_app_244210|assettocorsa\.exe)$" title="(?i)content manager"] floating enable, resize set 1400 900, move position center
 # Steam main window only (dialogs and games have other titles/classes)
 # Marked for scripts/open.sh ($mod+i / $mod+Shift+d): tiled on an empty workspace, else floating
 for_window [class="^steam$" title="^Steam$"] mark --add steam, floating enable, resize set 1400 900, move position center

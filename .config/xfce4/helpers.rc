@@ -1,0 +1,3 @@
+# Thunar "Open Terminal Here": exo has no xfce4-mime-helper here, so it reads its terminal from this
+# file and starts it in the folder
+TerminalEmulator=foot
