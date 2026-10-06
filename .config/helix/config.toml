@@ -5,3 +5,6 @@ theme = "base16_transparent"
 [editor]
 completion-trigger-len = 1   # default is 2
 idle-timeout = 50            # ms before the popup appears, default 250
+
+[keys.normal.space]
+L = ''':sh sh -c 'if pdflatex -interaction=nonstopmode -halt-on-error -file-line-error -output-directory="$(dirname "$1")" "$1" >/dev/null; then setsid -f xdg-open "${1%%.tex}.pdf" >/dev/null 2>&1; else grep -A3 -E "^(!|.+:[0-9]+:)" "${1%%.tex}.log" || tail -20 "${1%%.tex}.log"; fi' _ %{buffer_name}'''
