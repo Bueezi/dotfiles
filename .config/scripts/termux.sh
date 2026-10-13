@@ -36,8 +36,12 @@ PACKAGES=(
     # Only to build things below: libsensors (bison, flex), clipnotify (X11 headers)
     bison flex libx11 libxfixes
 )
-# Termux's own base: kept even though no listed package needs it
-BASE=(apt bash coreutils dpkg termux-am termux-exec termux-keyring termux-licenses termux-tools)
+# Termux's own base: what a fresh install starts with (termux-packages' generate-bootstraps.sh), kept
+# and installed even though no listed package needs it (`which` is in debianutils, for example)
+BASE=(apt bash bzip2 command-not-found coreutils curl dash debianutils diffutils dos2unix dpkg ed
+      findutils gawk grep gzip inetutils less lsof nano net-tools patch procps psmisc sed tar
+      termux-am termux-core termux-exec termux-keyring termux-licenses termux-tools unzip util-linux
+      xz-utils)
 
 # npm (global) and Go: the language servers Termux doesn't package, and cliphist
 NPM=(basedpyright vscode-langservers-extracted typescript typescript-language-server
@@ -131,7 +135,7 @@ say "Packages"
 pkg install -y x11-repo tur-repo
 pkg update -y
 pkg upgrade -y -o Dpkg::Options::=--force-confold
-pkg install -y "${PACKAGES[@]}"
+pkg install -y "${PACKAGES[@]}" "${BASE[@]}"
 keep=$(printf '%s\n' "${PACKAGES[@]}" "${BASE[@]}" | sort -u)
 installed_keep=$(comm -12 <(echo "$keep") <(dpkg-query -W -f='${Package}\n' | sort -u))
 apt-mark manual $installed_keep >/dev/null
@@ -170,7 +174,15 @@ if [ ! -e "$PREFIX/lib/libsensors.so" ]; then
 fi
 if ! command -v i3status-rs >/dev/null; then
     say "i3status-rs (takes a while)"
-    cargo install --locked i3status-rs
+    # Its sway/i3 connection (swayipc-async) needs async-pidfd, which refuses every target but
+    # "linux": Android's kernel has pidfd, only Rust calls it "android". Build against a copy with
+    # that one check widened (cargo keeps i3status-rs's pinned versions with it)
+    apd="$build/async-pidfd"
+    rm -rf "$apd" && mkdir -p "$apd"
+    curl -sL https://static.crates.io/crates/async-pidfd/async-pidfd-0.1.5.crate | tar -xz -C "$apd" --strip-components=1
+    sed -i 's/#\[cfg(not(target_os = "linux"))\]/#[cfg(not(any(target_os = "linux", target_os = "android")))]/' "$apd/src/lib.rs"
+    grep -q 'target_os = "android"' "$apd/src/lib.rs"
+    cargo install --locked i3status-rs --config "patch.crates-io.async-pidfd.path=\"$apd\""
     mkdir -p ~/.local/share/i3status-rust && cp -r ~/.cargo/registry/src/*/i3status-rs-*/files/* ~/.local/share/i3status-rust/ 2>/dev/null || true
 fi
 if [ ! -x ~/.local/bin/fetch ]; then
