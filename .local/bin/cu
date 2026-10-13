@@ -14,7 +14,8 @@ dotfiles() {
     if ! config diff --cached --quiet; then
         config commit -q -m "${1:-update: $(config diff --cached --name-only | sed 's|.*/||' | sort -u | head -6 | paste -sd ' ' -)}" || return
     fi
-    config pull --rebase && config push
+    # origin main spelled out: a fresh clone (the tablet's) has no upstream branch set
+    config pull --rebase origin main && config push origin main
 }
 
 documents() {
