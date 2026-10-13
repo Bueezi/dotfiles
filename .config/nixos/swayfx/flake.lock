@@ -1,0 +1,44 @@
+{
+  "nodes": {
+    "root": {
+      "inputs": {
+        "scenefx": "scenefx",
+        "swayfx": "swayfx"
+      }
+    },
+    "scenefx": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1789930608,
+        "narHash": "sha256-bwENSlz6FEld+QEQFyTHlsRY2fzXuOsdBea31ysyVog=",
+        "owner": "wlrfx",
+        "repo": "scenefx",
+        "rev": "dc3cddc3d40def29ed7a5ac16d3a48d348a8d75a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "wlrfx",
+        "repo": "scenefx",
+        "type": "github"
+      }
+    },
+    "swayfx": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1789930081,
+        "narHash": "sha256-Y+WC+RaThl8+LZ46Aq4Xz+KtShC9lus5ViKhIoMA1+U=",
+        "owner": "WillPower3309",
+        "repo": "swayfx",
+        "rev": "972e98614168a3a79ae1a84f59baa5001639e15f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "WillPower3309",
+        "repo": "swayfx",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}

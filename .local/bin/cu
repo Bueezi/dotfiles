@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# cu ["message"]: sync this machine with the others.
+# 1. Dotfiles (bare repo ~/.dotfiles, work tree ~): commit tracked changes, pull --rebase, push. New
+#    files still need an explicit `config add <file>` first. Without a message, the commit lists the
+#    changed files' names.
+# 2. ~/Documents/sync (wallpapers in wp/): its own private repo, github.com/Bueezi/sync, that only
+#    ever has one commit, so a file deleted here is gone from GitHub too. Takes the other machines'
+#    state, or replaces the commit with this folder and force-pushes; stops if both sides changed.
+
+config() { git --git-dir="$HOME/.dotfiles" --work-tree="$HOME" "$@"; }
+
+dotfiles() {
+    config add -u || return
+    if ! config diff --cached --quiet; then
+        config commit -q -m "${1:-update: $(config diff --cached --name-only | sed 's|.*/||' | sort -u | head -6 | paste -sd ' ' -)}" || return
+    fi
+    config pull --rebase && config push
+}
+
+documents() {
+    local d=~/Documents/sync mine= theirs= old
+    [ -d "$d/.git" ] || git clone -q https://github.com/Bueezi/sync "$d" || return
+    git -C "$d" fetch -q origin || return
+    git -C "$d" add -A
+    git -C "$d" diff --cached --quiet HEAD || mine=1
+    old=$(git -C "$d" rev-parse origin/main)
+    [ "$(git -C "$d" rev-parse HEAD)" = "$old" ] || theirs=1
+    if [ -n "$mine" ] && [ -n "$theirs" ]; then
+        echo "cu: ~/Documents/sync changed here and on another machine since the last sync; sort it out by hand" >&2
+        return 1
+    elif [ -n "$theirs" ]; then
+        git -C "$d" reset -q --hard origin/main && echo "cu: took the other machines' ~/Documents/sync"
+    elif [ -n "$mine" ]; then
+        git -C "$d" reset -q --soft "$(git -C "$d" commit-tree "$(git -C "$d" write-tree)" -m sync)" &&
+            git -C "$d" push -q --force-with-lease=main:"$old" origin HEAD:main && echo "cu: pushed ~/Documents/sync"
+    fi
+}
+
+ok=0
+dotfiles "$1" || ok=1
+documents || ok=1
+exit $ok

@@ -1,0 +1,74 @@
+[theme]
+theme = "plain"
+[theme.overrides]
+idle_bg = "#00000000"   # see-through: the bar behind is blurred
+idle_fg = "#ffffff"
+info_bg = "#00000000"
+info_fg = "#ffffff"
+good_bg = "#00000000"
+good_fg = "#ffffff"
+warning_bg = "#00000000"
+warning_fg = "#aaaaaa"
+critical_bg = "#ffffff"
+critical_fg = "#000000"
+separator = " "
+separator_bg = "#00000000"
+separator_fg = "#333333"
+
+[icons]
+icons = "material-nf"
+
+[[block]]
+block = "sound"
+format = "vol: {$volume|} "
+
+[[block]]
+block = "battery"
+interval = 30
+format = "bat: $percentage "
+if_command = "ls /sys/class/power_supply/BAT* 2>/dev/null | grep -q ."
+
+[[block]]
+block = "backlight"
+format = "bl: $brightness "
+if_command = "ls /sys/class/power_supply/BAT* 2>/dev/null | grep -q ."
+[[block.click]]
+button = "left"
+
+# Desktop: the monitor's brightness over DDC/CI, from osd.sh's cached level (it sends signal 3
+# on every change; interval: changes made with the monitor's own buttons)
+[[block]]
+block = "custom"
+command = "~/.config/sway/scripts/osd.sh brightness status"
+format = "bl: $text "
+signal = 3
+interval = 60
+hide_when_empty = true
+if_command = "! ls /sys/class/power_supply/BAT* 2>/dev/null | grep -q ."
+
+[[block]]
+block = "time"
+interval = 5
+format = "$timestamp.datetime(f:'%a  %d/%m   %R ')"
+
+[[block]]
+block = "custom"
+command = "~/.config/sway/scripts/toggle.sh caffeine status"
+json = true
+signal = 1
+interval = 5
+hide_when_empty = true
+[[block.click]]
+button = "left"
+cmd = "~/.config/sway/scripts/toggle.sh caffeine"
+
+[[block]]
+block = "custom"
+command = "~/.config/sway/scripts/toggle.sh nightlight status"
+json = true
+signal = 2
+interval = 5
+hide_when_empty = true
+[[block.click]]
+button = "left"
+cmd = "~/.config/sway/scripts/toggle.sh nightlight"

@@ -1,0 +1,19 @@
+# Git for all machines (was in Nix's /etc/gitconfig and an untracked ~/.gitconfig)
+[user]
+	name = Bueezi
+	email = mail@b3n.me
+[core]
+	editor = hx
+# GitHub login through gh (`gh auth login` once per machine). Plain `gh` from PATH, not the Nix store
+# path `gh auth setup-git` writes: that one broke when gh was updated and the old path was GC'd
+[credential "https://github.com"]
+	helper =
+	helper = !gh auth git-credential
+[credential "https://gist.github.com"]
+	helper =
+	helper = !gh auth git-credential
+[filter "lfs"]
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+	clean = git-lfs clean -- %f

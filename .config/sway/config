@@ -1,0 +1,304 @@
+# ── Variables ───────────────────────────────────────
+set $mod     Mod4
+set $left    h
+set $down    j
+set $up      k
+set $right   l
+set $term    foot
+set $fm      thunar
+set $menu    fuzzel
+set $browser librewolf
+set $discord vesktop
+set $scripts ~/.config/sway/scripts
+
+set $bg      #000000
+set $fg      #ffffff
+set $dim     #777777
+set $subtle  #333333
+
+# ── Appearance ──────────────────────────────────────
+font pango:JetBrainsMono Nerd Font 10
+
+# class                 border   bg    text  indicator child_border
+client.focused          $fg      $bg   $fg   $fg       $fg
+client.focused_inactive $subtle  $bg   $dim  $subtle   $subtle
+client.unfocused        $subtle  $bg   $dim  $subtle   $subtle
+client.urgent           $fg      $fg   $bg   $fg       $fg
+
+default_border          pixel 2
+default_floating_border pixel 2
+# Title bars (tabbed/stacked): centred text, no line under them
+title_align             center
+titlebar_separator      disable
+smart_borders on
+gaps inner 5
+smart_gaps on
+
+# SwayFX (rounded corners need gaps to be visible)
+animation_duration_ms 350
+corner_radius 6
+blur enable
+blur_xray disable
+blur_passes 3
+blur_radius 4
+shadows enable
+shadow_blur_radius 20
+shadow_color #000000cc
+shadow_inactive_color #00000080
+# Frosted glass behind the launcher, notifications and bar (their backgrounds are see-through)
+layer_effects "launcher" {
+    blur enable;
+    shadows enable;
+}
+layer_effects "notifications" {
+    blur enable;
+    blur_ignore_transparent enable;
+    corner_radius 6;
+}
+layer_effects "panel" {
+    blur enable;
+}
+
+# cursor
+seat * xcursor_theme Bibata-Modern-Classic 20
+
+# ── Outputs ─────────────────────────────────────────
+# Output names: swaymsg -t get_outputs
+# Wallpaper: awww (see autostart, and hyprquickpaper.nix). No `output * bg` here: swaybg is
+# restarted on every reload and then covers awww, hiding all wallpaper changes
+
+output eDP-1 {
+    scale 1.35
+    render_bit_depth 10
+}
+output DP-2 {
+    mode 2560x1440@180.000Hz
+    allow_tearing yes
+    render_bit_depth 10
+}
+
+# ── Inputs ──────────────────────────────────────────
+input type:touchpad {
+    dwt enabled
+    tap enabled
+    natural_scroll enabled
+    middle_emulation enabled
+    scroll_factor 0.65
+}
+input "14139:4229:CX_Wireless_mouse_-1k_dongle_Mouse" {
+    accel_profile flat
+    pointer_accel 0
+}
+
+# ── Autostart ───────────────────────────────────────
+exec mako
+exec sh -c 'awww-daemon & until awww query >/dev/null 2>&1; do sleep 0.1; done; awww img ~/.local/state/wallpaper --transition-type none'
+# Wallpaper slideshow, if it was on (power menu → slideshow touches/removes ~/.config/slideshow)
+exec sh -c 'test -e ~/.config/slideshow && systemctl --user start wallpaper-slideshow.timer'
+exec lxqt-policykit-agent
+# Night light (wlsunset) lives in a script so `toggle.sh nightlight` can stop/restart it
+exec $scripts/sunset.sh
+exec $scripts/battery-notify.sh
+exec sh -c 'rm -f ~/.cache/cliphist/db && exec wl-paste --watch $scripts/clipstore.sh'
+# Browser (a normal window at login)
+exec $browser
+# Desktop only: Vesktop and Steam in the tray
+exec sh -c 'test -d /sys/class/power_supply/BAT0 || exec vesktop --start-minimized'
+exec sh -c 'test -d /sys/class/power_supply/BAT0 || exec steam -silent'
+# Laptop only: start muted
+exec sh -c 'test -d /sys/class/power_supply/BAT0 && sleep 2 && wpctl set-volume @DEFAULT_AUDIO_SINK@ 0'
+
+# Light/dark: bring foot's and qt6ct's files in line with the saved mode ($mod+Shift+t toggles)
+exec $scripts/darkmode.sh apply
+
+# Idle (swayidle) lives in a script so `toggle.sh caffeine` can stop/restart it
+exec $scripts/idle.sh
+
+# Window switcher daemon (Alt+Tab)
+exec swayrd
+
+# Put tray right-click menus in the top-right corner (see the for_window rule below)
+exec $scripts/tray-menu.sh
+
+# ── Window rules ────────────────────────────────────
+for_window [app_id="(?i)freerdp"] shortcuts_inhibitor enable
+for_window [app_id=".*"] inhibit_idle fullscreen
+for_window [class=".*"]  inhibit_idle fullscreen
+
+for_window [app_id="^(blueman-manager|org.gnome.FileRoller|org.gnome.eog|xdg-desktop-portal-gtk)$"] floating enable, resize set 900 600, move position center
+for_window [app_id="^clipboard$"] floating enable, resize set 760 420, move position center
+# Scratchpad apps ($mod+Shift+Return / e, power.sh update/rebuild/sync): open floating in the
+# scratchpad, shown. The same key (or $mod+minus) hides/shows them again.
+for_window [app_id="^(scratch-.*|thunar|Thunar)$"] floating enable, resize set 900 600, move scratchpad, scratchpad show, move position center
+# Eclipse Music (~/.config/nixos/eclipse): hides to its tray icon on close, $mod+m toggles
+for_window [app_id="^eclipse$"] floating enable, resize set 1100 750, move position center, focus
+# Assetto Corsa's Content Manager floats like on Windows; the race (acs.exe, same Proton class) doesn't
+for_window [class="(?i)^(steam_app_244210|assettocorsa\.exe)$" title="(?i)content manager"] floating enable, resize set 1400 900, move position center
+# Steam main window only (dialogs and games have other titles/classes)
+# Marked for scripts/open.sh ($mod+i / $mod+Shift+d): tiled on an empty workspace, else floating
+for_window [class="^steam$" title="^Steam$"] mark --add steam, floating enable, resize set 1400 900, move position center
+for_window [app_id="^vesktop$"] mark --add vesktop, floating enable, resize set 1200 800, move position center
+# Tray right-click menus (Electron: no app_id, no title). Float them before they're drawn and
+# park them off-screen; scripts/tray-menu.sh then moves them to the top-right corner.
+for_window [shell="xdg_shell" app_id="^$" title="^$"] floating enable, move absolute position 20000 0
+# Polkit password prompt (lxqt-policykit-agent; wrapped binary's app_id can differ, so match loosely)
+for_window [app_id="policykit"] floating enable, resize set 500 200, move position center
+
+# $mod + left drag = move, $mod + right drag = resize
+floating_modifier $mod normal
+focus_on_window_activation focus
+
+# ── Keybindings ─────────────────────────────────────
+bindsym {
+    # Apps
+    $mod+Return         exec $term
+    # New floating terminal each press (scratch-* rule: floating, in the scratchpad)
+    $mod+Shift+Return   exec $term --app-id=scratch-float
+    $mod+d              exec $menu
+    # New floating file manager every press (Thunar rule: floating, in the scratchpad)
+    $mod+Shift+e        exec $fm
+    $mod+Shift+v        exec $scripts/clipboard.sh
+    $mod+Shift+s        exec $scripts/screenshot.sh
+    $mod+Shift+x        exec $scripts/screenshot.sh ocr
+    $mod+Shift+n        exec networkmanager_dmenu
+    $mod+x              exec swaymsg '[app_id="librewolf"] focus' || $browser
+    $mod+m              exec eclipse
+    $mod+Shift+d        exec $scripts/open.sh vesktop 1200 800 $discord
+    $mod+i              exec $scripts/open.sh steam 1400 900 steam
+    $mod+t              exec swaymsg '[app_id="foot"] focus' || $term
+    $mod+Shift+b        exec $scripts/bluetooth.sh
+
+    # Scripts
+    $mod+Shift+a        exec $scripts/audio_switch.sh
+    $mod+Shift+p        exec $scripts/power.sh
+    $mod+p              exec $scripts/display.sh
+    $mod+Shift+t        exec $scripts/darkmode.sh
+    $mod+Shift+r        exec $scripts/record.sh
+    $mod+Shift+w        exec hyprquickpaper
+    $mod+Shift+o        exec $scripts/power.sh slideshow
+    $mod+Shift+i        exec $scripts/toggle.sh caffeine
+    $mod+n              exec $scripts/toggle.sh nightlight
+    $mod+slash          exec $scripts/keybinds.sh
+
+    # Session
+    $mod+q              kill
+    $mod+Escape         exec swaylock
+    Print               exec systemctl sleep
+    $mod+Shift+c        reload
+    $mod+Shift+m        exec swaynag -t warning -m 'Exit SwayFX? This will end your Wayland session.' -B 'Yes, exit' 'swaymsg exit'
+
+    # Focus
+    $mod+$left          focus left
+    $mod+$down          focus down
+    $mod+$up            focus up
+    $mod+$right         focus right
+    $mod+Left           focus left
+    $mod+Down           focus down
+    $mod+Up             focus up
+    $mod+Right          focus right
+    # Alt+Tab: hold Alt, tap Tab to step back through recent windows
+    Mod1+Tab            exec swayr next-window all-workspaces
+    Mod1+Shift+Tab      exec swayr prev-window all-workspaces
+
+    # Move window
+    # 60px per press for floating windows (default 10px); tiled ones just swap places
+    $mod+Shift+$left    move left 60px
+    $mod+Shift+$down    move down 60px
+    $mod+Shift+$up      move up 60px
+    $mod+Shift+$right   move right 60px
+    $mod+Shift+Left     move left 60px
+    $mod+Shift+Down     move down 60px
+    $mod+Shift+Up       move up 60px
+    $mod+Shift+Right    move right 60px
+
+    # Workspaces
+    $mod+1 workspace number 1
+    $mod+2 workspace number 2
+    $mod+3 workspace number 3
+    $mod+4 workspace number 4
+    $mod+5 workspace number 5
+    $mod+6 workspace number 6
+    $mod+7 workspace number 7
+    $mod+8 workspace number 8
+    $mod+9 workspace number 9
+    $mod+0 workspace number 10
+
+    $mod+Shift+1 move container to workspace number 1
+    $mod+Shift+2 move container to workspace number 2
+    $mod+Shift+3 move container to workspace number 3
+    $mod+Shift+4 move container to workspace number 4
+    $mod+Shift+5 move container to workspace number 5
+    $mod+Shift+6 move container to workspace number 6
+    $mod+Shift+7 move container to workspace number 7
+    $mod+Shift+8 move container to workspace number 8
+    $mod+Shift+9 move container to workspace number 9
+    $mod+Shift+0 move container to workspace number 10
+
+    # Layout
+    $mod+v              splith
+    $mod+c              splitv
+    $mod+s              layout stacking
+    $mod+w              layout tabbed
+    $mod+e              layout toggle split
+    $mod+f              fullscreen
+    $mod+Shift+space    floating toggle
+    $mod+space          focus mode_toggle
+    $mod+a              focus parent
+
+    # Scratchpad
+    $mod+Shift+minus    move scratchpad
+    $mod+minus          scratchpad show
+
+    $mod+r              mode "resize"
+}
+
+# Media & brightness keys (work on the lock screen too)
+bindsym --locked {
+    XF86AudioMute          exec $scripts/osd.sh volume mute
+    XF86AudioLowerVolume   exec $scripts/osd.sh volume down
+    XF86AudioRaiseVolume   exec $scripts/osd.sh volume up
+    XF86AudioMicMute       exec $scripts/osd.sh mic mute
+    XF86AudioPlay          exec $scripts/osd.sh media play
+    XF86AudioNext          exec $scripts/osd.sh media next
+    XF86AudioPrev          exec $scripts/osd.sh media prev
+    XF86MonBrightnessDown  exec $scripts/osd.sh brightness down
+    XF86MonBrightnessUp    exec $scripts/osd.sh brightness up
+    # For keyboards without brightness keys (desktop: sets the monitor over DDC/CI)
+    $mod+Next              exec $scripts/osd.sh brightness down
+    $mod+Prior             exec $scripts/osd.sh brightness up
+}
+
+mode "resize" {
+    bindsym $left   resize shrink width 10px
+    bindsym $down   resize grow height 10px
+    bindsym $up     resize shrink height 10px
+    bindsym $right  resize grow width 10px
+    bindsym Left    resize shrink width 10px
+    bindsym Down    resize grow height 10px
+    bindsym Up      resize shrink height 10px
+    bindsym Right   resize grow width 10px
+    bindsym Return  mode "default"
+    bindsym Escape  mode "default"
+}
+
+# ── Bar ─────────────────────────────────────────────
+bar {
+    position top
+    height 20
+    workspace_min_width 30
+    status_command i3status-rs ~/.config/sway/i3status.toml
+    font pango:JetBrainsMono Nerd Font 9
+    tray_output *
+
+    colors {
+        background         #000000b3
+        statusline         $fg
+        separator          $subtle
+        focused_workspace  $fg $fg $bg
+        active_workspace   #00000000 #00000000 $fg
+        inactive_workspace #00000000 #00000000 $dim
+        urgent_workspace   $fg #555555 $fg
+    }
+}
+
+include /etc/sway/config.d/*

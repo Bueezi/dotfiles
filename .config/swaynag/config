@@ -1,0 +1,17 @@
+font=JetBrainsMono Nerd Font 10
+
+[warning]
+background=000000
+text=ffffff
+border=ffffff
+border-bottom=ffffff
+button-background=000000
+button-text=ffffff
+
+[error]
+background=000000
+text=ffffff
+border=ffffff
+border-bottom=ffffff
+button-background=000000
+button-text=ffffff

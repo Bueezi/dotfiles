@@ -1,0 +1,23 @@
+# fetch (areofyl) — same fields and order as fastfetch, black and white
+os
+host
+kernel
+uptime
+packages
+shell
+display
+wm
+theme
+icons
+terminal
+cpu
+gpu
+memory
+disk
+disk=/mnt/hdd
+disk=/mnt/nvme
+
+label_color=white
+logo_inner=white
+logo_outer=8
+shading_mode=sextants

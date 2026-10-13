@@ -1,0 +1,19 @@
+/* GTK4/libadwaita, like the Mono-dark GTK3 theme (~/.local/share/themes/Mono-dark): pure black backgrounds
+   in dark mode instead of Adwaita's grey (the blue accent stays). darkmode.sh ($mod+Shift+t)
+   flips color-scheme, which picks the block below. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --window-bg-color: #000000;
+    --view-bg-color: #000000;
+    --headerbar-bg-color: #000000;
+    --headerbar-backdrop-color: #000000;
+    --sidebar-bg-color: #0a0a0a;
+    --sidebar-backdrop-color: #0a0a0a;
+    --secondary-sidebar-bg-color: #050505;
+    --secondary-sidebar-backdrop-color: #050505;
+    --card-bg-color: rgb(255 255 255 / 5%);
+    --dialog-bg-color: #111111;
+    --popover-bg-color: #111111;
+    --thumbnail-bg-color: #111111;
+  }
+}

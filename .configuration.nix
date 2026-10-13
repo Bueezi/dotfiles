@@ -1,0 +1,430 @@
+# Shared NixOS config for the laptop and the desktop.
+# Imported by the stub in ~/.config/scripts/configuration.nix (which lives in /etc/nixos on each
+# machine); per-machine settings (hostName, isLaptop) are set there.
+{ config, lib, pkgs, isLaptop, ... }:
+
+let
+  # Cursor and icon themes for sway (XCURSOR_*), GTK and dconf below. To revert: "Adwaita" for both
+  # (and `seat * xcursor_theme` in the sway config)
+  cursorTheme = "Bibata-Modern-Classic";
+  cursorSize = 20;   # also in `seat * xcursor_theme` in the sway config
+  # Dark is the default; darkmode.sh ($mod+Shift+t) switches to adw-gtk3 / Papirus and back
+  iconTheme = "Papirus-Dark";   # grey folders instead of blue (papirus override below)
+  gtkTheme = "Mono-dark";   # adw-gtk3-dark in black: ~/.local/share/themes/Mono-dark (a real file)
+
+  # Assetto Corsa: acmanager:// links on websites (NoHesi "Join", server lists) open in Content
+  # Manager. CM registers them only inside its Proton prefix, so the browser had no handler. The link
+  # goes through Steam (-applaunch), which starts AC normally (its Proton, launch options) with the
+  # link as argument, like CM's own Windows handler. Only while CM is closed: Steam won't start a
+  # running game twice, and nothing outside Steam's sandbox can reach a running CM (its wineserver
+  # socket is in the sandbox's private /tmp; protontricks-launch started hidden copies instead)
+  acmanagerLinks = pkgs.makeDesktopItem {
+    name = "acmanager";
+    desktopName = "Content Manager link";
+    noDisplay = true;
+    mimeTypes = [ "x-scheme-handler/acmanager" ];
+    exec = "${pkgs.writeShellScript "acmanager" ''
+      if ${pkgs.procps}/bin/pgrep -f 'AssettoCorsa\.exe' >/dev/null; then
+        ${pkgs.libnotify}/bin/notify-send -a acmanager -i dialog-information-symbolic "Content Manager is open" \
+          "Close it and click the link again, or join from its Online tab"
+        exit 0
+      fi
+      exec ${config.programs.steam.package}/bin/steam -applaunch 244210 "$1"
+    ''} %u";
+  };
+
+  # swaylock-effects only starts redrawing on its first clock tick (~1s after locking), so the
+  # fade-in sits on the unblurred screenshot until then. Start redrawing once the lock surface
+  # is configured, so the fade begins immediately.
+  swaylockFx = pkgs.swaylock-effects.overrideAttrs (old: {
+    postPatch = (old.postPatch or "") + ''
+      sed -i '/ext_session_lock_surface_v1_ack_configure(lock_surface, serial);/{n;n;s/$/\n\tdamage_surface(surface);/}' main.c
+      grep -A3 'ext_session_lock_surface_v1_ack_configure(lock_surface, serial);' main.c | grep -q damage_surface
+    '';
+  });
+in
+{
+  # Optional extras from the dotfiles repo, skipped on a fresh install (no dotfiles yet)
+  imports = builtins.filter builtins.pathExists [
+    /home/ben/.config/nixos/librewolf.nix
+    /home/ben/.config/nixos/swayfx.nix  # latest swayfx from git
+    /home/ben/.config/nixos/plymouth.nix  # boot splash (penguin video)
+    /home/ben/.config/nixos/eclipse.nix   # Eclipse Music as a desktop app
+    /home/ben/.config/nixos/hyprquickpaper.nix  # wallpaper picker ($mod+Shift+w)
+  ];
+
+  # ── Boot ────────────────────────────────────────────
+  boot = {
+    loader = {
+      timeout = 0;
+      systemd-boot.enable = true;
+      systemd-boot.configurationLimit = 3;
+      efi.canTouchEfiVariables = true;
+    };
+    kernelPackages = pkgs.linuxPackages_latest; # RDNA4 needs a recent kernel
+  };
+
+  # Switch profile automatically on AC/battery
+  services.udev.extraRules = lib.mkIf isLaptop ''
+    SUBSYSTEM=="power_supply", ATTR{type}=="Mains", ATTR{online}=="0", RUN+="${pkgs.power-profiles-daemon}/bin/powerprofilesctl set power-saver"
+    SUBSYSTEM=="power_supply", ATTR{type}=="Mains", ATTR{online}=="1", RUN+="${pkgs.power-profiles-daemon}/bin/powerprofilesctl set balanced"
+  '';
+
+  # Laptop's Realtek (rtw89) Wi-Fi card fix
+  networking.networkmanager.wifi.powersave = lib.mkIf isLaptop false;
+
+  boot.extraModprobeConfig = lib.mkIf isLaptop ''
+    options rtw89_core disable_ps_mode=y
+    options rtw89_pci disable_aspm_l1=y disable_aspm_l1ss=y disable_clkreq=y
+  '';
+
+  # ── System basics ───────────────────────────────────
+  networking.networkmanager.enable = true;
+  # Tailscale: reach the homelab from anywhere. Once per machine: `sudo tailscale up --accept-routes`
+  # (Linux ignores the homelab's advertised subnets without it). "client" loosens reverse-path
+  # filtering, which subnet routes and exit nodes need. openFirewall: its UDP port, so peers can
+  # connect directly instead of through a slow DERP relay
+  services.tailscale = { enable = true; useRoutingFeatures = "client"; openFirewall = true; };
+  # Without resolved, Tailscale takes over /etc/resolv.conf with only its own 100.100.100.100, so
+  # all DNS broke with it. With it, only tailnet names go to Tailscale (NetworkManager uses it too)
+  services.resolved.enable = true;
+
+  services.printing.enable = true;
+  services.avahi = { enable = true; nssmdns4 = true; openFirewall = true; };
+
+  time.timeZone = "Europe/Brussels";
+  i18n.defaultLocale = "en_US.UTF-8";
+  i18n.extraLocaleSettings.LC_TIME = "en_GB.UTF-8";
+
+  users.users.ben = {
+    isNormalUser = true;
+    description = "Ben";
+    extraGroups = [ "networkmanager" "wheel" "video" ] ++ lib.optional (!isLaptop) "i2c";
+  };
+
+  # Git; identity, editor and GitHub login are in ~/.config/git/config (shared with the tablet)
+  programs.git.enable = true;
+
+  # Shells: bash stays the login shell (and for scripts); foot starts fish (~/.config/fish)
+  programs.fish.enable = true;
+  # NixOS has no /bin/bash, so scripts with `#!/bin/bash` fail; point it at the system bash
+  systemd.tmpfiles.rules = [ "L+ /bin/bash - - - - ${pkgs.bashInteractive}/bin/bash" ]
+    # LM Studio keeps its models etc. in ~/.lmstudio: point that at the nvme
+    ++ lib.optionals (!isLaptop) [ "L /home/ben/.lmstudio - - - - /mnt/nvme/Documents/lm-studio" ];
+
+  zramSwap.enable = true;
+
+  # ── Hardware ────────────────────────────────────────
+  hardware = {
+    graphics = { enable = true; enable32Bit = true; };
+    enableRedistributableFirmware = true;
+    cpu.amd.updateMicrocode = true;
+    bluetooth.enable = true;
+    bluetooth.powerOnBoot = !isLaptop;   # laptop: radio off until you need it (bluetooth.sh)
+  };
+
+  services.fwupd.enable = true;
+  services.blueman.enable = true;
+
+  # RAM RGB: OpenRGB reaches the DIMMs over SMBus through /dev/i2c-* (i2c-dev).
+  # spd5118 (DDR5 SPD/temperature driver) claims the sticks' SPD addresses, which makes
+  # OpenRGB skip them, so keep it off (costs the RAM temperature sensor).
+  boot.kernelModules = lib.optionals (!isLaptop) [ "i2c-dev" ];
+  boot.blacklistedKernelModules = lib.optionals (!isLaptop) [ "spd5118" ];
+  # /dev/i2c-* for the i2c group too: ddcutil sets the monitor's brightness over DDC/CI
+  hardware.i2c.enable = !isLaptop;
+
+  systemd.services.rgb-off = lib.mkIf (!isLaptop) {
+    description = "Turn off RGB lighting";
+    wantedBy = [ "multi-user.target" "suspend.target" ];
+    after = [ "systemd-modules-load.service" "suspend.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.openrgb}/bin/openrgb --noautoconnect -m off";
+    };
+  };
+
+  # ── Audio ───────────────────────────────────────────
+  security.rtkit.enable = true;
+  services.pulseaudio.enable = false;
+  services.pipewire = {
+    enable = true;
+    alsa = { enable = true; support32Bit = true; };
+    pulse.enable = true;
+  };
+
+  # ── Power ───────────────────────────────────────────
+  services.upower.enable = true;
+  services.power-profiles-daemon.enable = true;
+
+  # Idle is handled by swayidle in the sway config.
+  services.logind.settings.Login.HandleLidSwitch = lib.mkIf isLaptop "suspend-then-hibernate";
+
+  # Laptop: how long to sleep before switching to hibernate
+  systemd.sleep.settings.Sleep.HibernateDelaySec = lib.mkIf isLaptop "30min";
+  boot.resumeDevice = lib.mkIf isLaptop "/dev/disk/by-uuid/8ac0d876-3d7b-485a-8948-4ccd737b8d5f";
+
+  fileSystems."/mnt/nvme" = lib.mkIf (!isLaptop) {
+    device = "/dev/disk/by-uuid/b2eb90c5-7585-4519-83e9-91808d894f17";   # from `blkid /dev/nvme0n1p3`
+    fsType = "ext4";
+    options = [ "nofail" "x-systemd.device-timeout=5s" "x-gvfs-show" "x-gvfs-name=nvme" ];
+  };
+  fileSystems."/mnt/hdd" = lib.mkIf (!isLaptop) {
+    device = "/dev/disk/by-uuid/005AA8F65AA8EA1C";
+    fsType = "ntfs3";   # the kernel's own NTFS driver, faster than ntfs-3g
+    options = [
+      "nofail" "x-systemd.device-timeout=5s"
+      "uid=1000" "gid=100" "umask=022"   # NTFS has no Linux owners: make everything yours
+      "x-gvfs-show" "x-gvfs-name=hdd"
+    ];
+  };
+
+  # ── Desktop: Sway ───────────────────────────────────
+  programs.sway = {
+    enable = true;
+    package = pkgs.swayfx; # latest git via ~/.config/nixos/swayfx (no HDR: scenefx renderer)
+    wrapperFeatures.gtk = true;
+    extraSessionCommands = ''
+      export QT_QPA_PLATFORM="wayland;xcb"
+      # Proton: native Wayland in games. HDR does nothing yet: swayfx has no HDR output
+      export PROTON_ENABLE_WAYLAND=1
+      export PROTON_ENABLE_HDR=1
+    '';
+    extraPackages = with pkgs; [
+      # session
+      swaylockFx swayidle awww wdisplays wlsunset lxqt.lxqt-policykit
+      # terminal, launcher, bar, notifications
+      foot fuzzel i3status-rust mako libnotify swayr bzmenu
+      # clipboard picker (fzf + sixel image preview) and auto-paste
+      fzf chafa wtype
+      # screenshots, recording, clipboard
+      grim slurp wayfreeze wf-recorder cliphist
+      # OCR ($mod+Shift+x, screenshot.sh ocr): only these languages, all of them is huge
+      (tesseract.override { enableLanguages = [ "eng" "fra" "nld" ]; })
+      # hardware controls, media keys (osd.sh)
+      brightnessctl playerctl pavucontrol
+      networkmanager_dmenu networkmanagerapplet
+      # GUI utilities
+      file-roller baobab eog adwaita-icon-theme
+      bibata-cursors (papirus-icon-theme.override { color = "grey"; })
+      adw-gtk3   # Mono-dark (~/.local/share/themes) imports its dark variant
+    ];
+  };
+
+  environment.sessionVariables = {
+    XCURSOR_THEME = cursorTheme;
+    XCURSOR_SIZE = toString cursorSize;
+    NIXOS_OZONE_WL = "1";    # Electron/Chromium on Wayland
+    RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";   # std sources for rust-analyzer
+  };
+
+  # Login: greetd + tuigreet, black and white with a big "nixos" greeting
+  services.greetd = {
+    enable = true;
+    settings.default_session = {
+      command = let
+        greeting = lib.concatStringsSep "\n" [   # lines padded to one width: tuigreet centres each
+        "          _                "
+        "   ____  (_)  ______  _____"
+        "  / __ \\/ / |/_/ __ \\/ ___/"
+        " / / / / />  </ /_/ (__  ) "
+        "/_/ /_/_/_/|_|\\____/____/  "
+        ];
+      in "${pkgs.writeShellScript "tuigreet" ''
+        exec ${pkgs.tuigreet}/bin/tuigreet --cmd sway --remember --asterisks \
+          --time --time-format '%a %d/%m  %H:%M' \
+          --greeting '${greeting}' --window-padding 2 --container-padding 2 \
+          --theme 'border=white;text=gray;prompt=white;time=gray;action=darkgray;button=white;container=black;input=white;greet=white'
+      ''}";
+      user = "greeter";
+    };
+  };
+
+  # Screen sharing, file pickers, Flatpak integration
+  xdg.portal = {
+    enable = true;
+    wlr.enable = true;
+    # Screen-share picker (screens + windows). Full path: the portal service's PATH doesn't
+    # include the sway packages, and NixOS ignores ~/.config/xdg-desktop-portal-wlr/config.
+    wlr.settings.screencast = {
+      chooser_type = "dmenu";
+      chooser_cmd = "${lib.getExe pkgs.fuzzel} --dmenu --prompt 'share ❯ '";
+    };
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    config.common.default = [ "wlr" "gtk" ];
+  };
+
+  security.polkit.enable = true;
+  # Qt: Fusion with black and white palettes through qt6ct. darkmode.sh writes ~/.config/qt6ct/qt6ct.conf
+  # (Qt's own gtk3 theme ignores the GTK colours and falls back to Adwaita's old greys)
+  qt = {
+    enable = true;
+    platformTheme = "qt5ct";   # qt5ct + qt6ct; all Qt apps here are Qt6
+  };
+  programs.dconf = {
+    enable = true;
+    profiles.user.databases = [{
+      settings."org/gnome/desktop/interface" = {
+        color-scheme = "prefer-dark";
+        gtk-theme = gtkTheme;
+        cursor-theme = cursorTheme;
+        icon-theme = iconTheme;
+        cursor-size = lib.gvariant.mkInt32 cursorSize;
+      };
+    }];
+  };
+
+  # Default apps (was default.sh). ~/.config/mimeapps.list, which apps write to, still wins.
+  xdg.mime.defaultApplications =
+    let each = app: types: lib.genAttrs types (_: app);
+    in each "thunar.desktop" [ "inode/directory" ]
+      // each "librewolf.desktop" [ "x-scheme-handler/http" "x-scheme-handler/https" "text/html" "application/xhtml+xml" "application/pdf" ]
+      // each "org.gnome.eog.desktop" (map (t: "image/${t}") [ "jpeg" "jpg" "png" "gif" "bmp" "webp" "tiff" ])
+      // each "mpv.desktop" [ "video/mp4" "video/x-matroska" "video/webm" "video/quicktime" "video/x-msvideo"
+                             "audio/mpeg" "audio/x-wav" "audio/flac" "audio/ogg" ]
+      // each "helix.desktop" [ "text/plain" "text/x-c" "text/x-c++" "text/x-java" "text/x-python" "application/x-shellscript" ]
+      // lib.optionalAttrs (!isLaptop) (each "acmanager.desktop" [ "x-scheme-handler/acmanager" ]);  # see acmanagerLinks
+
+  # Keyring unlocked at login via PAM
+  services.gnome.gnome-keyring.enable = true;
+  security.pam.services.greetd.enableGnomeKeyring = true;
+  # swaylock: no ~2s pause after a wrong password (pam_unix's default). swaylock ignores keys
+  # while it checks, so you had to wait before retyping; now a wrong one is rejected at once
+  security.pam.services.swaylock.nodelay = true;
+
+  # File manager + thumbnails, mounting, trash
+  programs.thunar = {
+    enable = true;
+    plugins = [ pkgs.thunar-archive-plugin ];
+  };
+  services.gvfs.enable = true;
+  services.tumbler.enable = true;
+
+  fonts.packages = with pkgs; [
+    noto-fonts
+    noto-fonts-color-emoji
+    nerd-fonts.jetbrains-mono
+    nerd-fonts.iosevka
+  ];
+
+  # ── Nix & containers ────────────────────────────────
+  nix = {
+    settings.experimental-features = [ "nix-command" "flakes" ];
+    gc = {
+      automatic = true;
+      dates = "daily";
+      options = "--delete-older-than 5d";
+    };
+    optimise.automatic = true;
+  };
+
+  virtualisation = {
+    containers.enable = true;
+    podman = {
+      enable = true;
+      dockerCompat = true;
+      defaultNetwork.settings.dns_enabled = true;
+    };
+  };
+
+  programs.appimage = {
+    enable = true;
+    binfmt = true;
+    # Extra libraries AppImages expect in /usr/lib
+    package = pkgs.appimage-run.override {
+      # Nuvio's player bridge (libplayer_bridge.so) needs libmpv.so.2 and webkit2gtk-4.1
+      extraPkgs = pkgs: [ pkgs.mpv-unwrapped pkgs.webkitgtk_4_1 ];
+    };
+  };
+  services.flatpak.enable = true;
+
+  # ── Packages ────────────────────────────────────────
+  nixpkgs.config.allowUnfree = true;
+
+  environment.systemPackages = with pkgs; [
+    # CLI
+    git gh gcc python3 less htop btop powertop fastfetch cowsay
+    wl-clipboard zip unzip p7zip ffmpeg jq wl-mirror
+    starship  # prompt, ~/.config/starship.toml
+    cava cmatrix pipes  # music visualiser (~/.config/cava/config), eye candy
+    freerdp   # RDP into Windows: sdl-freerdp /v:<ip> /u:<user> /dynamic-resolution
+    man-pages man-pages-posix # man
+    # Dev
+    # Helix opens in foot from file managers (text/* defaults above)
+    (makeDesktopItem {
+      name = "helix"; desktopName = "Helix"; exec = "foot hx %F";
+      mimeTypes = [ "text/plain" ]; categories = [ "Development" "TextEditor" ];
+    })
+    # Zed (`zeditor`), FHS variant: the language servers and extensions it downloads are generic
+    # Linux binaries that need a normal /usr/lib
+    zed-editor.fhs
+    helix nodejs rustc cargo podman-compose sqlite-interactive dbeaver-bin
+    distrobox distroshelf
+    # KUL
+    (texliveBasic.withPackages (ps: with ps; [ collection-latex collection-latexrecommended collection-fontsrecommended collection-fontsextra collection-latexextra collection-langeuropean latexmk ])) ddd gdb openssl
+    # LSP (Helix, ~/.config/helix/languages.toml): Python, C/C++, HTML/CSS/JSON, JS/TS, Tailwind,
+    # Rust, shell (+ shellcheck), PHP, SQL, Nix
+    basedpyright clang-tools vscode-langservers-extracted typescript-language-server typescript
+    tailwindcss-language-server rust-analyzer bash-language-server shellcheck intelephense sqls nil
+    # Apps
+    librewolf ungoogled-chromium mpv vesktop qbittorrent
+    libreoffice filezilla github-desktop bazaar gearlever
+    # Claude Desktop (community build; updates to the latest version on rebuild)
+    (builtins.getFlake "github:aaddrick/claude-desktop-debian").packages.${stdenv.hostPlatform.system}.default
+    # fetch by areofyl: spinning 3D distro logo + system info (not in 26.05 yet; follows main,
+    # built with the system nixpkgs). Black and white: no logo colours, grey usage percentages.
+    ((callPackage "${builtins.fetchTarball "https://github.com/areofyl/fetch/archive/main.tar.gz"}/nix/package.nix" { }).overrideAttrs (old: {
+      postPatch = ''sed -i -E '/(pct|capacity) >=/ s/"(31|32|93)"/"38;5;248"/g' fetch.c'';
+      postInstall = old.postInstall + "wrapProgram $out/bin/fetch --add-flags --no-color";
+    }))
+  ]
+  # ── Per-machine apps ────────────────────────────────
+  # Packages installed on only one machine. (Apps that need a NixOS module, like
+  # Steam, go in the "Gaming" section below instead.)
+  ++ lib.optionals (!isLaptop) [ # desktop only
+    upscayl               # AI image upscaler
+    openrgb               # RGB control GUI/CLI (rgb-off below uses its own store path)
+    rocmPackages.rocm-smi # GPU monitoring
+    mangohud              # in-game FPS/temps overlay: `mangohud %command%` in Steam
+    protontricks          # Windows fonts/libs into a game's Proton prefix (Content Manager)
+    acmanagerLinks        # acmanager:// links (NoHesi "Join") → Content Manager, see the let
+    oversteer             # G920 settings: rotation, force feedback, pedal test
+    ddcutil               # monitor brightness over DDC/CI (osd.sh brightness)
+    lmstudio              # local LLMs; data/models live on the nvme (see tmpfiles above)
+  ]
+  ++ lib.optionals isLaptop [   # laptop only
+  ];
+
+  # ── Gaming (desktop only) ───────────────────────────
+  programs.steam = lib.mkIf (!isLaptop) {
+    enable = true;
+    remotePlay.openFirewall = true;               # Steam Remote Play
+    localNetworkGameTransfers.openFirewall = true; # copy games between PCs on the LAN
+    extraCompatPackages = [
+      pkgs.proton-ge-bin   # Proton-GE, pick it per game in Properties > Compatibility
+      # Assetto Corsa only: Wine 10+ blocks writing to executable memory (W^X), so Custom Shaders
+      # Patch can't patch acs.exe ("Failed to tweak Assetto Corsa: Can't find ..."). The last Wine 9 GE
+      ((pkgs.proton-ge-bin.override { steamDisplayName = "GE-Proton9-20"; }).overrideAttrs {
+        version = "GE-Proton9-20";
+        src = pkgs.fetchzip {
+          url = "https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton9-20/GE-Proton9-20.tar.gz";
+          hash = "sha256-1twCv81KO1fcRcIb4H7VtAjtcKrX+DymsYdf885eOWo=";
+        };
+      })
+    ];
+  };
+  # Performance mode while a game runs: launch option `gamemoderun %command%`
+  programs.gamemode.enable = !isLaptop;
+  # Micro-compositor for games: HDR, frame limiting, upscaling (`gamescope --hdr-enabled -- %command%`)
+  # (No capSysNice: its capability wrapper can't run inside Steam's sandbox, so gamescope
+  # fails with "failed to inherit capabilities" and the game exits)
+  programs.gamescope.enable = !isLaptop;
+  # GPU control (fan curves, power limit, undervolt): LACT app + its daemon
+  services.lact.enable = !isLaptop;
+  # Logitech G920: switch it out of Xbox mode so it shows up as a wheel
+  hardware.usb-modeswitch.enable = !isLaptop;
+  # Let Oversteer and OpenRGB reach the wheel / RGB devices without root
+  services.udev.packages = lib.mkIf (!isLaptop) [ pkgs.oversteer pkgs.openrgb ];
+
+  system.stateVersion = "26.05";
+}

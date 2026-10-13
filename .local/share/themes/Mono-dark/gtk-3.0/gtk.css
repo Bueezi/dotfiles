@@ -1,0 +1,14 @@
+/* Mono-dark: adw-gtk3-dark with pure black backgrounds instead of Adwaita's grey (the blue accent
+   stays: selections, buttons). GTK4/libadwaita gets the same from ~/.config/gtk-4.0/gtk.css, Qt
+   from the qt6ct palettes. darkmode.sh ($mod+Shift+t) switches between this and adw-gtk3. */
+@import url("file:///run/current-system/sw/share/themes/adw-gtk3-dark/gtk-3.0/gtk.css");
+@define-color window_bg_color black;
+@define-color view_bg_color black;
+@define-color headerbar_bg_color black;
+@define-color headerbar_backdrop_color black;
+@define-color sidebar_bg_color #0a0a0a;
+@define-color sidebar_backdrop_color #0a0a0a;
+@define-color card_bg_color rgba(255, 255, 255, 0.05);
+@define-color dialog_bg_color #111111;
+@define-color popover_bg_color #111111;
+@define-color thumbnail_bg_color #111111;

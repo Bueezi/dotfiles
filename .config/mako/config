@@ -1,0 +1,30 @@
+font=JetBrainsMono Nerd Font 10
+background-color=#000000b3
+text-color=#ffffff
+border-color=#ffffff
+border-size=2
+border-radius=6
+padding=10
+margin=10
+default-timeout=4000
+anchor=top-right
+# Overlay layer: show above fullscreen video/games too (default "top" is hidden by them)
+layer=overlay
+
+[urgency=low]
+border-color=#555555
+text-color=#aaaaaa
+
+[urgency=critical]
+background-color=#ffffff
+text-color=#000000
+default-timeout=0
+
+[app-name=osd]
+anchor=bottom-center
+# 25-char bar (8px/char at 10pt) + padding + border
+width=226
+text-alignment=center
+# Black and white like the rest: plain white text, the level is a text bar (osd.sh)
+text-color=#ffffff
+border-color=#ffffff

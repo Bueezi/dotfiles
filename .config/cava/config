@@ -1,0 +1,5 @@
+# cava: black and white like the rest (default is a colour gradient)
+[color]
+foreground = white
+background = default
+gradient = 0
