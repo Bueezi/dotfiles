@@ -20,7 +20,7 @@ dotfiles() {
 }
 
 documents() {
-    local d=~/Documents/sync mine= theirs= old
+    local d=~/Documents/sync mine='' theirs='' old
     echo "==> ~/Documents/sync"
     # Not quiet: the first clone (the wallpapers) takes a while, git shows its progress
     [ -d "$d/.git" ] || git clone https://github.com/Bueezi/sync "$d" || return
