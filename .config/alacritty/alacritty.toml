@@ -1,0 +1,20 @@
+# Alacritty on the tablet: foot's counterpart (~/.config/foot/foot.ini), same font and look.
+# The colours are in colors.toml, which darkmode.sh writes (dark or light, untracked); alacritty
+# reloads it by itself.
+
+[general]
+import = ["~/.config/alacritty/colors.toml"]
+live_config_reload = true
+
+# fish for the interactive shell (bash stays Termux's login shell; fallback if fish is missing)
+[terminal.shell]
+program = "sh"
+args = ["-c", "command -v fish >/dev/null && exec fish || exec bash"]
+
+[window]
+padding = { x = 12, y = 12 }
+opacity = 0.88
+
+[font]
+normal = { family = "Iosevka Nerd Font" }
+size = 12

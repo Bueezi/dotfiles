@@ -1,12 +1,12 @@
 # Dotfiles
 
-My real config (not a template): a bare Git repo `~/.dotfiles` with `$HOME` as work tree, NixOS + a SwayFX desktop on two machines. Details live in the files' own comments; this is the map and the rules.
+My real config (not a template): a bare Git repo `~/.dotfiles` with `$HOME` as work tree. NixOS + a SwayFX desktop on two machines, and a tablet with Termux + i3 that checks out part of it. Details live in the files' own comments; this is the map and the rules.
 
-| | Desktop | Laptop |
-|---|---|---|
-| Hardware | Ryzen 5 7500F, RX 9070 XT, `DP-2` 2560x1440@180 | Ryzen 7430U, `eDP-1` scale 1.35 |
-| Nix | `isLaptop = false` | `isLaptop = true` |
-| Scripts / sway | no `/sys/class/power_supply/BAT0` | `BAT0` exists |
+| | Desktop | Laptop | Tablet |
+|---|---|---|---|
+| Hardware | Ryzen 5 7500F, RX 9070 XT, `DP-2` 2560x1440@180 | Ryzen 7430U, `eDP-1` scale 1.35 | Honor MagicPad 4 (Snapdragon, Adreno) |
+| System | NixOS, `isLaptop = false` | NixOS, `isLaptop = true` | Android: Termux + Termux:X11, i3 (X11), `termux.sh` |
+| Scripts | no `/sys/class/power_supply/BAT0` | `BAT0` exists | `$TERMUX_VERSION` set; i3 = `$SWAYSOCK` unset |
 
 NixOS 26.05, channel-based (not a flake system). Per-machine: `lib.mkIf isLaptop` / `lib.optionals (!isLaptop)` in Nix, the `BAT0` test elsewhere.
 
@@ -33,6 +33,7 @@ NixOS 26.05, channel-based (not a flake system). Per-machine: `lib.mkIf isLaptop
 - `.local/bin/cu`: sync. Dotfiles (commit tracked changes, message = changed files, pull --rebase, push), then `~/Documents/sync`.
 - `~/Documents/sync/`: separate private repo (github.com/Bueezi/sync) with **one commit only**, so deleted files leave GitHub too. Wallpapers in `wp/active/` (picker, slideshow) and `wp/inactive/`.
 - Shell: bash is the login shell and runs scripts; foot starts fish + starship. **Aliases only in `.bashrc`**: fish imports its `alias` lines. `.bash_profile` is what loads `.bashrc` on TTY/SSH logins.
+- Tablet: `.config/wm/i3` (+ `.config/i3/config` link), and the X11 counterparts of the sway tools: alacritty (foot), dunst (mako), rofi (fuzzel), picom (SwayFX effects), feh + `wm/scripts/wallpaper.sh` (HyprQuickPaper/slideshow). `.config/termux/`: `bin/desktop` (starts Termux:X11 + i3 in a D-Bus session), `bin/pd` (proot Debian), Termux's own `termux.properties`/`colors.properties` (linked into `~/.termux` by `termux.sh`, so the PCs get no `~/.termux`). `.local/bin/term` = foot or alacritty (Thunar's terminal via `.config/xfce4/helpers.rc`). Can't be run from here: only checked in Xvfb.
 - Git identity and GitHub login: `.config/git/config` (plain `gh` as helper, not a store path).
 - Themes: dconf `color-scheme` is the truth, `darkmode.sh` toggles. GTK3 dark = `.local/share/themes/Mono-dark` (imports `../../adw-gtk3-dark`: on NixOS a tracked link to the system's theme, on the tablet downloaded), GTK4 = `.config/gtk-4.0/gtk.css`, Qt = qt6ct palettes in `.config/qt6ct/colors/` (`qt6ct.conf` is written by `darkmode.sh`, untracked).
 
@@ -56,3 +57,4 @@ config config --local status.showUntrackedFiles no
 config checkout   # if files already exist: move them aside first
 ```
 Then copy `.config/scripts/configuration.nix` to `/etc/nixos/`, set `hostName` / `isLaptop`, rebuild, and run `cu` once (clones `~/Documents/sync`).
+Tablet: in Termux, `curl -L https://raw.githubusercontent.com/Bueezi/dotfiles/main/.config/scripts/termux.sh | bash`, then `cu` once, then `desktop`.

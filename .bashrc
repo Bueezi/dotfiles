@@ -3,6 +3,8 @@
 #
 
 export PATH="$HOME/.cargo/bin:$PATH"
+# The tablet (Termux): its launchers (desktop, pd)
+[ -n "$TERMUX_VERSION" ] && export PATH="$HOME/.config/termux/bin:$PATH"
 
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return

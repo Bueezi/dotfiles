@@ -3,6 +3,8 @@
 # fish_add_path skips entries already there (fish started from fish would add them again)
 fish_add_path -g ~/.cargo/bin ~/.local/bin
 fish_add_path -ga ~/.lmstudio/bin
+# The tablet (Termux): its launchers (desktop, pd)
+set -q TERMUX_VERSION; and fish_add_path -g ~/.config/termux/bin
 
 if status is-interactive
     # Light mode (darkmode.sh): switch this foot window to its [colors-light] before the first

@@ -107,6 +107,9 @@ in
 
   # Shells: bash stays the login shell (and for scripts); foot starts fish (~/.config/fish)
   programs.fish.enable = true;
+  # ~/.local/bin (my commands: cu, term) in PATH for the whole session, not just shells: greetd
+  # sources /etc/profile, so sway and everything it starts (Thunar's terminal, power.sh) find them
+  environment.localBinInPath = true;
   # NixOS has no /bin/bash, so scripts with `#!/bin/bash` fail; point it at the system bash
   systemd.tmpfiles.rules = [ "L+ /bin/bash - - - - ${pkgs.bashInteractive}/bin/bash" ]
     # LM Studio keeps its models etc. in ~/.lmstudio: point that at the nvme

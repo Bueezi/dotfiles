@@ -1,0 +1,4 @@
+#!/bin/sh
+# A terminal (in the current folder), whatever the session: foot under Wayland (sway), alacritty
+# under X11 (the tablet's i3). Thunar's "Open Terminal Here" uses it (~/.config/xfce4/helpers.rc).
+if [ -n "$WAYLAND_DISPLAY" ]; then exec foot "$@"; else exec alacritty "$@"; fi

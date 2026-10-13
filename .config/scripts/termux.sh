@@ -54,7 +54,6 @@ PROOT_PACKAGES=(ddd)
 # What the tablet checks out of the dotfiles (sparse checkout; NixOS and sway stay out)
 SPARSE='/.bashrc
 /.bash_profile
-/.termux/
 /.local/bin/
 /.local/share/themes/Mono-dark/
 /.config/CLAUDE.md
@@ -80,6 +79,17 @@ SPARSE='/.bashrc
 /.config/fetch/
 /.config/cava/'
 
+# ── Mirrors: the Europe group, before the first download. Without a group, pkg picks a random
+# working mirror from all regions (Asia, North America…), not the fastest. Same as choosing
+# "Europe" in termux-change-repo; pkg still switches to another European one if a mirror fails ──
+europe="$PREFIX/etc/termux/mirrors/europe"
+if [ "$(readlink "$PREFIX/etc/termux/chosen_mirrors")" != "$europe" ]; then
+    say "Mirrors: Europe"
+    rm -rf "$PREFIX/etc/termux/chosen_mirrors"
+    ln -s "$europe" "$PREFIX/etc/termux/chosen_mirrors"
+    pkg --check-mirror update
+fi
+
 # ── Dotfiles first (also what makes `curl … | bash` work) ──
 if [ ! -d ~/.dotfiles ]; then
     say "Dotfiles"
@@ -91,7 +101,7 @@ if [ ! -d ~/.dotfiles ]; then
 fi
 printf '%s\n' "$SPARSE" > ~/.dotfiles/info/sparse-checkout
 if ! config rev-parse -q --verify HEAD >/dev/null || [ ! -f ~/.config/scripts/termux.sh ]; then
-    # Files Termux made itself (e.g. ~/.termux) go aside instead of blocking the checkout
+    # Files that already exist (e.g. a default ~/.bashrc) go aside instead of blocking the checkout
     mkdir -p ~/.config-backup
     { config checkout 2>&1 || true; } | awk '/^\t/ { print $1 }' | while read -r f; do
         mkdir -p ~/.config-backup/"$(dirname "$f")" && mv ~/"$f" ~/.config-backup/"$f"
@@ -177,6 +187,12 @@ for l in fra nld; do
     [ -f "$t" ] || curl -L -o "$t" "https://github.com/tesseract-ocr/tessdata_fast/raw/main/$l.traineddata"
 done
 fc-cache -f >/dev/null
+
+# ── Termux's own settings (keys above the touch keyboard, colours): it only reads ~/.termux ──
+mkdir -p ~/.termux
+ln -sfn ~/.config/termux/termux.properties ~/.termux/termux.properties
+ln -sfn ~/.config/termux/colors.properties ~/.termux/colors.properties
+termux-reload-settings
 
 # ── LibreWolf: the same prefs and policies as the desktop (one source in .config/librewolf) ──
 mkdir -p ~/.librewolf "$PREFIX/lib/librewolf/distribution"

@@ -1,0 +1,66 @@
+# i3 on the tablet (Termux:X11). The looks and window keys shared with sway are in
+# ~/.config/wm/common.conf. ~/.config/i3/config is a symlink to this file; ~/.config/termux/bin/desktop
+# starts it. i3 can't use variables set in common.conf here, so the bar's colours are spelled out.
+
+# ── Variables ───────────────────────────────────────
+# Super, like the desktop: needs Termux:X11's "capture system shortcuts" (else Android takes it;
+# then use Mod1 = Alt)
+set $mod        Mod4
+set $term       alacritty
+set $term_float alacritty --class scratch-float
+set $fm         thunar
+set $menu       rofi -show drun
+set $browser    librewolf
+set $scripts    ~/.config/wm/scripts
+
+include ~/.config/wm/common.conf
+
+# ── Autostart ───────────────────────────────────────
+# Dark/light first: writes alacritty's colours and qt6ct's file, starts xsettingsd (GTK on X11)
+exec --no-startup-id $scripts/darkmode.sh apply
+exec --no-startup-id dunst
+# Compositor (transparency, blur): GL through Zink; plain xrender (no blur) if that fails
+exec --no-startup-id picom -b || picom -b --backend xrender
+exec --no-startup-id $scripts/clipstore.sh
+exec --no-startup-id $scripts/wallpaper.sh restore
+
+# ── Window rules (X11: by class) ────────────────────
+for_window [class="^clipboard$"] floating enable, resize set 760 420, move position center
+# Scratchpad apps ($mod+Shift+Return / e, the power menu's terminal): floating in the scratchpad,
+# shown. The same key (or $mod+minus) hides/shows them again
+for_window [class="^(scratch-.*|Thunar)$"] floating enable, resize set 900 600, move scratchpad, scratchpad show, move position center
+for_window [window_role="pop-up"] floating enable
+for_window [window_type="dialog"] floating enable
+
+# ── Keybindings (i3 only; the shared ones are in common.conf) ──
+# Apps
+bindsym $mod+x              exec i3-msg -q '[class="(?i)librewolf"] focus' || $browser
+bindsym $mod+t              exec i3-msg -q '[class="^Alacritty$"] focus' || $term
+bindsym $mod+Shift+w        exec $scripts/wallpaper.sh pick
+bindsym $mod+Shift+o        exec $scripts/wallpaper.sh slideshow
+# Alt+Tab: window list (sway's swayr doesn't exist here)
+bindsym Mod1+Tab            exec rofi -show window
+
+# Session
+bindsym $mod+Shift+m        exec i3-nagbar -t warning -m 'Leave the desktop?' -B 'Yes, leave' 'pkill -f termux.x11'
+
+# ── Bar ─────────────────────────────────────────────
+bar {
+    position top
+    workspace_min_width 30
+    status_command i3status-rs ~/.config/wm/i3status-rs.toml
+    font pango:JetBrainsMono Nerd Font 9
+    # See-through background (the compositor draws the alpha)
+    i3bar_command i3bar --transparency
+    tray_output primary
+
+    colors {
+        background         #000000b3
+        statusline         #ffffff
+        separator          #333333
+        focused_workspace  #ffffff #ffffff #000000
+        active_workspace   #00000000 #00000000 #ffffff
+        inactive_workspace #00000000 #00000000 #777777
+        urgent_workspace   #ffffff #555555 #ffffff
+    }
+}

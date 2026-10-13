@@ -1,0 +1,35 @@
+# dunst on the tablet: mako's counterpart (~/.config/mako/config), same black and white look.
+[global]
+    font = JetBrainsMono Nerd Font 10
+    origin = top-right
+    offset = (10, 10)
+    width = 300
+    gap_size = 10
+    padding = 10
+    horizontal_padding = 10
+    frame_width = 2
+    frame_color = "#ffffff"
+    corner_radius = 6
+    icon_position = left
+    max_icon_size = 32
+    format = "<b>%s</b>\n%b"
+
+# Low (the OSD-style ones): grey, like mako's
+[urgency_low]
+    background = "#000000b3"
+    foreground = "#aaaaaa"
+    frame_color = "#555555"
+    timeout = 4
+
+[urgency_normal]
+    background = "#000000b3"
+    foreground = "#ffffff"
+    frame_color = "#ffffff"
+    timeout = 4
+
+# Critical: inverted, stays until clicked
+[urgency_critical]
+    background = "#ffffff"
+    foreground = "#000000"
+    frame_color = "#ffffff"
+    timeout = 0

@@ -1,0 +1,54 @@
+/* rofi on the tablet: fuzzel's counterpart (~/.config/fuzzel/fuzzel.ini), same black and white
+   look: see-through black, white border, grey text, the selection inverted. */
+configuration {
+    font: "JetBrainsMono Nerd Font 13";
+    show-icons: true;
+    icon-theme: "Papirus-Dark";
+    display-drun: "❯";
+    display-window: "❯";
+    drun-display-format: "{name}";
+}
+
+* {
+    background-color: transparent;
+    text-color: #888888;
+}
+
+window {
+    width: 30em;
+    background-color: #000000b3;
+    border: 2px;
+    border-color: #ffffff;
+    border-radius: 6px;
+    padding: 16px 30px;
+}
+
+inputbar {
+    children: [ prompt, entry ];
+    spacing: 10px;
+    margin: 0 0 10px 0;
+}
+prompt, entry {
+    text-color: #ffffff;
+}
+
+listview {
+    lines: 10;
+    spacing: 4px;
+}
+element {
+    padding: 4px 6px;
+    spacing: 10px;
+    border-radius: 4px;
+}
+element-text {
+    text-color: inherit;
+    highlight: bold #ffffff;
+}
+element selected {
+    background-color: #ffffff;
+    text-color: #444444;
+}
+element-text selected {
+    highlight: bold #000000;
+}
