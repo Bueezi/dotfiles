@@ -45,7 +45,8 @@ bindsym $mod+Shift+o        exec $scripts/wallpaper.sh slideshow
 bindsym Mod1+Tab            exec rofi -show window
 
 # Session
-bindsym $mod+Shift+m        exec i3-nagbar -t warning -m 'Leave the desktop?' -B 'Yes, leave' 'pkill -f termux.x11'
+# Close the desktop or exit Termux (the power menu's first two entries)
+bindsym $mod+Shift+m        exec $scripts/power.sh leave
 
 # ── Bar ─────────────────────────────────────────────
 bar {

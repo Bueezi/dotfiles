@@ -1,8 +1,11 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# `d`: starts the tablet's desktop: Termux:X11 (the X server, shown by its Android app), then i3 in
-# it (~/.config/wm/i3), inside a D-Bus session (dunst, dconf and notify-send need one).
-# Runs in the background, detached from the Termux session, so the terminal stays free; its output
-# goes to $PREFIX/tmp/desktop.log.
+# `d`: the tablet's desktop. Termux:X11 (the X server, shown by its Android app) with i3 in it
+# (~/.config/wm/i3), inside a D-Bus session (dunst, dconf and notify-send need one).
+# Usage: d          start it in the background (the terminal stays free; log in
+#                   $PREFIX/tmp/desktop.log), or just show it if it's already running
+#        d stop     close the desktop; Termux keeps running
+#        d exit     close the desktop and exit Termux too
+# The power menu and the Termux:Widget buttons (~/.shortcuts, made by termux.sh) run the same.
 # GPU: native apps use Zink on Turnip (Adreno's open Vulkan driver), the proot container (pd) uses
 # VirGL. If `glxinfo -B` shows llvmpipe, Zink isn't working: GALLIUM_DRIVER=virpipe instead.
 
@@ -11,14 +14,27 @@
 export XFT_DPI=168
 
 log="$PREFIX/tmp/desktop.log"
-if [ "$1" != --here ]; then
-    setsid -f "$0" --here > "$log" 2>&1 < /dev/null
-    echo "Desktop starting (log: $log)"
-    exit
-fi
+show() { am start -n com.termux.x11/com.termux.x11.MainActivity >/dev/null 2>&1; }
+running() { pgrep -f com.termux.x11.CmdEntryPoint >/dev/null; }
+stop() {
+    pkill -f termux.x11; pkill -f virgl_test_server; pkill -f 'wallpaper\.sh loop$'
+    for _ in $(seq 50); do running || break; sleep 0.1; done
+    # A leftover socket made the next start look ready too early: i3 found no X (black screen)
+    rm -f "$PREFIX/tmp/.X11-unix/X0" "$PREFIX/tmp/.X0-lock"
+}
 
-# A previous session's X server and VirGL (i3 ends with its X server)
-pkill -f termux.x11; pkill -f virgl_test_server
+case "$1" in
+stop)   stop; exit ;;
+exit)   stop; am startservice -a com.termux.service_stop com.termux/.app.TermuxService >/dev/null 2>&1; exit ;;
+"")     if running; then show; exit; fi
+        setsid -f "$0" --here > "$log" 2>&1 < /dev/null
+        echo "Desktop starting (log: $log)"
+        exit ;;
+--here) ;;
+*)      echo "usage: d [stop|exit]" >&2; exit 1 ;;
+esac
+
+stop
 
 # Audio; proot apps reach it over TCP
 pulseaudio --check 2>/dev/null || pulseaudio --start --exit-idle-time=-1 \
@@ -26,11 +42,11 @@ pulseaudio --check 2>/dev/null || pulseaudio --start --exit-idle-time=-1 \
 
 virgl_test_server_android >/dev/null 2>&1 &
 termux-x11 :0 >/dev/null 2>&1 &
-# Wait for the X socket instead of a fixed sleep
-for _ in $(seq 50); do [ -S "$PREFIX/tmp/.X11-unix/X0" ] && break; sleep 0.1; done
-am start -n com.termux.x11/com.termux.x11.MainActivity >/dev/null 2>&1
-
 export DISPLAY=:0
+# Ready = the X server answers (not just its socket file existing)
+for _ in $(seq 100); do xrdb -query >/dev/null 2>&1 && break; sleep 0.1; done
+show
+
 export GALLIUM_DRIVER=zink MESA_LOADER_DRIVER_OVERRIDE=zink TU_DEBUG=noconform
 echo "Xft.dpi: $XFT_DPI" | xrdb -merge
 # The cursor grows with it (20 px at 96 dpi, like the desktop)

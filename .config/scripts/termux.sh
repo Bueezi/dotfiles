@@ -75,6 +75,7 @@ SPARSE='/.bashrc
 /.config/helix/
 /.config/git/
 /.config/gtk-3.0/
+!/.config/gtk-3.0/bookmarks
 /.config/gtk-4.0/
 /.config/qt6ct/
 /.config/librewolf/
@@ -110,6 +111,8 @@ else
     config pull -q --ff-only origin main || echo "Couldn't update the dotfiles, using the local copy"
 fi
 printf '%s\n' "$SPARSE" > ~/.dotfiles/info/sparse-checkout
+# Files the tablet keeps its own copy of at a left-out path (bookmarks) stay untracked here
+config config sparse.expectFilesOutsideOfPatterns true
 if ! config rev-parse -q --verify HEAD >/dev/null || [ ! -f ~/.config/scripts/termux.sh ]; then
     # Files that already exist (e.g. a default ~/.bashrc) go aside instead of blocking the checkout
     mkdir -p ~/.config-backup
@@ -214,6 +217,20 @@ for l in fra nld; do
 done
 fc-cache -f >/dev/null
 
+# ── Android integration ──
+# Storage access (Android's Download folder), asks once
+[ -d ~/storage ] || termux-setup-storage
+# Thunar's sidebar with the tablet's paths (the PCs' bookmarks file is left out of this checkout)
+printf 'file://%s/Documents Documents\nfile:///storage/emulated/0/Download Downloads\n' "$HOME" > ~/.config/gtk-3.0/bookmarks
+# The Termux app opens fish, without Termux's welcome text
+[ "$(readlink ~/.termux/shell 2>/dev/null)" = "$PREFIX/bin/fish" ] || chsh -s fish
+touch ~/.hushlogin
+# Termux:Widget buttons on the home screen (tasks/ run in the background): desktop start/stop
+mkdir -p ~/.shortcuts/tasks
+printf '#!%s/bin/sh\nexec ~/.config/termux/bin/d\n' "$PREFIX" > ~/.shortcuts/tasks/Desktop
+printf '#!%s/bin/sh\nexec ~/.config/termux/bin/d stop\n' "$PREFIX" > ~/.shortcuts/tasks/"Desktop stop"
+chmod 700 ~/.shortcuts ~/.shortcuts/tasks; chmod 700 ~/.shortcuts/tasks/*
+
 # ── Termux's own settings (keys above the touch keyboard, colours): it only reads ~/.termux ──
 mkdir -p ~/.termux
 ln -sfn ~/.config/termux/termux.properties ~/.termux/termux.properties
@@ -260,6 +277,6 @@ Once, on the Android side:
   - Developer options → "Disable child process restrictions" (else Android kills the desktop),
     and no battery optimisation for Termux and Termux:X11
   - Termux:X11 → Preferences: capture system shortcuts (Super for i3), clipboard sharing
-  - Apps: Termux:API (battery, notifications), Tailscale (homelab)
+  - Apps: Termux:API (battery, volume), Termux:Widget (desktop buttons), Tailscale (homelab)
 Then: `d` starts X11 + i3 (in the background).
 EOF
