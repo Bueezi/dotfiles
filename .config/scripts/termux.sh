@@ -225,7 +225,8 @@ ln -sfn ~/.config/librewolf/prefs.js ~/.librewolf/librewolf.overrides.cfg
 ln -sfn ~/.config/librewolf/policies.json "$PREFIX/lib/librewolf/distribution/policies.json"
 
 # ── TeX Live (once; later `tlmgr install` only adds what's missing) ──
-if [ ! -x "$PREFIX/bin/texlive/tlmgr" ]; then
+# Installed = the package database install-tl writes (texlive-bin already ships tlmgr before that)
+if ! compgen -G "$PREFIX/share/texlive/*/tlpkg/texlive.tlpdb" >/dev/null; then
     say "TeX Live: scheme-basic, then KU Leuven's collections (several GB)"
     # Termux's termux-install-tl, without its questions and with scheme-basic instead of scheme-full
     sed 's/^selected_scheme .*/selected_scheme scheme-basic/' "$PREFIX/opt/texlive/termux.profile" > "$build/texlive.profile"
