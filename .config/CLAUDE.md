@@ -45,7 +45,7 @@ NixOS 26.05, channel-based (not a flake system). Per-machine: `lib.mkIf isLaptop
 - The sway session's PATH lacks `~/.local/bin` (greetd only sources `.profile`): call `cu` by full path from scripts.
 - Tried and disliked: dimming unfocused windows, Qt's `gtk3` platform theme (old greys), foot `include=` of a state file (errors when missing), `GTK_THEME` (pins one theme).
 - `~/.config/xdg-desktop-portal-wlr/config` is ignored: the picker is set in Nix (`xdg.portal.wlr.settings`).
-- Tailscale needs `services.resolved`, or it takes over all DNS.
+- Tailscale needs `services.resolved`, or it takes over all DNS. Taildrop: the user service `taildrop` (`.configuration.nix`) receives into `~/Downloads` (needs `--operator=ben`, set via `extraSetFlags`); Android sends via Share → Tailscale.
 - Tablet compositor: xcompmgr (transparency, no blur). picom lags on Termux:X11 (no DRI3: every composited frame goes through the CPU) and flickers with xrender. No brightness in the bar: Android refuses its settings service to apps. LibreWolf's forced GPU prefs crash it (GPU process on Zink): keep software WebRender.
 - Steam games run in a sandbox with a private `/tmp`: nothing outside can talk to a running Wine app.
 - Assetto Corsa: GE-Proton9-20 (Wine 10+ blocks CSP's patching), launch options `WINEDLLOVERRIDES="dwrite=n,b" %command%` (no gamescope), its prefix's `Steam/config/loginusers.vdf` symlinks to Steam's, hidden CSP caches off in the prefix's `Documents/Assetto Corsa/cfg/extension/general.ini`. `acmanager://` links (`acmanagerLinks`) work only while Content Manager is closed.
