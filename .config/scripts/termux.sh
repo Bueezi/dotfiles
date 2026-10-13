@@ -8,6 +8,8 @@
 set -eo pipefail
 [ -n "$TERMUX_VERSION" ] || { echo "Only for Termux" >&2; exit 1; }
 say() { printf '\n==> %s\n' "$*"; }
+self=~/.config/scripts/termux.sh
+self_before=$(cat "$self" 2>/dev/null | md5sum)
 config() { git --git-dir="$HOME/.dotfiles" --work-tree="$HOME" "$@"; }
 
 # ── Packages (the "systemPackages" of the tablet) ───
@@ -98,6 +100,11 @@ if [ ! -d ~/.dotfiles ]; then
     git clone --bare --filter=blob:none https://github.com/Bueezi/dotfiles ~/.dotfiles
     config config status.showUntrackedFiles no
     config config core.sparseCheckout true
+else
+    # The latest dotfiles first (this script included). Local changes stay; if they'd conflict,
+    # this is skipped and the local copy is used
+    say "Dotfiles: update"
+    config pull -q --ff-only origin main || echo "Couldn't update the dotfiles, using the local copy"
 fi
 printf '%s\n' "$SPARSE" > ~/.dotfiles/info/sparse-checkout
 if ! config rev-parse -q --verify HEAD >/dev/null || [ ! -f ~/.config/scripts/termux.sh ]; then
@@ -109,13 +116,19 @@ if ! config rev-parse -q --verify HEAD >/dev/null || [ ! -f ~/.config/scripts/te
     config checkout
 fi
 config read-tree -mu HEAD   # apply the sparse list (new paths appear, removed ones go)
-# Piped in (`curl … | bash`): run the checked-out copy, with the keyboard for the questions below
-if [ ! -t 0 ] && [ "${BASH_SOURCE[0]}" != ~/.config/scripts/termux.sh ]; then
-    exec bash ~/.config/scripts/termux.sh "$@" < /dev/tty
+# Piped in (`curl … | bash`): run the checked-out copy, with the keyboard for the questions below.
+# Same when the update above changed this script: carry on with the new version
+if [ ! -t 0 ] && [ "${BASH_SOURCE[0]}" != "$self" ]; then
+    exec bash "$self" "$@" < /dev/tty
+elif [ "$(md5sum < "$self")" != "$self_before" ]; then
+    exec bash "$self" "$@"
 fi
 
 # ── Packages: install, then remove what isn't listed ──
 say "Packages"
+# The X11 and TUR repositories first: apt plans a whole `pkg install` before installing anything,
+# so packages from a repository installed in the same command are "unable to locate"
+pkg install -y x11-repo tur-repo
 pkg update -y
 pkg upgrade -y -o Dpkg::Options::=--force-confold
 pkg install -y "${PACKAGES[@]}"
