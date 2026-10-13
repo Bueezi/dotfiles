@@ -19,7 +19,8 @@ case "$1" in
 restore)
     if [ -e "$cur" ]; then feh --no-fehbg --bg-fill "$cur"
     else f=$(random); [ -n "$f" ] && set_wp "$f"; fi
-    [ -e ~/.config/slideshow ] && setsid -f "$0" loop >/dev/null 2>&1 ;;
+    # The slideshow waits its 5 minutes first: logging in keeps the wallpaper you had
+    [ -e ~/.config/slideshow ] && setsid -f "$0" loop later >/dev/null 2>&1 ;;
 pick)
     # Thumbnails: rofi shows each file as its own icon
     f=$(images | while read -r p; do printf '%s\0icon\x1f%s\n' "${p#"$dir"/}" "$p"; done |
@@ -29,17 +30,18 @@ pick)
 slideshow)
     if [ -e ~/.config/slideshow ]; then
         rm -f ~/.config/slideshow
-        pkill -f 'wallpaper\.sh loop$'; rm -f "$pidf"
+        pkill -f 'wallpaper\.sh loop( later)?$'; rm -f "$pidf"
         notify-send -a slideshow -i preferences-desktop-wallpaper-symbolic "Slideshow off"
     else
         touch ~/.config/slideshow
         setsid -f "$0" loop >/dev/null 2>&1
         notify-send -a slideshow -i preferences-desktop-wallpaper-symbolic "Slideshow on" "New wallpaper every 5 minutes"
     fi ;;
-loop)   # the slideshow itself: a new one right away, then every 5 minutes
-    # Only one: a loop from an earlier desktop session (`d` again) keeps running detached, and
+loop)   # the slideshow itself: a new one right away (`loop later`: after 5 minutes), then every 5
+    # Only one: a loop from an earlier desktop session (`desktop` again) keeps running detached, and
     # several at once made the wallpaper change every few seconds
-    for p in $(pgrep -f 'wallpaper\.sh loop$'); do [ "$p" != $$ ] && kill "$p"; done
+    for p in $(pgrep -f 'wallpaper\.sh loop( later)?$'); do [ "$p" != $$ ] && kill "$p"; done
     echo $$ > "$pidf"
+    [ "$2" = later ] && sleep 300
     while :; do f=$(random); [ -n "$f" ] && set_wp "$f"; sleep 300; done ;;
 esac

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Power menu ($mod+Shift+p). NixOS: sleep, hibernate (laptop), reboot, power off, update, rebuild,
-# sync. The tablet (Termux, i3): close desktop, exit Termux, update, sync; Android does the rest.
-# `power.sh leave` ($mod+Shift+m on the tablet): only close desktop / exit Termux.
+# sync. The tablet (Termux, i3): hide, close desktop, exit Termux, update, sync; Android does the rest.
+# `power.sh leave` ($mod+Shift+m on the tablet): only hide / close desktop / exit Termux.
 # Update, rebuild and sync run in a scratchpad terminal (hide/show with $mod+minus) so you can see
 # output and type your sudo password. Once the password is in (sudo caches it), the terminal hides
 # itself and comes back only when it needs you: a failure, a firmware prompt, or the end of an update.
@@ -108,7 +108,7 @@ slideshow() {
 case "$1" in slideshow|sync|update|rebuild) "$1"; exit ;; esac
 
 if [ -n "$TERMUX_VERSION" ]; then
-    items="󰍃  close desktop\n󰐥  exit termux"
+    items="󰓎  hide desktop\n󰍃  close desktop\n󰐥  exit termux"
     [ "$1" = leave ] || items="$items\n󰚰  update\n󰓦  sync"
     choice=$(printf "$items" | rofi -dmenu -i -p power)
 else
@@ -123,9 +123,11 @@ case "$choice" in
     *update)  exec "${term[@]}" "$0" update ;;
     *rebuild) exec "${term[@]}" "$0" rebuild ;;
     *sync)    exec "${term[@]}" "$0" sync ;;
-    # `d stop`: the X server goes, i3 with it; Termux keeps running. `d exit`: Termux too
-    *"close desktop") exec "$HOME/.config/termux/bin/d" stop ;;
-    *"exit termux")   exec "$HOME/.config/termux/bin/d" exit ;;
+    # hide: back to Android, all keeps running. stop: the X server goes, i3 with it; Termux keeps
+    # running. exit: Termux too
+    *"hide desktop")  exec "$HOME/.config/termux/bin/desktop" hide ;;
+    *"close desktop") exec "$HOME/.config/termux/bin/desktop" stop ;;
+    *"exit termux")   exec "$HOME/.config/termux/bin/desktop" exit ;;
 esac
 
 case "$choice" in

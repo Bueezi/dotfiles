@@ -1,5 +1,5 @@
 # i3 on the tablet (Termux:X11). The looks and window keys shared with sway are in
-# ~/.config/wm/common.conf. ~/.config/i3/config is a symlink to this file; `d` (~/.config/termux/bin/d)
+# ~/.config/wm/common.conf. ~/.config/i3/config is a symlink to this file; `desktop` (~/.config/termux/bin)
 # starts it. i3 can't use variables set in common.conf here, so the bar's colours are spelled out.
 
 # ── Variables ───────────────────────────────────────
@@ -45,7 +45,7 @@ bindsym $mod+Shift+o        exec $scripts/wallpaper.sh slideshow
 bindsym Mod1+Tab            exec rofi -show window
 
 # Session
-# Close the desktop or exit Termux (the power menu's first two entries)
+# Hide or close the desktop, or exit Termux (the power menu's first three entries)
 bindsym $mod+Shift+m        exec $scripts/power.sh leave
 
 # ── Bar ─────────────────────────────────────────────

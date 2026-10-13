@@ -1,11 +1,12 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# `d`: the tablet's desktop. Termux:X11 (the X server, shown by its Android app) with i3 in it
-# (~/.config/wm/i3), inside a D-Bus session (dunst, dconf and notify-send need one).
-# Usage: d          start it in the background (the terminal stays free; log in
-#                   $PREFIX/tmp/desktop.log), or just show it if it's already running
-#        d stop     close the desktop; Termux keeps running
-#        d exit     close the desktop and exit Termux too
-# The power menu and the Termux:Widget buttons (~/.shortcuts, made by termux.sh) run the same.
+# `desktop`: the tablet's desktop. Termux:X11 (the X server, shown by its Android app) with i3 in
+# it (~/.config/wm/i3), inside a D-Bus session (dunst, dconf and notify-send need one).
+# Usage: desktop        start it in the background (the terminal stays free; log in
+#                       $PREFIX/tmp/desktop.log), or just show it if it's already running
+#        desktop hide   back to Android's home screen; the desktop keeps running
+#        desktop stop   close the desktop; Termux keeps running
+#        desktop exit   close the desktop and exit Termux too
+# The power menu and the Termux:Widget buttons Start/Stop (made by termux.sh) run the same.
 # GPU: native apps use Zink on Turnip (Adreno's open Vulkan driver), the proot container (pd) uses
 # VirGL. If `glxinfo -B` shows llvmpipe, Zink isn't working: GALLIUM_DRIVER=virpipe instead.
 
@@ -13,17 +14,23 @@
 # (xrdb below) and GTK through xsettingsd (darkmode.sh). 96 = 100 %, 144 = 150 %, 192 = 200 %
 export XFT_DPI=168
 
+# Termux:Widget runs this without a terminal's environment: the PATH a shell would have
+# (i3status-rs is in ~/.cargo/bin, cliphist in ~/.local/bin)
+export PATH="$HOME/.config/termux/bin:$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+export LANG="${LANG:-en_US.UTF-8}"
+
 log="$PREFIX/tmp/desktop.log"
 show() { am start -n com.termux.x11/com.termux.x11.MainActivity >/dev/null 2>&1; }
 running() { pgrep -f com.termux.x11.CmdEntryPoint >/dev/null; }
 stop() {
-    pkill -f termux.x11; pkill -f virgl_test_server; pkill -f 'wallpaper\.sh loop$'
+    pkill -f termux.x11; pkill -f virgl_test_server; pkill -f 'wallpaper\.sh loop( later)?$'
     for _ in $(seq 50); do running || break; sleep 0.1; done
     # A leftover socket made the next start look ready too early: i3 found no X (black screen)
     rm -f "$PREFIX/tmp/.X11-unix/X0" "$PREFIX/tmp/.X0-lock"
 }
 
 case "$1" in
+hide)   am start -a android.intent.action.MAIN -c android.intent.category.HOME >/dev/null 2>&1; exit ;;
 stop)   stop; exit ;;
 exit)   stop; am startservice -a com.termux.service_stop com.termux/.app.TermuxService >/dev/null 2>&1; exit ;;
 "")     if running; then show; exit; fi
@@ -31,7 +38,7 @@ exit)   stop; am startservice -a com.termux.service_stop com.termux/.app.TermuxS
         echo "Desktop starting (log: $log)"
         exit ;;
 --here) ;;
-*)      echo "usage: d [stop|exit]" >&2; exit 1 ;;
+*)      echo "usage: desktop [hide|stop|exit]" >&2; exit 1 ;;
 esac
 
 stop

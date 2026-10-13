@@ -227,14 +227,15 @@ printf 'file://%s/Documents Documents\nfile:///storage/emulated/0/Download Downl
 # The Termux app opens fish, without Termux's welcome text
 [ "$(readlink ~/.termux/shell 2>/dev/null)" = "$PREFIX/bin/fish" ] || chsh -s fish
 touch ~/.hushlogin
-# Termux:Widget buttons (a folder named tasks = run in the background): desktop start/stop. In
-# ~/.shortcuts for its list widget, and as dynamic shortcuts (long-press the Termux:Widget icon,
+# Termux:Widget buttons Start/Stop for the desktop (a folder named tasks = run in the background).
+# In ~/.shortcuts for its list widget, and as dynamic shortcuts (long-press the Termux:Widget icon,
 # drag one onto the home screen; Honor's launcher has no 1x1 shortcut widget) after pressing
 # "Create shortcuts" in the Termux:Widget app
 for dir in ~/.shortcuts/tasks ~/.termux/widget/dynamic_shortcuts/tasks; do
     mkdir -p "$dir"
-    printf '#!%s/bin/sh\nexec ~/.config/termux/bin/d\n' "$PREFIX" > "$dir/Desktop"
-    printf '#!%s/bin/sh\nexec ~/.config/termux/bin/d stop\n' "$PREFIX" > "$dir/Desktop stop"
+    rm -f "$dir/Desktop" "$dir/Desktop stop"
+    printf '#!%s/bin/sh\nexec ~/.config/termux/bin/desktop\n' "$PREFIX" > "$dir/Start"
+    printf '#!%s/bin/sh\nexec ~/.config/termux/bin/desktop stop\n' "$PREFIX" > "$dir/Stop"
     chmod 700 "$dir" "$dir"/*
 done
 chmod 700 ~/.shortcuts ~/.termux/widget ~/.termux/widget/dynamic_shortcuts
@@ -286,5 +287,6 @@ Once, on the Android side:
     and no battery optimisation for Termux and Termux:X11
   - Termux:X11 → Preferences: capture system shortcuts (Super for i3), clipboard sharing
   - Apps: Termux:API (battery, volume), Termux:Widget (desktop buttons), Tailscale (homelab)
-Then: `d` starts X11 + i3 (in the background).
+  - Termux → "Display over other apps": lets the Start button bring Termux:X11 to the front
+Then: `desktop` (or the Start button) starts X11 + i3 in the background.
 EOF
