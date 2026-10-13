@@ -1,0 +1,4 @@
+#!/bin/sh
+# rb: rebuild this machine from its config. NixOS: nixos-rebuild switch; the tablet: termux.sh
+if [ -n "$TERMUX_VERSION" ]; then exec "$HOME/.config/scripts/termux.sh" "$@"; fi
+exec sudo nixos-rebuild switch "$@"

@@ -11,9 +11,10 @@ live_config_reload = true
 program = "sh"
 args = ["-c", "command -v fish >/dev/null && exec fish || exec bash"]
 
-# Opaque: the tablet has no compositor to draw foot's 0.88 transparency
+# See-through like foot (xcompmgr draws it; no blur on the tablet)
 [window]
 padding = { x = 12, y = 12 }
+opacity = 0.88
 
 [font]
 normal = { family = "Iosevka Nerd Font" }

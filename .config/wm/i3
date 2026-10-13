@@ -19,9 +19,10 @@ include ~/.config/wm/common.conf
 # Dark/light first: writes alacritty's colours and qt6ct's file, starts xsettingsd (GTK on X11)
 exec --no-startup-id $scripts/darkmode.sh apply
 exec --no-startup-id dunst
-# No compositor: picom made everything lag (Termux:X11 has no direct GPU path to the screen, so
-# every composited frame goes through the CPU; seconds per key press with blur, still laggy without).
-# So nothing is see-through here: the bar, rofi and dunst are solid black
+# Compositor: xcompmgr, transparency only (the see-through bar, rofi, dunst and alacritty; no blur).
+# picom lagged (Termux:X11 has no direct GPU path to the screen: seconds per key press with blur)
+# and with xrender windows disappeared and came back
+exec --no-startup-id xcompmgr
 exec --no-startup-id $scripts/clipstore.sh
 exec --no-startup-id $scripts/wallpaper.sh restore
 
@@ -52,17 +53,19 @@ bar {
     workspace_min_width 30
     status_command i3status-rs ~/.config/wm/i3status-rs.toml
     font pango:JetBrainsMono Nerd Font 9
+    # See-through background (xcompmgr draws the alpha)
+    i3bar_command i3bar --transparency
     tray_output primary
     # Clear of the screen's rounded corners (top left and right)
     padding 0 48px
 
     colors {
-        background         #000000
+        background         #000000b3
         statusline         #ffffff
         separator          #333333
         focused_workspace  #ffffff #ffffff #000000
-        active_workspace   #000000 #000000 #ffffff
-        inactive_workspace #000000 #000000 #777777
+        active_workspace   #00000000 #00000000 #ffffff
+        inactive_workspace #00000000 #00000000 #777777
         urgent_workspace   #ffffff #555555 #ffffff
     }
 }

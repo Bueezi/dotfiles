@@ -29,7 +29,7 @@ pick)
 slideshow)
     if [ -e ~/.config/slideshow ]; then
         rm -f ~/.config/slideshow
-        [ -f "$pidf" ] && kill "$(cat "$pidf")"; rm -f "$pidf"
+        pkill -f 'wallpaper\.sh loop$'; rm -f "$pidf"
         notify-send -a slideshow -i preferences-desktop-wallpaper-symbolic "Slideshow off"
     else
         touch ~/.config/slideshow
@@ -37,6 +37,9 @@ slideshow)
         notify-send -a slideshow -i preferences-desktop-wallpaper-symbolic "Slideshow on" "New wallpaper every 5 minutes"
     fi ;;
 loop)   # the slideshow itself: a new one right away, then every 5 minutes
+    # Only one: a loop from an earlier desktop session (`d` again) keeps running detached, and
+    # several at once made the wallpaper change every few seconds
+    for p in $(pgrep -f 'wallpaper\.sh loop$'); do [ "$p" != $$ ] && kill "$p"; done
     echo $$ > "$pidf"
     while :; do f=$(random); [ -n "$f" ] && set_wp "$f"; sleep 300; done ;;
 esac

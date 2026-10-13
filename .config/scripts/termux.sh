@@ -15,9 +15,9 @@ config() { git --git-dir="$HOME/.dotfiles" --work-tree="$HOME" "$@"; }
 # ── Packages (the "systemPackages" of the tablet) ───
 PACKAGES=(
     x11-repo tur-repo
-    # Desktop: X server, i3 (+ i3bar), notifications, launcher, terminal, wallpaper,
+    # Desktop: X server, i3 (+ i3bar), compositor, notifications, launcher, terminal, wallpaper,
     # screenshots, clipboard tools, theme switching for GTK on X11 (xsettingsd)
-    termux-x11-nightly i3 dbus dunst libnotify rofi alacritty feh scrot xclip xdotool xsettingsd xorg-xrdb
+    termux-x11-nightly i3 dbus xcompmgr dunst libnotify rofi alacritty feh scrot xclip xdotool xsettingsd xorg-xrdb
     pulseaudio pavucontrol
     # GPU: Zink on Turnip (Adreno) for native apps, VirGL for the proot container
     mesa-zink mesa-vulkan-icd-freedreno virglrenderer-android mesa-demos
@@ -184,8 +184,9 @@ if ! command -v i3status-rs >/dev/null; then
     cargo install --locked i3status-rs --config "patch.crates-io.async-pidfd.path=\"$apd\""
     mkdir -p ~/.local/share/i3status-rust && cp -r ~/.cargo/registry/src/*/i3status-rs-*/files/* ~/.local/share/i3status-rust/ 2>/dev/null || true
 fi
-# (Also replaces the old black-and-white wrapper that ran it with --no-color)
-if [ ! -x ~/.local/bin/fetch ] || grep -q -- --no-color ~/.local/bin/fetch; then
+# (Also replaces the old black-and-white wrapper script around fetch-bin. Not a search for
+# "--no-color": the program itself contains that option, so it rebuilt on every run)
+if [ ! -x ~/.local/bin/fetch ] || grep -q fetch-bin ~/.local/bin/fetch; then
     # Same as the desktop: logo in colour, grey usage percentages
     say "fetch (areofyl)"
     rm -rf "$build/fetch" && git clone -q --depth 1 https://github.com/areofyl/fetch "$build/fetch"
@@ -237,10 +238,15 @@ if ! compgen -G "$PREFIX/share/texlive/*/tlpkg/texlive.tlpdb" >/dev/null; then
     termux-patch-texlive
 fi
 source "$PREFIX/etc/profile.d/texlive.sh"
-tlmgr install "${TEX[@]}"
-fmtutil-sys --quiet --byfmt pdflatex
-updmap-sys --quiet
-command -v texlinks >/dev/null && texlinks
+# Only when a collection is missing: tlmgr goes online, and the font maps take minutes to rebuild
+missing=$(comm -23 <(printf '%s\n' "${TEX[@]}" | sort) <(tlmgr info --only-installed --data name | sort))
+if [ -n "$missing" ]; then
+    say "TeX Live: $(echo $missing)"
+    tlmgr install $missing
+    fmtutil-sys --quiet --byfmt pdflatex
+    updmap-sys --quiet
+    command -v texlinks >/dev/null && texlinks
+fi
 
 # ── Proot Debian ──
 say "Proot $PROOT_DISTRO: ${PROOT_PACKAGES[*]}"
