@@ -135,7 +135,9 @@ say "Packages"
 # The X11 and TUR repositories first: apt plans a whole `pkg install` before installing anything,
 # so packages from a repository installed in the same command are "unable to locate"
 pkg install -y x11-repo tur-repo
-pkg update -y
+# A repository mid-sync ("File has unexpected size") fails the update; apt keeps the previous lists,
+# so carry on instead of stopping
+pkg update -y || echo "Some package lists didn't update (a repository syncing?); using the previous ones"
 pkg upgrade -y -o Dpkg::Options::=--force-confold
 pkg install -y "${PACKAGES[@]}" "${BASE[@]}"
 keep=$(printf '%s\n' "${PACKAGES[@]}" "${BASE[@]}" | sort -u)
