@@ -172,6 +172,10 @@ if [ ! -x ~/.local/bin/clipnotify ]; then
     rm -rf "$build/clipnotify" && git clone -q --depth 1 https://github.com/cdown/clipnotify "$build/clipnotify"
     make -C "$build/clipnotify" && install -m 755 "$build/clipnotify/clipnotify" ~/.local/bin/
 fi
+if [ ~/.config/termux/tray-spacer.c -nt ~/.local/bin/tray-spacer ]; then
+    say "tray-spacer (keeps the bar's tray icons out of the round corner)"
+    clang -O2 -o ~/.local/bin/tray-spacer ~/.config/termux/tray-spacer.c -lX11
+fi
 if [ ! -e "$PREFIX/lib/libsensors.so" ]; then
     # i3status-rs always links libsensors (its temperature block); Termux doesn't package it
     say "libsensors (lm-sensors)"
@@ -192,12 +196,17 @@ if ! command -v i3status-rs >/dev/null; then
     cargo install --locked i3status-rs --config "patch.crates-io.async-pidfd.path=\"$apd\""
     mkdir -p ~/.local/share/i3status-rust && cp -r ~/.cargo/registry/src/*/i3status-rs-*/files/* ~/.local/share/i3status-rust/ 2>/dev/null || true
 fi
-if [ ! -x ~/.local/bin/fetch ]; then
-    # Same as the desktop: logo in colour, grey usage percentages
+fetch_rev=2   # one up after changing the patches below: rebuilds once
+if [ "$(cat "$build/fetch.rev" 2>/dev/null)" != "$fetch_rev" ] || [ ! -x ~/.local/bin/fetch ]; then
+    # Same as the desktop: logo in colour, grey usage percentages. Kernel without Android's long
+    # suffix ("6.6.50-android15-8-g…-4k": 6.6.50), like fastfetch's config does
     say "fetch (areofyl)"
     rm -rf "$build/fetch" && git clone -q --depth 1 https://github.com/areofyl/fetch "$build/fetch"
     sed -i -E '/(pct|capacity) >=/ s/"(31|32|93)"/"38;5;248"/g' "$build/fetch/fetch.c"
+    sed -i 's|add_info("Kernel", "%s %s", u.sysname, u.release);|{ char *a = strstr(u.release, "-android"); if (a) *a = 0; } &|' "$build/fetch/fetch.c"
+    grep -q 'strstr(u.release, "-android")' "$build/fetch/fetch.c"
     make -C "$build/fetch" && install -m 755 "$build/fetch/fetch" ~/.local/bin/fetch
+    echo "$fetch_rev" > "$build/fetch.rev"
 fi
 
 # ── Look: GTK theme, cursor, OCR languages ──
@@ -239,7 +248,8 @@ touch ~/.hushlogin
 for dir in ~/.shortcuts/tasks ~/.termux/widget/dynamic_shortcuts/tasks; do
     mkdir -p "$dir"
     printf '#!%s/bin/sh\nexec ~/.config/termux/bin/desktop\n' "$PREFIX" > "$dir/Start"
-    printf '#!%s/bin/sh\nexec ~/.config/termux/bin/desktop stop\n' "$PREFIX" > "$dir/Stop"
+    # Stop: Termux too (else its "1 session" notification stays)
+    printf '#!%s/bin/sh\nexec ~/.config/termux/bin/desktop exit\n' "$PREFIX" > "$dir/Stop"
     chmod 700 "$dir" "$dir"/*
 done
 chmod 700 ~/.shortcuts ~/.termux/widget ~/.termux/widget/dynamic_shortcuts
@@ -285,24 +295,33 @@ proot-distro login "$PROOT_DISTRO" -- sh -c "apt-get update -q && apt-get instal
 
 # Desktop apps with only Linux (glibc) builds: Electron apps, so the app inside their arm64 .deb
 # runs on Termux's own electron42 (launchers in .config/termux/bin: no proot, so the desktop's cursor,
-# dark mode and tray). Unpacked into $PREFIX/opt/<name>, again only when GitHub has a newer release.
+# dark mode and tray). Its resources are unpacked into $PREFIX/opt/<name>, again only when GitHub has
+# a newer release; Electron's files go next to them, like in the .deb: the app finds its own files
+# (tray icon, translations) in the "resources" next to the program, and counts as installed only
+# when the program isn't called "electron". So a copy named after the app (Android allows no hard
+# links), renewed when electron42 updates.
 # electron_app <name> <GitHub repo> <release file pattern> <app folder inside the .deb>
 electron_app() {
-    local url dir=$PREFIX/opt/$1 tmp=$PREFIX/tmp/$1
+    local url dir=$PREFIX/opt/$1 tmp=$PREFIX/tmp/$1 electron=$PREFIX/lib/electron42 f
     # `|| true`: no match is an answer here, not an error (set -e ended the script)
     url=$(curl -s "https://api.github.com/repos/$2/releases/latest" | grep -o "https://[^\"]*$3" | head -1 || true)
     [ -n "$url" ] || { echo "No $1 release found"; return; }
-    [ "$(cat "$dir/release" 2>/dev/null)" = "$url" ] && return
-    say "$1: $(basename "$url")"
-    curl -L -o "$tmp.deb" "$url"
-    rm -rf "$tmp" "$dir"; mkdir -p "$dir"
-    dpkg-deb -x "$tmp.deb" "$tmp"
-    mv "$tmp/$4/resources" "$dir/"
-    # The biggest icon, for the rofi entry
-    find "$tmp/usr/share/icons" -name '*.png' -printf '%s %p\n' | sort -n | tail -1 | cut -d' ' -f2- |
-        xargs -r -I{} cp {} "$dir/icon.png"
-    echo "$url" > "$dir/release"
-    rm -rf "$tmp" "$tmp.deb"
+    if [ "$(cat "$dir/release" 2>/dev/null)" != "$url" ]; then
+        say "$1: $(basename "$url")"
+        curl -L -o "$tmp.deb" "$url"
+        rm -rf "$tmp" "$dir/resources"; mkdir -p "$dir"
+        dpkg-deb -x "$tmp.deb" "$tmp"
+        mv "$tmp/$4/resources" "$dir/"
+        # The biggest icon, for the rofi entry
+        find "$tmp/usr/share/icons" -name '*.png' -printf '%s %p\n' | sort -n | tail -1 | cut -d' ' -f2- |
+            xargs -r -I{} cp {} "$dir/icon.png"
+        echo "$url" > "$dir/release"
+        rm -rf "$tmp" "$tmp.deb"
+    fi
+    for f in "$electron"/*; do
+        case ${f##*/} in electron|resources|chrome_sandbox) ;; *) ln -sfn "$f" "$dir/" ;; esac
+    done
+    cp -pu "$electron/electron" "$dir/$1"   # -p keeps electron42's date: -u copies again when newer
 }
 electron_app vesktop Vencord/Vesktop 'vesktop_[^"/]*_arm64\.deb' opt/Vesktop
 electron_app claude-desktop aaddrick/claude-desktop-debian 'claude-desktop_[^"/]*_arm64\.deb' usr/lib/claude-desktop
@@ -322,6 +341,11 @@ bin=$HOME/.config/termux/bin
 entry Vesktop "$bin/vesktop" discord "Network;InstantMessaging;"   # Papirus (its .deb has no png)
 entry Claude "$bin/claude-desktop %u" "$PREFIX/opt/claude-desktop/icon.png" "Utility;" "x-scheme-handler/claude;"
 entry Eclipse "$bin/eclipse" "$HOME/.config/nixos/eclipse/icon.png" "AudioVideo;Audio;Player;"
+# Termux's Chromium entry has unfilled placeholders (Exec=@@desktop_exec, Icon=@@desktop_icon): no
+# icon in rofi, no command. A copy here (same name: it replaces the system's) with both filled in
+c=$PREFIX/share/applications/chromium.desktop
+[ ! -f "$c" ] || sed -e "s|@@desktop_exec|$PREFIX/bin/chromium-browser|" -e 's/@@desktop_icon/chromium/' \
+    -e '/@@/d' "$c" > "$apps/chromium.desktop"
 ! command -v update-desktop-database >/dev/null || update-desktop-database -q "$apps"
 
 say "Done"

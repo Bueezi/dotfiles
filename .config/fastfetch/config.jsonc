@@ -12,7 +12,8 @@
     "separator",
     { "type": "os",       "key": "OS" },
     { "type": "host",     "key": "Host" },
-    { "type": "kernel",   "key": "Kernel" },
+    // Kernel without Android's long suffix on the tablet ("6.6.50-android15-8-g…-4k": 6.6.50)
+    { "type": "command",  "key": "Kernel", "text": "uname -sr | sed 's/-android.*//'" },
     { "type": "uptime",   "key": "Uptime" },
     { "type": "packages", "key": "Packages" },
     { "type": "shell",    "key": "Shell" },

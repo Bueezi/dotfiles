@@ -7,7 +7,7 @@
 #        desktop stop   close the desktop; Termux keeps running
 #        desktop exit   close the desktop and exit Termux too
 # The power menu and the Termux:Widget buttons Start/Stop (made by termux.sh) run the same.
-# GPU: native apps use Zink on Turnip (Adreno's open Vulkan driver), the proot container (pd) uses
+# GPU: native apps use Zink on Turnip (Adreno's open Vulkan driver), the proot container (`debian`) uses
 # VirGL. If `glxinfo -B` shows llvmpipe, Zink isn't working: GALLIUM_DRIVER=virpipe instead.
 
 # Size of everything (fonts, bar, apps): X11's DPI, which i3, alacritty, rofi, dunst and Qt read
@@ -25,6 +25,10 @@ if [ -z "$LD_PRELOAD" ]; then
         [ -f "$PREFIX/lib/$l" ] && { export LD_PRELOAD="$PREFIX/lib/$l"; break; }
     done
 fi
+
+# Termux's own am (the running Termux app does the work, over a socket): Android's starts a Java VM
+# every time, about a second for each Start/hide. Android's if Termux's isn't there or fails
+am() { termux-am "$@" 2>/dev/null || command am "$@"; }
 
 log="$PREFIX/tmp/desktop.log"
 show() { am start -n com.termux.x11/com.termux.x11.MainActivity >/dev/null 2>&1; }

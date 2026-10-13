@@ -25,6 +25,9 @@ exec --no-startup-id dunst
 exec --no-startup-id xcompmgr
 exec --no-startup-id $scripts/clipstore.sh
 exec --no-startup-id $scripts/wallpaper.sh restore
+# Two empty slots at the tray's far end: i3bar's padding doesn't move the tray out of the round
+# corner (tray-spacer.c in ~/.config/termux, built by termux.sh)
+exec --no-startup-id tray-spacer 2
 
 # ── Window rules (X11: by class) ────────────────────
 # Sizes as a share of the screen: fixed pixels look tiny at the tablet's DPI
@@ -35,7 +38,7 @@ for_window [class="^(scratch-.*|Thunar)$"] floating enable, resize set 60 ppt 70
 # Eclipse Music (Electron, ~/.config/nixos/eclipse): floating like on sway
 for_window [class="(?i)^eclipse$"] floating enable, resize set 60 ppt 70 ppt, move position center
 # Marked for scripts/open.sh ($mod+Shift+d), like on sway
-for_window [class="^vesktop$"] mark --add vesktop, floating enable, resize set 60 ppt 70 ppt, move position center
+for_window [class="(?i)^vesktop$"] mark --add vesktop, floating enable, resize set 60 ppt 70 ppt, move position center
 for_window [window_role="pop-up"] floating enable
 for_window [window_type="dialog"] floating enable
 
@@ -48,12 +51,13 @@ bindsym $mod+m              exec eclipse
 bindsym $mod+Shift+d        exec $scripts/open.sh vesktop "60 ppt" "70 ppt" vesktop
 bindsym $mod+Shift+w        exec $scripts/wallpaper.sh pick
 bindsym $mod+Shift+o        exec $scripts/wallpaper.sh slideshow
+# Area screenshot like $mod+Shift+s (common.conf), which Android takes for its own screenshot
+bindsym $mod+Shift+a        exec $scripts/screenshot.sh
 # Alt+Tab: window list (sway's swayr doesn't exist here)
 bindsym Mod1+Tab            exec rofi -show window
 
-# Session
-# Hide or close the desktop, or exit Termux (the power menu's first three entries)
-bindsym $mod+Shift+m        exec $scripts/power.sh leave
+# Session: back to Android, the desktop keeps running (closing/exiting: the power menu, $mod+Shift+p)
+bindsym $mod+Shift+m        exec desktop hide
 
 # ── Bar ─────────────────────────────────────────────
 bar {

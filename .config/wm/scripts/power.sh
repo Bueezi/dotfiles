@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # Power menu ($mod+Shift+p). NixOS: sleep, hibernate (laptop), reboot, power off, update, rebuild,
 # sync. The tablet (Termux, i3): hide, close desktop, exit Termux, update, sync; Android does the rest.
-# `power.sh leave` ($mod+Shift+m on the tablet): only hide / close desktop / exit Termux.
 # Update, rebuild and sync run in a scratchpad terminal (hide/show with $mod+minus) so you can see
 # output and type your sudo password. Once the password is in (sudo caches it), the terminal hides
 # itself and comes back only when it needs you: a failure, a firmware prompt, or the end of an update.
@@ -108,9 +107,8 @@ slideshow() {
 case "$1" in slideshow|sync|update|rebuild) "$1"; exit ;; esac
 
 if [ -n "$TERMUX_VERSION" ]; then
-    items="󰓎  hide desktop\n󰍃  close desktop\n󰐥  exit termux"
-    [ "$1" = leave ] || items="$items\n󰚰  update\n󰓦  sync"
-    choice=$(printf "$items" | rofi -dmenu -i -p power)
+    choice=$(printf "󰓎  hide desktop\n󰍃  close desktop\n󰐥  exit termux\n󰚰  update\n󰓦  sync" |
+      rofi -dmenu -i -p power)
 else
     # Hibernate only on the laptop: the desktop has no swap partition to resume from (zram only)
     hibernate=; [ -d /sys/class/power_supply/BAT0 ] && hibernate="󰋊  hibernate\n"

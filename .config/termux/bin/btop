@@ -5,4 +5,4 @@
 # which Android refuses, and btop quit. It gets the real file with that line added instead
 f=$PREFIX/tmp/btop-cpuinfo
 { printf 'model name\t: %s\n' "$(getprop ro.soc.model)"; cat /proc/cpuinfo; } > "$f"
-PD_OPTS="--bind=$f:/proc/cpuinfo" exec "$HOME/.config/termux/bin/pd" btop "$@"
+DEBIAN_OPTS="--bind=$f:/proc/cpuinfo" exec "$HOME/.config/termux/bin/debian" btop "$@"
