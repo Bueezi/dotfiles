@@ -1,0 +1,4 @@
+#!/data/data/com.termux/files/usr/bin/sh
+# Claude Desktop on Termux's own Electron (see vesktop next to this). Its native module is built for
+# glibc and can't load here: Claude runs without it (some local-file features may be missing)
+exec electron42 --no-sandbox "$PREFIX/opt/claude-desktop/resources/app.asar" "$@"

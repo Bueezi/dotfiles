@@ -1,0 +1,5 @@
+#!/data/data/com.termux/files/usr/bin/sh
+# Vesktop (Discord) on Termux's own Electron, like Eclipse: no proot, so the desktop's cursor, dark
+# mode and tray. termux.sh unpacks the app from its arm64 .deb into $PREFIX/opt/vesktop.
+# --no-sandbox: Android has no user namespaces for Electron's sandbox
+exec electron42 --no-sandbox "$PREFIX/opt/vesktop/resources/app.asar" "$@"

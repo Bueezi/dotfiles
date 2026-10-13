@@ -288,37 +288,45 @@ say "Proot $PROOT_DISTRO: ${PROOT_PACKAGES[*]}"
 proot-distro login "$PROOT_DISTRO" -- true 2>/dev/null || proot-distro install "$PROOT_DISTRO"
 proot-distro login "$PROOT_DISTRO" -- sh -c "apt-get update -q && apt-get install -y ${PROOT_PACKAGES[*]}"
 
-# Desktop apps with only Linux (glibc) builds, from their arm64 .deb releases, into the container;
-# reinstalled only when GitHub has a newer version. They run as normal windows via `pd`
-# deb_app <package> <GitHub repo> <release file pattern>
-deb_app() {
-    local url have
-    # `|| true`: "not installed" / no match are answers here, not errors (set -e ended the script)
+# Desktop apps with only Linux (glibc) builds: Electron apps, so the app inside their arm64 .deb
+# runs on Termux's own electron42 (launchers in .config/termux/bin: no proot, so the desktop's cursor,
+# dark mode and tray). Unpacked into $PREFIX/opt/<name>, again only when GitHub has a newer release.
+# electron_app <name> <GitHub repo> <release file pattern> <app folder inside the .deb>
+electron_app() {
+    local url dir=$PREFIX/opt/$1 tmp=$PREFIX/tmp/$1
+    # `|| true`: no match is an answer here, not an error (set -e ended the script)
     url=$(curl -s "https://api.github.com/repos/$2/releases/latest" | grep -o "https://[^\"]*$3" | head -1 || true)
     [ -n "$url" ] || { echo "No $1 release found"; return; }
-    have=$(proot-distro login "$PROOT_DISTRO" -- dpkg-query -W -f='${Version}' "$1" 2>/dev/null || true)
-    [ -n "$have" ] && [ "${url#*"$have"}" != "$url" ] && return
+    [ "$(cat "$dir/release" 2>/dev/null)" = "$url" ] && return
     say "$1: $(basename "$url")"
-    curl -L -o "$PREFIX/tmp/$1.deb" "$url"
-    proot-distro login "$PROOT_DISTRO" --shared-tmp -- apt-get install -y "/tmp/$1.deb"
-    rm -f "$PREFIX/tmp/$1.deb"
+    curl -L -o "$tmp.deb" "$url"
+    rm -rf "$tmp" "$dir"; mkdir -p "$dir"
+    dpkg-deb -x "$tmp.deb" "$tmp"
+    mv "$tmp/$4/resources" "$dir/"
+    # The biggest icon, for the rofi entry
+    find "$tmp/usr/share/icons" -name '*.png' -printf '%s %p\n' | sort -n | tail -1 | cut -d' ' -f2- |
+        xargs -r -I{} cp {} "$dir/icon.png"
+    echo "$url" > "$dir/release"
+    rm -rf "$tmp" "$tmp.deb"
 }
-deb_app vesktop Vencord/Vesktop 'vesktop_[^"/]*_arm64\.deb'
-deb_app claude-desktop aaddrick/claude-desktop-debian 'claude-desktop_[^"/]*_arm64\.deb'
+electron_app vesktop Vencord/Vesktop 'vesktop_[^"/]*_arm64\.deb' opt/Vesktop
+electron_app claude-desktop aaddrick/claude-desktop-debian 'claude-desktop_[^"/]*_arm64\.deb' usr/lib/claude-desktop
+# They ran in the proot container before
+proot-distro login "$PROOT_DISTRO" -- sh -c \
+    'p=$(dpkg-query -W -f="\${Package} " vesktop claude-desktop 2>/dev/null); [ -z "$p" ] || apt-get purge -y $p' || true
 
-# rofi entries (Termux's apps don't see the container's): Vesktop and Claude through pd, Eclipse
-# with Termux's own Electron. --no-sandbox: Android has no user namespaces for Electron's sandbox
+# rofi entries for the Electron apps. claude:// links: the browser hands the login back to Claude
+# through its entry (%u = the link, passed on to the Claude already running)
 apps=~/.local/share/applications; mkdir -p "$apps"
 # entry <name> <command> <icon> <categories> [<MimeType>]
 entry() {
     printf '[Desktop Entry]\nType=Application\nName=%s\nExec=%s\nIcon=%s\nCategories=%s\n' "$1" "$2" "$3" "$4" > "$apps/$1.desktop"
     [ -z "${5:-}" ] || echo "MimeType=$5" >> "$apps/$1.desktop"
 }
-entry Vesktop "$HOME/.config/termux/bin/pd vesktop --no-sandbox" discord "Network;InstantMessaging;"
-# claude:// links: the browser hands the login back to the app through this entry (%u = the link,
-# passed on to the Claude already running)
-entry Claude "$HOME/.config/termux/bin/pd claude-desktop --no-sandbox %u" claude "Utility;" "x-scheme-handler/claude;"
-entry Eclipse "electron42 --no-sandbox $HOME/.config/nixos/eclipse" "$HOME/.config/nixos/eclipse/icon.png" "AudioVideo;Audio;Player;"
+bin=$HOME/.config/termux/bin
+entry Vesktop "$bin/vesktop" discord "Network;InstantMessaging;"   # Papirus (its .deb has no png)
+entry Claude "$bin/claude-desktop %u" "$PREFIX/opt/claude-desktop/icon.png" "Utility;" "x-scheme-handler/claude;"
+entry Eclipse "$bin/eclipse" "$HOME/.config/nixos/eclipse/icon.png" "AudioVideo;Audio;Player;"
 ! command -v update-desktop-database >/dev/null || update-desktop-database -q "$apps"
 
 say "Done"

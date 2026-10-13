@@ -1,0 +1,3 @@
+#!/data/data/com.termux/files/usr/bin/sh
+# Eclipse Music (~/.config/nixos/eclipse) on Termux's Electron: the `eclipse` command of the PCs
+exec electron42 --no-sandbox "$HOME/.config/nixos/eclipse" "$@"

@@ -1,0 +1,10 @@
+#!/data/data/com.termux/files/usr/bin/sh
+# xdg-open on the desktop (this folder comes first in its PATH). Termux's own is termux-open, which
+# hands everything to Android: links from the desktop's apps opened in Android's browser. Here web
+# links go to LibreWolf and the rest (files, claude:// after a login) through GIO, which knows the
+# desktop's apps (~/.local/share/applications). Outside the desktop (no X): Android's, as before
+[ -n "$DISPLAY" ] || exec termux-open "$@"
+case "$1" in
+    http://*|https://*) exec librewolf "$1" ;;
+    *) exec gio open "$1" ;;
+esac

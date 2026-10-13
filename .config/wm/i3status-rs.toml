@@ -1,18 +1,20 @@
 [theme]
 theme = "plain"
 [theme.overrides]
-idle_bg = "#00000000"   # see-through: the bar behind is blurred
+# "none": no background of their own, the bar's shows (blurred on sway). A clear colour instead cut
+# a hole through i3bar's tint on the tablet (it paints blocks over the bar, not blended)
+idle_bg = "none"
 idle_fg = "#ffffff"
-info_bg = "#00000000"
+info_bg = "none"
 info_fg = "#ffffff"
-good_bg = "#00000000"
+good_bg = "none"
 good_fg = "#ffffff"
-warning_bg = "#00000000"
+warning_bg = "none"
 warning_fg = "#aaaaaa"
 critical_bg = "#ffffff"
 critical_fg = "#000000"
 separator = " "
-separator_bg = "#00000000"
+separator_bg = "none"
 separator_fg = "#333333"
 
 [icons]
@@ -29,7 +31,7 @@ if_command = "[ -z \"$TERMUX_VERSION\" ]"
 block = "custom"
 command = "termux-volume | jq -r '.[] | select(.stream == \"music\") | \"vol: \\(.volume * 100 / .max_volume | floor)%\"'"
 format = "$text "
-interval = 5
+interval = 2
 if_command = "[ -n \"$TERMUX_VERSION\" ]"
 
 [[block]]
