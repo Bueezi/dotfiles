@@ -1,6 +1,6 @@
 // LibreWolf prefs for every machine. NixOS: librewolf.nix bakes this file into the package. The
-// tablet (Termux): termux.sh links it as ~/.librewolf/librewolf.overrides.cfg. Policies (theme,
-// search engine) are in policies.json next to this file.
+// tablet (Termux): termux.sh links it as ~/.config/librewolf/librewolf/librewolf.overrides.cfg.
+// Policies (theme, search engine) are in policies.json next to this file.
 // defaultPref() overrides LibreWolf's defaults, but what you change in Settings still sticks;
 // pref() forces the value.
 

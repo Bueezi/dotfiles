@@ -192,15 +192,12 @@ if ! command -v i3status-rs >/dev/null; then
     cargo install --locked i3status-rs --config "patch.crates-io.async-pidfd.path=\"$apd\""
     mkdir -p ~/.local/share/i3status-rust && cp -r ~/.cargo/registry/src/*/i3status-rs-*/files/* ~/.local/share/i3status-rust/ 2>/dev/null || true
 fi
-# (Also replaces the old black-and-white wrapper script around fetch-bin. Not a search for
-# "--no-color": the program itself contains that option, so it rebuilt on every run)
-if [ ! -x ~/.local/bin/fetch ] || grep -q fetch-bin ~/.local/bin/fetch; then
+if [ ! -x ~/.local/bin/fetch ]; then
     # Same as the desktop: logo in colour, grey usage percentages
     say "fetch (areofyl)"
     rm -rf "$build/fetch" && git clone -q --depth 1 https://github.com/areofyl/fetch "$build/fetch"
     sed -i -E '/(pct|capacity) >=/ s/"(31|32|93)"/"38;5;248"/g' "$build/fetch/fetch.c"
     make -C "$build/fetch" && install -m 755 "$build/fetch/fetch" ~/.local/bin/fetch
-    rm -f ~/.local/bin/fetch-bin
 fi
 
 # ── Look: GTK theme, cursor, OCR languages ──
@@ -241,7 +238,6 @@ touch ~/.hushlogin
 # "Create shortcuts" in the Termux:Widget app
 for dir in ~/.shortcuts/tasks ~/.termux/widget/dynamic_shortcuts/tasks; do
     mkdir -p "$dir"
-    rm -f "$dir/Desktop" "$dir/Desktop stop"
     printf '#!%s/bin/sh\nexec ~/.config/termux/bin/desktop\n' "$PREFIX" > "$dir/Start"
     printf '#!%s/bin/sh\nexec ~/.config/termux/bin/desktop stop\n' "$PREFIX" > "$dir/Stop"
     chmod 700 "$dir" "$dir"/*
@@ -255,10 +251,9 @@ ln -sfn ~/.config/termux/colors.properties ~/.termux/colors.properties
 termux-reload-settings
 
 # ── LibreWolf: the same prefs and policies as the desktop (one source in .config/librewolf) ──
-# The overrides file sits next to the profiles (LibreWolf's XDG location; not the old ~/.librewolf)
+# The overrides file sits next to the profiles (LibreWolf's XDG location)
 mkdir -p ~/.config/librewolf/librewolf "$PREFIX/lib/librewolf/distribution"
 ln -sfn ~/.config/librewolf/prefs.js ~/.config/librewolf/librewolf/librewolf.overrides.cfg
-rm -rf ~/.librewolf
 ln -sfn ~/.config/librewolf/policies.json "$PREFIX/lib/librewolf/distribution/policies.json"
 
 # ── TeX Live (once; later `tlmgr install` only adds what's missing) ──
