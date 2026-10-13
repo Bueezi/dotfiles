@@ -35,11 +35,13 @@ for_window [class="^clipboard$"] floating enable, resize set 50 ppt 50 ppt, move
 # Scratchpad apps ($mod+Shift+Return / e, the power menu's terminal): floating in the scratchpad,
 # shown. The same key (or $mod+minus) hides/shows them again
 for_window [class="^(scratch-.*|Thunar)$"] floating enable, resize set 60 ppt 70 ppt, move scratchpad, scratchpad show, move position center
-# Web apps (Electron, ~/.config/nixos/webapps: Eclipse Music, Toledo): floating like on sway
-for_window [class="(?i)^(eclipse|toledo)$"] floating enable, resize set 60 ppt 70 ppt, move position center
+# Eclipse Music (Electron, ~/.config/nixos/webapps): floating like on sway. Toledo tiles (all the space)
+for_window [class="(?i)^eclipse$"] floating enable, resize set 60 ppt 70 ppt, move position center
 # Marked for scripts/open.sh ($mod+Shift+d), like on sway
 for_window [class="(?i)^vesktop$"] mark --add vesktop, floating enable, resize set 60 ppt 70 ppt, move position center
 for_window [window_role="pop-up"] floating enable
+# GTK's file chooser (LibreWolf's save dialog…): it sized itself to the whole screen at this DPI
+for_window [window_role="GtkFileChooserDialog"] floating enable, resize set 60 ppt 70 ppt, move position center
 for_window [window_type="dialog"] floating enable
 
 # ── Keybindings (i3 only; the shared ones are in common.conf) ──
