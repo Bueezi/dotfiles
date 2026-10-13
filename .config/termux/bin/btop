@@ -1,4 +1,8 @@
 #!/data/data/com.termux/files/usr/bin/sh
 # btop isn't packaged for Termux: Debian's, from the proot container (termux.sh installs it).
-# Android hides /proc/stat from apps, so CPU usage may stay empty
-exec "$HOME/.config/termux/bin/pd" btop "$@"
+# Android hides /proc/stat from apps, so CPU usage may stay empty.
+# ARM's /proc/cpuinfo has no "model name" line: btop then looks for the CPU's name in /sys/devices,
+# which Android refuses, and btop quit. It gets the real file with that line added instead
+f=$PREFIX/tmp/btop-cpuinfo
+{ printf 'model name\t: %s\n' "$(getprop ro.soc.model)"; cat /proc/cpuinfo; } > "$f"
+PD_OPTS="--bind=$f:/proc/cpuinfo" exec "$HOME/.config/termux/bin/pd" btop "$@"

@@ -6,6 +6,12 @@
 # The desktop's D-Bus session too (notifications in dunst): its socket is in Termux's tmp, which
 # --shared-tmp makes the container's /tmp
 # LANG: Debian's always-present UTF-8 locale (btop refuses to start without one)
-exec proot-distro login debian --shared-tmp -- env DISPLAY=:0 GALLIUM_DRIVER=virpipe LANG=C.UTF-8 \
+# BROWSER: links from the container's apps go to Termux's LibreWolf, with Termux's HOME so they open
+# in the running one. Without it Debian's xdg-open took the first browser on its list it found:
+# Termux's Chromium (proot-distro puts Termux's bin last on the container's PATH)
+# PD_OPTS: extra proot-distro options (btop binds a /proc file with it)
+# shellcheck disable=SC2086
+exec proot-distro login debian --shared-tmp $PD_OPTS -- env DISPLAY=:0 GALLIUM_DRIVER=virpipe LANG=C.UTF-8 \
     PULSE_SERVER=127.0.0.1 DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS//$PREFIX\/tmp//tmp}" \
+    BROWSER="env HOME=$HOME $PREFIX/bin/librewolf" \
     "${@:-bash}"

@@ -226,7 +226,12 @@ fc-cache -f >/dev/null
 # Storage access (Android's Download folder), asks once
 [ -d ~/storage ] || termux-setup-storage
 # Thunar's sidebar with the tablet's paths (the PCs' bookmarks file is left out of this checkout)
-printf 'file://%s/Documents Documents\nfile:///storage/emulated/0/Download Downloads\n' "$HOME" > ~/.config/gtk-3.0/bookmarks
+# ~/Documents/shared = Android's Documents/shared: the same files for Android's apps and the desktop's
+# (the container sees it too). A folder of its own: git and Android's shared storage don't mix
+mkdir -p ~/Documents /storage/emulated/0/Documents/shared ||
+    echo "No storage access yet: allow it, then rb again"
+ln -sfn /storage/emulated/0/Documents/shared ~/Documents/shared
+printf 'file://%s/Documents Documents\nfile://%s/Documents/shared Shared\nfile:///storage/emulated/0/Download Downloads\n' "$HOME" "$HOME" > ~/.config/gtk-3.0/bookmarks
 # The Termux app opens fish, without Termux's welcome text
 [ "$(readlink ~/.termux/shell 2>/dev/null)" = "$PREFIX/bin/fish" ] || chsh -s fish
 touch ~/.hushlogin
@@ -304,10 +309,17 @@ deb_app claude-desktop aaddrick/claude-desktop-debian 'claude-desktop_[^"/]*_arm
 # rofi entries (Termux's apps don't see the container's): Vesktop and Claude through pd, Eclipse
 # with Termux's own Electron. --no-sandbox: Android has no user namespaces for Electron's sandbox
 apps=~/.local/share/applications; mkdir -p "$apps"
-entry() { printf '[Desktop Entry]\nType=Application\nName=%s\nExec=%s\nIcon=%s\nCategories=%s\n' "$@" > "$apps/$1.desktop"; }
+# entry <name> <command> <icon> <categories> [<MimeType>]
+entry() {
+    printf '[Desktop Entry]\nType=Application\nName=%s\nExec=%s\nIcon=%s\nCategories=%s\n' "$1" "$2" "$3" "$4" > "$apps/$1.desktop"
+    [ -z "${5:-}" ] || echo "MimeType=$5" >> "$apps/$1.desktop"
+}
 entry Vesktop "$HOME/.config/termux/bin/pd vesktop --no-sandbox" discord "Network;InstantMessaging;"
-entry Claude "$HOME/.config/termux/bin/pd claude-desktop --no-sandbox" claude "Utility;"
+# claude:// links: the browser hands the login back to the app through this entry (%u = the link,
+# passed on to the Claude already running)
+entry Claude "$HOME/.config/termux/bin/pd claude-desktop --no-sandbox %u" claude "Utility;" "x-scheme-handler/claude;"
 entry Eclipse "electron42 --no-sandbox $HOME/.config/nixos/eclipse" "$HOME/.config/nixos/eclipse/icon.png" "AudioVideo;Audio;Player;"
+! command -v update-desktop-database >/dev/null || update-desktop-database -q "$apps"
 
 say "Done"
 cat <<'EOF'
