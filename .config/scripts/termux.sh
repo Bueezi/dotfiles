@@ -220,8 +220,10 @@ ln -sfn ~/.config/termux/colors.properties ~/.termux/colors.properties
 termux-reload-settings
 
 # ── LibreWolf: the same prefs and policies as the desktop (one source in .config/librewolf) ──
-mkdir -p ~/.librewolf "$PREFIX/lib/librewolf/distribution"
-ln -sfn ~/.config/librewolf/prefs.js ~/.librewolf/librewolf.overrides.cfg
+# The overrides file sits next to the profiles (LibreWolf's XDG location; not the old ~/.librewolf)
+mkdir -p ~/.config/librewolf/librewolf "$PREFIX/lib/librewolf/distribution"
+ln -sfn ~/.config/librewolf/prefs.js ~/.config/librewolf/librewolf/librewolf.overrides.cfg
+rm -rf ~/.librewolf
 ln -sfn ~/.config/librewolf/policies.json "$PREFIX/lib/librewolf/distribution/policies.json"
 
 # ── TeX Live (once; later `tlmgr install` only adds what's missing) ──

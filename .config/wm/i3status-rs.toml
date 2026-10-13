@@ -21,6 +21,16 @@ icons = "material-nf"
 [[block]]
 block = "sound"
 format = "vol: {$volume|} "
+# Not on the tablet: Termux's PulseAudio has its own volume, Android's is below
+if_command = "[ -z \"$TERMUX_VERSION\" ]"
+
+# Tablet: Android's media volume (Termux:API, like the battery)
+[[block]]
+block = "custom"
+command = "termux-volume | jq -r '.[] | select(.stream == \"music\") | \"vol: \\(.volume * 100 / .max_volume | floor)%\"'"
+format = "$text "
+interval = 5
+if_command = "[ -n \"$TERMUX_VERSION\" ]"
 
 [[block]]
 block = "battery"

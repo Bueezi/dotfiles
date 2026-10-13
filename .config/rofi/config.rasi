@@ -1,6 +1,8 @@
-/* rofi on the tablet: fuzzel's counterpart (~/.config/fuzzel/fuzzel.ini), same black and white
-   look, but solid black (no compositor on the tablet): white border, grey text, the selection
-   inverted. */
+/* rofi on the tablet: fuzzel's counterpart (~/.config/fuzzel/fuzzel.ini), same black and white look,
+   solid black (no compositor on the tablet): white border, grey text, the selection inverted.
+   Built on an empty theme: rofi's default one styles the list rows itself (light rows otherwise). */
+@theme "/dev/null"
+
 configuration {
     font: "JetBrainsMono Nerd Font 13";
     show-icons: true;
@@ -13,42 +15,59 @@ configuration {
 * {
     background-color: transparent;
     text-color: #888888;
+    border-color: #ffffff;
+    spacing: 0;
 }
 
 window {
     width: 30em;
     background-color: #000000;
     border: 2px;
-    border-color: #ffffff;
     border-radius: 6px;
     padding: 16px 30px;
 }
 
+mainbox {
+    children: [ inputbar, listview ];
+    spacing: 10px;
+}
 inputbar {
     children: [ prompt, entry ];
     spacing: 10px;
-    margin: 0 0 10px 0;
 }
 prompt, entry {
     text-color: #ffffff;
+    placeholder-color: #555555;
 }
 
 listview {
     lines: 10;
     spacing: 4px;
+    scrollbar: false;
 }
 element {
     padding: 4px 6px;
     spacing: 10px;
     border-radius: 4px;
+    children: [ element-icon, element-text ];
 }
-element-text {
-    text-color: inherit;
-    highlight: bold #ffffff;
+element normal.normal, element alternate.normal, element normal.active, element alternate.active,
+element normal.urgent, element alternate.urgent {
+    background-color: transparent;
+    text-color: #888888;
 }
-element selected {
+element selected.normal, element selected.active, element selected.urgent {
     background-color: #ffffff;
     text-color: #444444;
+}
+element-icon {
+    size: 1.2em;
+    background-color: inherit;
+}
+element-text {
+    background-color: inherit;
+    text-color: inherit;
+    highlight: bold #ffffff;
 }
 element-text selected {
     highlight: bold #000000;
