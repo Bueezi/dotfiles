@@ -84,29 +84,7 @@ in
   # (Linux ignores the homelab's advertised subnets without it). "client" loosens reverse-path
   # filtering, which subnet routes and exit nodes need. openFirewall: its UDP port, so peers can
   # connect directly instead of through a slow DERP relay
-  services.tailscale = {
-    enable = true; useRoutingFeatures = "client"; openFirewall = true;
-    # Taildrop: my user may receive files without sudo (the receiver below)
-    extraSetFlags = [ "--operator=ben" ];
-  };
-  # Taildrop receiver: files sent to this machine (Android: Share → Tailscale → this PC) land in
-  # ~/Downloads, same-named ones renamed, with a notification each
-  systemd.user.services.taildrop = {
-    description = "Receive Taildrop files into ~/Downloads";
-    wantedBy = [ "default.target" ];
-    path = [ config.services.tailscale.package pkgs.libnotify ];
-    serviceConfig = { Restart = "always"; RestartSec = 10; };
-    script = ''
-      mkdir -p "$HOME/Downloads"
-      tailscale file get --loop --verbose --conflict=rename "$HOME/Downloads" |
-        while read -r line; do
-          case "$line" in "wrote "*)
-            f=''${line#* as }; f=''${f% (*}
-            notify-send -a taildrop -i folder-download-symbolic "Received" "''${f##*/}" ;;
-          esac
-        done
-    '';
-  };
+  services.tailscale = { enable = true; useRoutingFeatures = "client"; openFirewall = true; };
   # Without resolved, Tailscale takes over /etc/resolv.conf with only its own 100.100.100.100, so
   # all DNS broke with it. With it, only tailnet names go to Tailscale (NetworkManager uses it too)
   services.resolved.enable = true;

@@ -28,7 +28,8 @@ fi
 
 log="$PREFIX/tmp/desktop.log"
 show() { am start -n com.termux.x11/com.termux.x11.MainActivity >/dev/null 2>&1; }
-running() { pgrep -f com.termux.x11.CmdEntryPoint >/dev/null; }
+# Running = the X server answers (its process name isn't reliable: Start restarted a running desktop)
+running() { DISPLAY=:0 timeout 2 xrdb -query >/dev/null 2>&1; }
 stop() {
     pkill -f termux.x11; pkill -f virgl_test_server; pkill -f 'wallpaper\.sh loop( later)?$'
     for _ in $(seq 50); do running || break; sleep 0.1; done
