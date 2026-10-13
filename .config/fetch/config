@@ -1,4 +1,4 @@
-# fetch (areofyl) — same fields and order as fastfetch, black and white
+# fetch (areofyl) — same fields and order as fastfetch; the logo in its distro's colours
 os
 host
 kernel
@@ -18,6 +18,4 @@ disk=/mnt/hdd
 disk=/mnt/nvme
 
 label_color=white
-logo_inner=white
-logo_outer=8
 shading_mode=sextants

@@ -110,6 +110,9 @@ in
   # ~/.local/bin (my commands: cu, term) in PATH for the whole session, not just shells: greetd
   # sources /etc/profile, so sway and everything it starts (Thunar's terminal, power.sh) find them
   environment.localBinInPath = true;
+  # Mono-dark (~/.local/share/themes, tracked) imports ../../adw-gtk3-dark: link the system's here at
+  # login. A link, not a tracked file: the tablet keeps a real adw-gtk3 at that path
+  systemd.user.tmpfiles.rules = [ "L+ %h/.local/share/themes/adw-gtk3-dark - - - - /run/current-system/sw/share/themes/adw-gtk3-dark" ];
   # NixOS has no /bin/bash, so scripts with `#!/bin/bash` fail; point it at the system bash
   systemd.tmpfiles.rules = [ "L+ /bin/bash - - - - ${pkgs.bashInteractive}/bin/bash" ]
     # LM Studio keeps its models etc. in ~/.lmstudio: point that at the nvme
@@ -375,10 +378,9 @@ in
     # Claude Desktop (community build; updates to the latest version on rebuild)
     (builtins.getFlake "github:aaddrick/claude-desktop-debian").packages.${stdenv.hostPlatform.system}.default
     # fetch by areofyl: spinning 3D distro logo + system info (not in 26.05 yet; follows main,
-    # built with the system nixpkgs). Black and white: no logo colours, grey usage percentages.
+    # built with the system nixpkgs). Logo in colour, grey usage percentages.
     ((callPackage "${builtins.fetchTarball "https://github.com/areofyl/fetch/archive/main.tar.gz"}/nix/package.nix" { }).overrideAttrs (old: {
       postPatch = ''sed -i -E '/(pct|capacity) >=/ s/"(31|32|93)"/"38;5;248"/g' fetch.c'';
-      postInstall = old.postInstall + "wrapProgram $out/bin/fetch --add-flags --no-color";
     }))
   ]
   # ── Per-machine apps ────────────────────────────────

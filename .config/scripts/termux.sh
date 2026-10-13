@@ -15,9 +15,9 @@ config() { git --git-dir="$HOME/.dotfiles" --work-tree="$HOME" "$@"; }
 # ── Packages (the "systemPackages" of the tablet) ───
 PACKAGES=(
     x11-repo tur-repo
-    # Desktop: X server, i3 (+ i3bar), compositor, notifications, launcher, terminal, wallpaper,
+    # Desktop: X server, i3 (+ i3bar), notifications, launcher, terminal, wallpaper,
     # screenshots, clipboard tools, theme switching for GTK on X11 (xsettingsd)
-    termux-x11-nightly i3 dbus picom dunst libnotify rofi alacritty feh scrot xclip xdotool xsettingsd
+    termux-x11-nightly i3 dbus dunst libnotify rofi alacritty feh scrot xclip xdotool xsettingsd
     pulseaudio pavucontrol
     # GPU: Zink on Turnip (Adreno) for native apps, VirGL for the proot container
     mesa-zink mesa-vulkan-icd-freedreno virglrenderer-android mesa-demos
@@ -70,7 +70,6 @@ SPARSE='/.bashrc
 /.config/alacritty/
 /.config/dunst/
 /.config/rofi/
-/.config/picom/
 /.config/fish/
 /.config/starship.toml
 /.config/helix/
@@ -185,19 +184,20 @@ if ! command -v i3status-rs >/dev/null; then
     cargo install --locked i3status-rs --config "patch.crates-io.async-pidfd.path=\"$apd\""
     mkdir -p ~/.local/share/i3status-rust && cp -r ~/.cargo/registry/src/*/i3status-rs-*/files/* ~/.local/share/i3status-rust/ 2>/dev/null || true
 fi
-if [ ! -x ~/.local/bin/fetch ]; then
-    # Same as the desktop: black and white (grey percentages, --no-color)
+# (Also replaces the old black-and-white wrapper that ran it with --no-color)
+if [ ! -x ~/.local/bin/fetch ] || grep -q -- --no-color ~/.local/bin/fetch; then
+    # Same as the desktop: logo in colour, grey usage percentages
     say "fetch (areofyl)"
     rm -rf "$build/fetch" && git clone -q --depth 1 https://github.com/areofyl/fetch "$build/fetch"
     sed -i -E '/(pct|capacity) >=/ s/"(31|32|93)"/"38;5;248"/g' "$build/fetch/fetch.c"
-    make -C "$build/fetch" && install -m 755 "$build/fetch/fetch" ~/.local/bin/fetch-bin
-    printf '#!%s/bin/sh\nexec fetch-bin --no-color "$@"\n' "$PREFIX" > ~/.local/bin/fetch && chmod +x ~/.local/bin/fetch
+    make -C "$build/fetch" && install -m 755 "$build/fetch/fetch" ~/.local/bin/fetch
+    rm -f ~/.local/bin/fetch-bin
 fi
 
 # ── Look: GTK theme, cursor, OCR languages ──
 themes=~/.local/share/themes icons=~/.local/share/icons
 if [ ! -d "$themes/adw-gtk3-dark" ]; then
-    # Mono-dark (tracked) imports ../../adw-gtk3-dark; on NixOS that's a link to the system's
+    # Mono-dark (tracked) imports ../../adw-gtk3-dark; NixOS links its system copy there instead
     say "adw-gtk3"
     url=$(curl -s https://api.github.com/repos/lassekongo83/adw-gtk3/releases/latest | grep -o 'https://[^"]*\.tar\.xz' | head -1)
     mkdir -p "$themes" && curl -L "$url" | tar -xJ -C "$themes"
@@ -252,5 +252,5 @@ Once, on the Android side:
     and no battery optimisation for Termux and Termux:X11
   - Termux:X11 → Preferences: capture system shortcuts (Super for i3), clipboard sharing
   - Apps: Termux:API (battery, notifications), Tailscale (homelab)
-Then: `desktop` starts X11 + i3.
+Then: `d` starts X11 + i3 (in the background).
 EOF

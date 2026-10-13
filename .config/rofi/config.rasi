@@ -1,5 +1,6 @@
 /* rofi on the tablet: fuzzel's counterpart (~/.config/fuzzel/fuzzel.ini), same black and white
-   look: see-through black, white border, grey text, the selection inverted. */
+   look, but solid black (no compositor on the tablet): white border, grey text, the selection
+   inverted. */
 configuration {
     font: "JetBrainsMono Nerd Font 13";
     show-icons: true;
@@ -16,7 +17,7 @@ configuration {
 
 window {
     width: 30em;
-    background-color: #000000b3;
+    background-color: #000000;
     border: 2px;
     border-color: #ffffff;
     border-radius: 6px;

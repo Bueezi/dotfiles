@@ -1,8 +1,17 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# Starts the tablet's desktop: Termux:X11 (the X server, shown by its Android app), then i3 in it
-# (~/.config/wm/i3), inside a D-Bus session (dunst, dconf and notify-send need one).
+# `d`: starts the tablet's desktop: Termux:X11 (the X server, shown by its Android app), then i3 in
+# it (~/.config/wm/i3), inside a D-Bus session (dunst, dconf and notify-send need one).
+# Runs in the background, detached from the Termux session, so the terminal stays free; its output
+# goes to $PREFIX/tmp/desktop.log.
 # GPU: native apps use Zink on Turnip (Adreno's open Vulkan driver), the proot container (pd) uses
 # VirGL. If `glxinfo -B` shows llvmpipe, Zink isn't working: GALLIUM_DRIVER=virpipe instead.
+
+log="$PREFIX/tmp/desktop.log"
+if [ "$1" != --here ]; then
+    setsid -f "$0" --here > "$log" 2>&1 < /dev/null
+    echo "Desktop starting (log: $log)"
+    exit
+fi
 
 # A previous session's X server and VirGL (i3 ends with its X server)
 pkill -f termux.x11; pkill -f virgl_test_server
