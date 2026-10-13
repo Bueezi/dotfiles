@@ -17,7 +17,7 @@ PACKAGES=(
     x11-repo tur-repo
     # Desktop: X server, i3 (+ i3bar), notifications, launcher, terminal, wallpaper,
     # screenshots, clipboard tools, theme switching for GTK on X11 (xsettingsd)
-    termux-x11-nightly i3 dbus dunst libnotify rofi alacritty feh scrot xclip xdotool xsettingsd
+    termux-x11-nightly i3 dbus dunst libnotify rofi alacritty feh scrot xclip xdotool xsettingsd xorg-xrdb
     pulseaudio pavucontrol
     # GPU: Zink on Turnip (Adreno) for native apps, VirGL for the proot container
     mesa-zink mesa-vulkan-icd-freedreno virglrenderer-android mesa-demos

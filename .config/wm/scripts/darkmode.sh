@@ -42,6 +42,8 @@ dconf write $key/icon-theme "'$icons'"
 if [ -z "$SWAYSOCK" ]; then
     mkdir -p ~/.config/xsettingsd ~/.config/alacritty
     printf 'Net/ThemeName "%s"\nNet/IconThemeName "%s"\n' "$theme" "$icons" > ~/.config/xsettingsd/xsettingsd.conf
+    # GTK's size: the tablet's DPI (set in `d`), in XSETTINGS' 1/1024 units
+    [ -n "$XFT_DPI" ] && printf 'Xft/DPI %d\n' $(( XFT_DPI * 1024 )) >> ~/.config/xsettingsd/xsettingsd.conf
     # Reload it, or start it (at login, `darkmode.sh apply` runs before anything else needs it)
     pkill -HUP -x xsettingsd || setsid -f xsettingsd >/dev/null 2>&1
     if [ $mode = dark ]; then bg=000000 fg=ffffff; else bg=ffffff fg=000000; fi
