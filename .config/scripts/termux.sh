@@ -227,11 +227,17 @@ printf 'file://%s/Documents Documents\nfile:///storage/emulated/0/Download Downl
 # The Termux app opens fish, without Termux's welcome text
 [ "$(readlink ~/.termux/shell 2>/dev/null)" = "$PREFIX/bin/fish" ] || chsh -s fish
 touch ~/.hushlogin
-# Termux:Widget buttons on the home screen (tasks/ run in the background): desktop start/stop
-mkdir -p ~/.shortcuts/tasks
-printf '#!%s/bin/sh\nexec ~/.config/termux/bin/d\n' "$PREFIX" > ~/.shortcuts/tasks/Desktop
-printf '#!%s/bin/sh\nexec ~/.config/termux/bin/d stop\n' "$PREFIX" > ~/.shortcuts/tasks/"Desktop stop"
-chmod 700 ~/.shortcuts ~/.shortcuts/tasks; chmod 700 ~/.shortcuts/tasks/*
+# Termux:Widget buttons (a folder named tasks = run in the background): desktop start/stop. In
+# ~/.shortcuts for its list widget, and as dynamic shortcuts (long-press the Termux:Widget icon,
+# drag one onto the home screen; Honor's launcher has no 1x1 shortcut widget) after pressing
+# "Create shortcuts" in the Termux:Widget app
+for dir in ~/.shortcuts/tasks ~/.termux/widget/dynamic_shortcuts/tasks; do
+    mkdir -p "$dir"
+    printf '#!%s/bin/sh\nexec ~/.config/termux/bin/d\n' "$PREFIX" > "$dir/Desktop"
+    printf '#!%s/bin/sh\nexec ~/.config/termux/bin/d stop\n' "$PREFIX" > "$dir/Desktop stop"
+    chmod 700 "$dir" "$dir"/*
+done
+chmod 700 ~/.shortcuts ~/.termux/widget ~/.termux/widget/dynamic_shortcuts
 
 # ── Termux's own settings (keys above the touch keyboard, colours): it only reads ~/.termux ──
 mkdir -p ~/.termux
