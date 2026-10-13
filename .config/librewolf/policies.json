@@ -1,0 +1,23 @@
+{
+  "policies": {
+    "ExtensionSettings": {
+      "{22b0eca1-8c02-4c0d-a5d7-6604ddd9836e}": {
+        "installation_mode": "normal_installed",
+        "install_url": "https://addons.mozilla.org/firefox/downloads/latest/nicothin-space/latest.xpi"
+      }
+    },
+    "SearchEngines": {
+      "Add": [
+        {
+          "Name": "DuckDuckGo",
+          "URLTemplate": "https://duckduckgo.com/?q={searchTerms}",
+          "SuggestURLTemplate": "https://duckduckgo.com/ac/?q={searchTerms}&type=list",
+          "IconURL": "https://duckduckgo.com/favicon.ico",
+          "Alias": "@ddg"
+        }
+      ],
+      "Default": "DuckDuckGo",
+      "Remove": ["DuckDuckGo No-AI"]
+    }
+  }
+}

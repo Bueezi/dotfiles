@@ -1,10 +1,18 @@
 #!/usr/bin/env bash
+# Power menu ($mod+Shift+p). NixOS: sleep, hibernate (laptop), reboot, power off, update, rebuild,
+# sync. The tablet (Termux, i3): update, sync, leave desktop; Android does the rest.
+# Update, rebuild and sync run in a scratchpad terminal (hide/show with $mod+minus) so you can see
+# output and type your sudo password. Once the password is in (sudo caches it), the terminal hides
+# itself and comes back only when it needs you: a failure, a firmware prompt, or the end of an update.
 
-# Runs in a scratchpad terminal (hide/show with $mod+minus) so you can see output and type your sudo password.
-# Once the password is in (sudo caches it), the terminal hides itself and comes back only when
-# it needs you: a failure, a firmware prompt, or the end of an update.
-hide() { swaymsg -q '[app_id="^scratch-power$"] move scratchpad'; }
-show() { swaymsg -q '[app_id="^scratch-power$"] focus'; }
+# Sway: foot, fuzzel, swaymsg, the window found by app_id. i3: alacritty, rofi, i3-msg, by class
+if [ -n "$SWAYSOCK" ]; then
+    msg=swaymsg crit='app_id="^scratch-power$"' term=(foot --app-id=scratch-power)
+else
+    msg=i3-msg crit='class="^scratch-power$"' term=(alacritty --class scratch-power -e)
+fi
+hide() { $msg -q "[$crit] move scratchpad"; }
+show() { $msg -q "[$crit] focus"; }
 
 # Ask for the sudo password up front, then hide and say it started. $1 = name for the notification
 auth() {
@@ -18,6 +26,18 @@ auth() {
 }
 
 update() {
+    # Tablet: Termux's packages, then its setup script applies the package list (like a rebuild)
+    if [ -n "$TERMUX_VERSION" ]; then
+        echo "==> Termux"
+        if pkg upgrade -y && bash ~/.config/scripts/termux.sh; then
+            notify-send -a update -i emblem-ok-symbolic "Update" "Finished"
+        else
+            notify-send -u critical -a update -i dialog-error-symbolic "Update" "Failed"
+        fi
+        show
+        echo; read -rp "Done. Press Enter to close."
+        return
+    fi
     auth Update
     echo "==> NixOS"
     sudo nixos-rebuild switch --upgrade
@@ -86,16 +106,22 @@ slideshow() {
 
 case "$1" in slideshow|sync|update|rebuild) "$1"; exit ;; esac
 
-# Hibernate only on the laptop: the desktop has no swap partition to resume from (zram only)
-hibernate=; [ -d /sys/class/power_supply/BAT0 ] && hibernate="󰋊  hibernate\n"
-choice=$(printf "${hibernate}󰜉  reboot\n󰒲  sleep\n󰐥  power off\n󰚰  update\n󱄅  rebuild\n󰓦  sync" |
-  fuzzel --dmenu --width 20 --lines 7)
+if [ -n "$TERMUX_VERSION" ]; then
+    choice=$(printf "󰚰  update\n󰓦  sync\n󰍃  leave desktop" | rofi -dmenu -i -p power)
+else
+    # Hibernate only on the laptop: the desktop has no swap partition to resume from (zram only)
+    hibernate=; [ -d /sys/class/power_supply/BAT0 ] && hibernate="󰋊  hibernate\n"
+    choice=$(printf "${hibernate}󰜉  reboot\n󰒲  sleep\n󰐥  power off\n󰚰  update\n󱄅  rebuild\n󰓦  sync" |
+      fuzzel --dmenu --width 20 --lines 7)
+fi
 
 [ "$choice" ] || exit 0
 case "$choice" in
-    *update)  exec foot --app-id=scratch-power "$0" update ;;
-    *rebuild) exec foot --app-id=scratch-power "$0" rebuild ;;
-    *sync)    exec foot --app-id=scratch-power "$0" sync ;;
+    *update)  exec "${term[@]}" "$0" update ;;
+    *rebuild) exec "${term[@]}" "$0" rebuild ;;
+    *sync)    exec "${term[@]}" "$0" sync ;;
+    # Stopping Termux:X11's server ends i3 with it; Termux itself keeps running
+    *"leave desktop") exec pkill -f termux.x11 ;;
 esac
 
 case "$choice" in

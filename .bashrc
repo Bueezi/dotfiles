@@ -18,7 +18,7 @@ alias g="git"
 alias gc='gcc -std=c99 -Wall -Wextra -pedantic'
 
 alias hc='hx ~/.configuration.nix'
-alias hs='hx ~/.config/sway/config'
+alias hs='hx ~/.config/wm/sway'
 alias rb="sudo nixos-rebuild switch"
 alias gitu='git commit -m "update" && git push'
 

@@ -15,7 +15,7 @@ NixOS 26.05, channel-based (not a flake system). Per-machine: `lib.mkIf isLaptop
 - **Git:** `config`, never `git`, in `~`. New files: `config add <file>`, never `config add .`. Don't commit or push: I sync with `cu`.
 - **Nothing in the root of `~`.** New files go under `~/.config/`. Only exceptions, because programs look nowhere else: `~/.local/share/themes/` (GTK themes) and `~/.local/bin/` (my commands, like `cu`).
 - **No sudo here** (no-new-privileges). For `nixos-rebuild`, tell me to rebuild (power menu → *rebuild*).
-- **Check before handing over:** `sway -C -c ~/.config/sway/config` then `swaymsg reload`; `sh -n` / `bash -n`; NixOS via a throwaway config in a scratch dir (never `~`), for both `isLaptop` values:
+- **Check before handing over:** `sway -C -c ~/.config/wm/sway` then `swaymsg reload`; shared i3 syntax: `i3 -C` misses bind commands, so test them in an Xvfb i3 with its own `ipc-socket` and `unset I3SOCK SWAYSOCK` first (sway exports I3SOCK: `i3-msg` would hit the real session); `sh -n` / `bash -n`; NixOS via a throwaway config in a scratch dir (never `~`), for both `isLaptop` values:
   ```nix
   { ... }: { imports = [ /home/ben/.configuration.nix ]; _module.args.isLaptop = false;
              fileSystems."/" = { device = "/dev/null"; fsType = "ext4"; }; }
@@ -27,14 +27,14 @@ NixOS 26.05, channel-based (not a flake system). Per-machine: `lib.mkIf isLaptop
 ## Map
 
 - `.configuration.nix`: the whole system (boot, hardware, sway session, login, themes, default apps, packages, gaming). Imported by the `/etc/nixos` stub `.config/scripts/configuration.nix` (sets `hostName`, `isLaptop`; fetches from GitHub on a fresh install).
-- `.config/nixos/*.nix`: self-contained modules, imported only if present (`builtins.pathExists`): LibreWolf prefs/policies, SwayFX from git (`swayfx/flake.nix`, pinned; carries a patch for swayfx#557), Plymouth splash, HyprQuickPaper + wallpaper slideshow, Eclipse Music (Electron).
-- `.config/sway/`: config, `i3status.toml`, `scripts/` (each script's header says what it does; `$mod+/` lists all keys).
-- `.config/scripts/`: install scripts served by URL (`nix.b3n.me` → the NixOS stub; `arch.sh`/`void.sh` kept for future installs; the tablet setup will go here).
+- `.config/nixos/*.nix`: self-contained modules, imported only if present (`builtins.pathExists`): LibreWolf (reads `.config/librewolf/prefs.js` + `policies.json`, the same files the tablet links), SwayFX from git (`swayfx/flake.nix`, pinned; carries a patch for swayfx#557), Plymouth splash, HyprQuickPaper + wallpaper slideshow, Eclipse Music (Electron).
+- `.config/wm/`: window manager. `common.conf` = what sway and the tablet's i3 share (looks, window keys; only syntax both accept: plain `bindsym` lines, `split h`, `60 px`), `sway` = the sway-only rest (SwayFX, outputs, rules, sway keys, bar), `i3status-rs.toml`, `scripts/` (each header says what it does; `$mod+/` lists all keys, includes followed): the ones bound in `common.conf` work in both (they branch on `$SWAYSOCK`: foot/fuzzel/wl-copy/wtype vs alacritty/rofi/xclip/xdotool), the rest are sway-only and bound in `wm/sway`. Test i3 paths in Xvfb with a fake `HOME`/`XDG_CONFIG_HOME` set *before* `dbus-run-session` (else the test bus's dconf-service writes the real dconf), and stand-ins for notify-send; clean up by PID only (the real `wl-paste --watch …/clipstore.sh` matches a `pkill -f clipstore`). `.config/sway/config` is a tracked symlink to `wm/sway`: **edit `wm/sway`**, since editors that save by renaming turn the symlink into a copy.
+- `.config/scripts/`: install scripts served by URL (`nix.b3n.me` → the NixOS stub; `arch.sh`/`void.sh` kept for future installs). `termux.sh` = the tablet's setup and "rebuild": its package lists (pkg, npm, go, TeX Live collections = KU Leuven's list, proot Debian for ddd) are the source of truth like `.configuration.nix`; unlisted packages get removed after a prompt; it also does the dotfiles' sparse checkout and the source builds (clipnotify, libsensors, i3status-rs, fetch).
 - `.local/bin/cu`: sync. Dotfiles (commit tracked changes, message = changed files, pull --rebase, push), then `~/Documents/sync`.
 - `~/Documents/sync/`: separate private repo (github.com/Bueezi/sync) with **one commit only**, so deleted files leave GitHub too. Wallpapers in `wp/active/` (picker, slideshow) and `wp/inactive/`.
 - Shell: bash is the login shell and runs scripts; foot starts fish + starship. **Aliases only in `.bashrc`**: fish imports its `alias` lines. `.bash_profile` is what loads `.bashrc` on TTY/SSH logins.
 - Git identity and GitHub login: `.config/git/config` (plain `gh` as helper, not a store path).
-- Themes: dconf `color-scheme` is the truth, `darkmode.sh` toggles. GTK3 dark = `.local/share/themes/Mono-dark` (imports adw-gtk3-dark), GTK4 = `.config/gtk-4.0/gtk.css`, Qt = qt6ct palettes in `.config/qt6ct/colors/` (`qt6ct.conf` is written by `darkmode.sh`, untracked).
+- Themes: dconf `color-scheme` is the truth, `darkmode.sh` toggles. GTK3 dark = `.local/share/themes/Mono-dark` (imports `../../adw-gtk3-dark`: on NixOS a tracked link to the system's theme, on the tablet downloaded), GTK4 = `.config/gtk-4.0/gtk.css`, Qt = qt6ct palettes in `.config/qt6ct/colors/` (`qt6ct.conf` is written by `darkmode.sh`, untracked).
 
 ## Gotchas (don't re-investigate)
 

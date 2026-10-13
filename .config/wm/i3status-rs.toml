@@ -39,12 +39,12 @@ button = "left"
 # on every change; interval: changes made with the monitor's own buttons)
 [[block]]
 block = "custom"
-command = "~/.config/sway/scripts/osd.sh brightness status"
+command = "~/.config/wm/scripts/osd.sh brightness status"
 format = "bl: $text "
 signal = 3
 interval = 60
 hide_when_empty = true
-if_command = "! ls /sys/class/power_supply/BAT* 2>/dev/null | grep -q ."
+if_command = "[ -n \"$SWAYSOCK\" ] && ! ls /sys/class/power_supply/BAT* 2>/dev/null | grep -q ."
 
 [[block]]
 block = "time"
@@ -53,22 +53,26 @@ format = "$timestamp.datetime(f:'%a  %d/%m   %R ')"
 
 [[block]]
 block = "custom"
-command = "~/.config/sway/scripts/toggle.sh caffeine status"
+command = "~/.config/wm/scripts/toggle.sh caffeine status"
+# sway only: the tablet has no swayidle/wlsunset (Android does both)
+if_command = "[ -n \"$SWAYSOCK\" ]"
 json = true
 signal = 1
 interval = 5
 hide_when_empty = true
 [[block.click]]
 button = "left"
-cmd = "~/.config/sway/scripts/toggle.sh caffeine"
+cmd = "~/.config/wm/scripts/toggle.sh caffeine"
 
 [[block]]
 block = "custom"
-command = "~/.config/sway/scripts/toggle.sh nightlight status"
+command = "~/.config/wm/scripts/toggle.sh nightlight status"
+# sway only: the tablet has no swayidle/wlsunset (Android does both)
+if_command = "[ -n \"$SWAYSOCK\" ]"
 json = true
 signal = 2
 interval = 5
 hide_when_empty = true
 [[block.click]]
 button = "left"
-cmd = "~/.config/sway/scripts/toggle.sh nightlight"
+cmd = "~/.config/wm/scripts/toggle.sh nightlight"

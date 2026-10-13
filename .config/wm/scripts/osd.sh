@@ -100,7 +100,7 @@ case "$1 $2" in
         fi ;;
     "brightness up")   brightness + ;;
     "brightness down") brightness - ;;
-    # For the bar (i3status.toml), desktop only: the laptop has the backlight block
+    # For the bar (i3status-rs.toml), desktop only: the laptop has the backlight block
     "brightness status")
         [ -n "$(ls /sys/class/backlight 2>/dev/null)" ] && exit 0
         ddc_level 60
