@@ -5,6 +5,7 @@
 #        pd some-gui-app  run an app from the container on the desktop (pd ddd)
 # The desktop's D-Bus session too (notifications in dunst): its socket is in Termux's tmp, which
 # --shared-tmp makes the container's /tmp
-exec proot-distro login debian --shared-tmp -- env DISPLAY=:0 GALLIUM_DRIVER=virpipe \
+# LANG: Debian's always-present UTF-8 locale (btop refuses to start without one)
+exec proot-distro login debian --shared-tmp -- env DISPLAY=:0 GALLIUM_DRIVER=virpipe LANG=C.UTF-8 \
     PULSE_SERVER=127.0.0.1 DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS//$PREFIX\/tmp//tmp}" \
     "${@:-bash}"

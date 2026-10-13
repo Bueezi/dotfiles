@@ -288,9 +288,10 @@ proot-distro login "$PROOT_DISTRO" -- sh -c "apt-get update -q && apt-get instal
 # deb_app <package> <GitHub repo> <release file pattern>
 deb_app() {
     local url have
-    url=$(curl -s "https://api.github.com/repos/$2/releases/latest" | grep -o "https://[^\"]*$3" | head -1)
+    # `|| true`: "not installed" / no match are answers here, not errors (set -e ended the script)
+    url=$(curl -s "https://api.github.com/repos/$2/releases/latest" | grep -o "https://[^\"]*$3" | head -1 || true)
     [ -n "$url" ] || { echo "No $1 release found"; return; }
-    have=$(proot-distro login "$PROOT_DISTRO" -- dpkg-query -W -f='${Version}' "$1" 2>/dev/null)
+    have=$(proot-distro login "$PROOT_DISTRO" -- dpkg-query -W -f='${Version}' "$1" 2>/dev/null || true)
     [ -n "$have" ] && [ "${url#*"$have"}" != "$url" ] && return
     say "$1: $(basename "$url")"
     curl -L -o "$PREFIX/tmp/$1.deb" "$url"
