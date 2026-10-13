@@ -27,6 +27,10 @@
           substituteInPlace sway/desktop/transaction.c --replace-fail \
             'view_remove_saved_buffer(con->view);' \
             'if (con->view->container == con && con->view->saved_surface_tree) view_remove_saved_buffer(con->view);'
+          # No fade between workspaces (tied to animation_duration_ms, no option of its own): switching
+          # stays instant, opening/closing windows keeps its animation
+          substituteInPlace sway/desktop/transaction.c --replace-fail \
+            'bool is_ws_switch = old_active' 'bool is_ws_switch = false && old_active'
         '';
       });
     };
