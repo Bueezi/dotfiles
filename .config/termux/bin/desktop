@@ -69,7 +69,8 @@ for _ in $(seq 100); do xrdb -query >/dev/null 2>&1 && break; sleep 0.1; done
 show
 
 export GALLIUM_DRIVER=zink MESA_LOADER_DRIVER_OVERRIDE=zink TU_DEBUG=noconform
-echo "Xft.dpi: $XFT_DPI" | xrdb -merge
-# The cursor grows with it (20 px at 96 dpi, like the desktop)
+# The cursor grows with it (20 px at 96 dpi, like the desktop): for X11 apps, as X resources too
+# (some only read those), and GTK's through xsettingsd (darkmode.sh)
 export XCURSOR_THEME=Bibata-Modern-Classic XCURSOR_SIZE=$(( 20 * XFT_DPI / 96 ))
+printf 'Xft.dpi: %s\nXcursor.theme: %s\nXcursor.size: %s\n' "$XFT_DPI" "$XCURSOR_THEME" "$XCURSOR_SIZE" | xrdb -merge
 exec dbus-run-session -- i3

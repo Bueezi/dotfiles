@@ -44,6 +44,9 @@ if [ -z "$SWAYSOCK" ]; then
     printf 'Net/ThemeName "%s"\nNet/IconThemeName "%s"\n' "$theme" "$icons" > ~/.config/xsettingsd/xsettingsd.conf
     # GTK's size: the tablet's DPI (set in `desktop`), in XSETTINGS' 1/1024 units
     [ -n "$XFT_DPI" ] && printf 'Xft/DPI %d\n' $(( XFT_DPI * 1024 )) >> ~/.config/xsettingsd/xsettingsd.conf
+    # GTK apps' cursor, the one `desktop` sets for X11 (without it LibreWolf's was half the size)
+    [ -n "$XCURSOR_SIZE" ] && printf 'Gtk/CursorThemeName "%s"\nGtk/CursorThemeSize %d\n' \
+        "$XCURSOR_THEME" "$XCURSOR_SIZE" >> ~/.config/xsettingsd/xsettingsd.conf
     # Reload it, or start it (at login, `darkmode.sh apply` runs before anything else needs it)
     pkill -HUP -x xsettingsd || setsid -f xsettingsd >/dev/null 2>&1
     if [ $mode = dark ]; then bg=000000 fg=ffffff; else bg=ffffff fg=000000; fi
