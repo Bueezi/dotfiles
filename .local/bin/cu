@@ -10,6 +10,7 @@
 config() { git --git-dir="$HOME/.dotfiles" --work-tree="$HOME" "$@"; }
 
 dotfiles() {
+    echo "==> Dotfiles"
     config add -u || return
     if ! config diff --cached --quiet; then
         config commit -q -m "${1:-update: $(config diff --cached --name-only | sed 's|.*/||' | sort -u | head -6 | paste -sd ' ' -)}" || return
@@ -20,8 +21,10 @@ dotfiles() {
 
 documents() {
     local d=~/Documents/sync mine= theirs= old
-    [ -d "$d/.git" ] || git clone -q https://github.com/Bueezi/sync "$d" || return
-    git -C "$d" fetch -q origin || return
+    echo "==> ~/Documents/sync"
+    # Not quiet: the first clone (the wallpapers) takes a while, git shows its progress
+    [ -d "$d/.git" ] || git clone https://github.com/Bueezi/sync "$d" || return
+    git -C "$d" fetch --progress origin || return
     git -C "$d" add -A
     git -C "$d" diff --cached --quiet HEAD || mine=1
     old=$(git -C "$d" rev-parse origin/main)

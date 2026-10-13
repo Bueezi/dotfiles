@@ -242,7 +242,8 @@ command -v texlinks >/dev/null && texlinks
 
 # ── Proot Debian ──
 say "Proot $PROOT_DISTRO: ${PROOT_PACKAGES[*]}"
-[ -d "$PREFIX/var/lib/proot-distro/installed-rootfs/$PROOT_DISTRO" ] || proot-distro install "$PROOT_DISTRO"
+# Installed = it can log in (newer proot-distro versions keep containers elsewhere than installed-rootfs)
+proot-distro login "$PROOT_DISTRO" -- true 2>/dev/null || proot-distro install "$PROOT_DISTRO"
 proot-distro login "$PROOT_DISTRO" -- sh -c "apt-get update -q && apt-get install -y ${PROOT_PACKAGES[*]}"
 
 say "Done"
