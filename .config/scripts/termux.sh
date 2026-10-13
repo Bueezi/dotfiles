@@ -23,9 +23,9 @@ PACKAGES=(
     mesa-zink mesa-vulkan-icd-freedreno virglrenderer-android mesa-demos
     # Apps
     librewolf chromium mpv-x qbittorrent libreoffice zed
-    # Electron for the Eclipse Music wrapper (~/.config/nixos/eclipse), natively (no proot)
+    # Electron: the web apps (~/.config/nixos/webapps), Vesktop and Claude, natively (no proot)
     electron42
-    thunar thunar-archive-plugin gvfs tumbler file-roller eog
+    thunar thunar-archive-plugin gvfs tumbler file-roller eog zathura zathura-pdf-mupdf
     # Look: icons, Qt palettes (qt6ct), dconf (dark mode's source of truth), fonts
     papirus-icon-theme adwaita-icon-theme qt6ct dconf fontconfig-utils
     ttf-dejavu ttf-jetbrains-mono-nerd ttf-iosevka-nerd
@@ -84,8 +84,9 @@ SPARSE='/.bashrc
 /.config/xfce4/
 /.config/zed/
 /.config/fastfetch/
-/.config/nixos/eclipse/
+/.config/nixos/webapps/
 /.config/fetch/
+/.config/zathura/
 /.config/cava/'
 
 # ── Mirrors: the Europe group, before the first download. Without a group, pkg picks a random
@@ -253,6 +254,10 @@ for dir in ~/.shortcuts/tasks ~/.termux/widget/dynamic_shortcuts/tasks; do
     chmod 700 "$dir" "$dir"/*
 done
 chmod 700 ~/.shortcuts ~/.termux/widget ~/.termux/widget/dynamic_shortcuts
+# Their icons (▶ / ■): copies, Termux:Widget refuses links to outside ~/.shortcuts/icons. Shortcuts
+# already on the home screen keep their old icon: remove them, "Create shortcuts" again, re-add
+mkdir -p ~/.shortcuts/icons && chmod 700 ~/.shortcuts/icons
+install -m 600 ~/.config/termux/icons/Start.png ~/.config/termux/icons/Stop.png ~/.shortcuts/icons/
 
 # ── Termux's own settings (keys above the touch keyboard, colours): it only reads ~/.termux ──
 mkdir -p ~/.termux
@@ -340,13 +345,23 @@ entry() {
 bin=$HOME/.config/termux/bin
 entry Vesktop "$bin/vesktop" discord "Network;InstantMessaging;"   # Papirus (its .deb has no png)
 entry Claude "$bin/claude-desktop %u" "$PREFIX/opt/claude-desktop/icon.png" "Utility;" "x-scheme-handler/claude;"
-entry Eclipse "$bin/eclipse" "$HOME/.config/nixos/eclipse/icon.png" "AudioVideo;Audio;Player;"
+entry Eclipse "$bin/eclipse" "$HOME/.config/nixos/webapps/eclipse/icon.png" "AudioVideo;Audio;Player;"
+entry Toledo "$bin/toledo" "$HOME/.config/nixos/webapps/toledo/icon.png" "Education;"
 # Termux's Chromium entry has unfilled placeholders (Exec=@@desktop_exec, Icon=@@desktop_icon): no
 # icon in rofi, no command. A copy here (same name: it replaces the system's) with both filled in
 c=$PREFIX/share/applications/chromium.desktop
 [ ! -f "$c" ] || sed -e "s|@@desktop_exec|$PREFIX/bin/chromium-browser|" -e 's/@@desktop_icon/chromium/' \
     -e '/@@/d' "$c" > "$apps/chromium.desktop"
 ! command -v update-desktop-database >/dev/null || update-desktop-database -q "$apps"
+
+# Default apps, like the PCs' (xdg.mime.defaultApplications), with GIO's own command (it writes
+# ~/.config/mimeapps.list): for Thunar and xdg-open. Else whatever claims the type, like Chromium
+mime() { local app=$1 t; shift; for t; do gio mime "$t" "$app" >/dev/null || echo "No $app for $t"; done; }
+mime librewolf.desktop x-scheme-handler/http x-scheme-handler/https text/html application/xhtml+xml
+mime thunar.desktop inode/directory
+mime org.pwmt.zathura-pdf-mupdf.desktop application/pdf
+mime org.gnome.eog.desktop image/jpeg image/png image/gif image/bmp image/webp image/tiff
+mime mpv.desktop video/mp4 video/x-matroska video/webm audio/mpeg audio/flac audio/ogg
 
 say "Done"
 cat <<'EOF'

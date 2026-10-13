@@ -32,6 +32,7 @@ am() { termux-am "$@" 2>/dev/null || command am "$@"; }
 
 log="$PREFIX/tmp/desktop.log"
 show() { am start -n com.termux.x11/com.termux.x11.MainActivity >/dev/null 2>&1; }
+home() { am start -a android.intent.action.MAIN -c android.intent.category.HOME >/dev/null 2>&1; }
 # Running = the X server answers (its process name isn't reliable: Start restarted a running desktop)
 running() { DISPLAY=:0 timeout 2 xrdb -query >/dev/null 2>&1; }
 stop() {
@@ -42,9 +43,10 @@ stop() {
 }
 
 case "$1" in
-hide)   am start -a android.intent.action.MAIN -c android.intent.category.HOME >/dev/null 2>&1; exit ;;
+hide)   home; exit ;;
 stop)   stop; exit ;;
-exit)   stop; am startservice -a com.termux.service_stop com.termux/.app.TermuxService >/dev/null 2>&1; exit ;;
+# exit: Termux:X11 out of sight first (Android's home screen), then everything closes
+exit)   home; stop; am startservice -a com.termux.service_stop com.termux/.app.TermuxService >/dev/null 2>&1; exit ;;
 "")     if running; then show; exit; fi
         setsid -f "$0" --here > "$log" 2>&1 < /dev/null
         echo "Desktop starting (log: $log)"

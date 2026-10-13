@@ -49,7 +49,7 @@ in
     /home/ben/.config/nixos/librewolf.nix
     /home/ben/.config/nixos/swayfx.nix  # latest swayfx from git
     /home/ben/.config/nixos/plymouth.nix  # boot splash (penguin video)
-    /home/ben/.config/nixos/eclipse.nix   # Eclipse Music as a desktop app
+    /home/ben/.config/nixos/webapps.nix   # Eclipse Music and Toledo as desktop apps
     /home/ben/.config/nixos/hyprquickpaper.nix  # wallpaper picker ($mod+Shift+w)
   ];
 
@@ -211,7 +211,7 @@ in
       brightnessctl playerctl pavucontrol
       networkmanager_dmenu networkmanagerapplet
       # GUI utilities
-      file-roller baobab eog adwaita-icon-theme
+      file-roller baobab eog zathura adwaita-icon-theme
       bibata-cursors (papirus-icon-theme.override { color = "grey"; })
       adw-gtk3   # Mono-dark (~/.local/share/themes) imports its dark variant
     ];
@@ -284,7 +284,8 @@ in
   xdg.mime.defaultApplications =
     let each = app: types: lib.genAttrs types (_: app);
     in each "thunar.desktop" [ "inode/directory" ]
-      // each "librewolf.desktop" [ "x-scheme-handler/http" "x-scheme-handler/https" "text/html" "application/xhtml+xml" "application/pdf" ]
+      // each "librewolf.desktop" [ "x-scheme-handler/http" "x-scheme-handler/https" "text/html" "application/xhtml+xml" ]
+      // each "org.pwmt.zathura-pdf-mupdf.desktop" [ "application/pdf" ]
       // each "org.gnome.eog.desktop" (map (t: "image/${t}") [ "jpeg" "jpg" "png" "gif" "bmp" "webp" "tiff" ])
       // each "mpv.desktop" [ "video/mp4" "video/x-matroska" "video/webm" "video/quicktime" "video/x-msvideo"
                              "audio/mpeg" "audio/x-wav" "audio/flac" "audio/ogg" ]

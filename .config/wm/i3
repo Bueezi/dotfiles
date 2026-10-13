@@ -25,9 +25,9 @@ exec --no-startup-id dunst
 exec --no-startup-id xcompmgr
 exec --no-startup-id $scripts/clipstore.sh
 exec --no-startup-id $scripts/wallpaper.sh restore
-# Two empty slots at the tray's far end: i3bar's padding doesn't move the tray out of the round
-# corner (tray-spacer.c in ~/.config/termux, built by termux.sh)
-exec --no-startup-id tray-spacer 2
+# An empty slot at the tray's far end, the bar's gap on the right: i3bar's padding doesn't move the
+# tray out of the round corner (tray-spacer.c in ~/.config/termux, built by termux.sh)
+exec --no-startup-id tray-spacer 1
 
 # ── Window rules (X11: by class) ────────────────────
 # Sizes as a share of the screen: fixed pixels look tiny at the tablet's DPI
@@ -35,8 +35,8 @@ for_window [class="^clipboard$"] floating enable, resize set 50 ppt 50 ppt, move
 # Scratchpad apps ($mod+Shift+Return / e, the power menu's terminal): floating in the scratchpad,
 # shown. The same key (or $mod+minus) hides/shows them again
 for_window [class="^(scratch-.*|Thunar)$"] floating enable, resize set 60 ppt 70 ppt, move scratchpad, scratchpad show, move position center
-# Eclipse Music (Electron, ~/.config/nixos/eclipse): floating like on sway
-for_window [class="(?i)^eclipse$"] floating enable, resize set 60 ppt 70 ppt, move position center
+# Web apps (Electron, ~/.config/nixos/webapps: Eclipse Music, Toledo): floating like on sway
+for_window [class="(?i)^(eclipse|toledo)$"] floating enable, resize set 60 ppt 70 ppt, move position center
 # Marked for scripts/open.sh ($mod+Shift+d), like on sway
 for_window [class="(?i)^vesktop$"] mark --add vesktop, floating enable, resize set 60 ppt 70 ppt, move position center
 for_window [window_role="pop-up"] floating enable
@@ -46,8 +46,7 @@ for_window [window_type="dialog"] floating enable
 # Apps
 bindsym $mod+x              exec i3-msg -q '[class="(?i)librewolf"] focus' || $browser
 bindsym $mod+t              exec i3-msg -q '[class="^Alacritty$"] focus' || $term
-# Eclipse Music (toggles its window) and Vesktop: the same keys as sway, sizes in ppt
-bindsym $mod+m              exec eclipse
+# Vesktop: the same key as sway, sizes in ppt
 bindsym $mod+Shift+d        exec $scripts/open.sh vesktop "60 ppt" "70 ppt" vesktop
 bindsym $mod+Shift+w        exec $scripts/wallpaper.sh pick
 bindsym $mod+Shift+o        exec $scripts/wallpaper.sh slideshow
@@ -68,8 +67,10 @@ bar {
     # See-through background (xcompmgr draws the alpha)
     i3bar_command i3bar --transparency
     # No tray_output: "primary" showed no tray at all (Termux:X11's screen isn't marked primary)
-    # Clear of the screen's rounded corners: top 0, right, bottom 0, left (the right needs more)
-    padding 0 48px 0 24px
+    # Clear of the screen's rounded corners on the left (top, right, bottom, left). The right's gap is
+    # tray-spacer's empty tray slot (autostart): padding there left the tray in the corner and, with
+    # the slot, made that side's gap twice the left's
+    padding 0 0 0 24px
 
     colors {
         background         #000000b3
