@@ -9,7 +9,7 @@ let
   cursorTheme = "Bibata-Modern-Classic";
   cursorSize = 20;   # also in `seat * xcursor_theme` in the sway config
   # Dark is the default; darkmode.sh ($mod+Shift+t) switches to adw-gtk3 / Papirus and back
-  iconTheme = "Papirus-Dark";   # grey folders instead of blue (papirus override below)
+  iconTheme = "Papirus-Dark";   # grey folders instead of blue (papirusGrey below)
   gtkTheme = "Mono-dark";   # adw-gtk3-dark in black: ~/.local/share/themes/Mono-dark (a real file)
 
   # Assetto Corsa: acmanager:// links on websites (NoHesi "Join", server lists) open in Content
@@ -42,6 +42,31 @@ let
       grep -A3 'ext_session_lock_surface_v1_ack_configure(lock_surface, serial);' main.c | grep -q damage_surface
     '';
   });
+
+  # Papirus with grey folders, like papirus-folders (papirus-icon-theme.override { color = "grey"; })
+  # but in seconds: that rebuilt the whole theme (~80k icons) on every machine at every nixpkgs
+  # update, 10+ minutes. Here: links to the cached theme, each folder icon pointed at its grey one
+  # (all but 16x16, which papirus-folders leaves alone)
+  papirusGrey = pkgs.runCommand "papirus-icon-theme-grey" { nativeBuildInputs = [ pkgs.gtk3 pkgs.lndir ]; } ''
+    mkdir -p $out/share/icons
+    for t in ${pkgs.papirus-icon-theme}/share/icons/*; do
+      case ''${t##*/} in
+        Papirus*) mkdir $out/share/icons/''${t##*/}
+                  lndir -silent $t $out/share/icons/''${t##*/} ;;  # keeps its relative links (Dark → Papirus)
+        *) cp -P $t $out/share/icons/ ;;   # breeze, hicolor: the themes Papirus falls back to
+      esac
+    done
+    for p in $out/share/icons/*/*/places; do
+      case "$p" in */16x16*/places) continue ;; esac
+      case "$(readlink -f "$p")" in $out/*) ;; *) continue ;; esac
+      for g in "$p"/*-grey.svg "$p"/*-grey-*.svg; do
+        [ -e "$g" ] || continue
+        b=''${g##*/}
+        [ -e "$p/''${b/-grey/}" ] && ln -sf "$b" "$p/''${b/-grey/}"
+      done
+    done
+    for t in $out/share/icons/Papirus*; do gtk-update-icon-cache --force --quiet "$t"; done
+  '';
 in
 {
   # Optional extras from the dotfiles repo, skipped on a fresh install (no dotfiles yet)
@@ -212,7 +237,7 @@ in
       networkmanager_dmenu networkmanagerapplet
       # GUI utilities
       file-roller baobab eog zathura adwaita-icon-theme
-      bibata-cursors (papirus-icon-theme.override { color = "grey"; })
+      bibata-cursors papirusGrey
       adw-gtk3   # Mono-dark (~/.local/share/themes) imports its dark variant
     ];
   };
