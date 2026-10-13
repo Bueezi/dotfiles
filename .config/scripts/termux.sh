@@ -23,6 +23,8 @@ PACKAGES=(
     mesa-zink mesa-vulkan-icd-freedreno virglrenderer-android mesa-demos
     # Apps
     librewolf chromium mpv-x qbittorrent libreoffice zed
+    # Electron for the Eclipse Music wrapper (~/.config/nixos/eclipse), natively (no proot)
+    electron42
     thunar thunar-archive-plugin gvfs tumbler file-roller eog
     # Look: icons, Qt palettes (qt6ct), dconf (dark mode's source of truth), fonts
     papirus-icon-theme adwaita-icon-theme qt6ct dconf fontconfig-utils
@@ -53,9 +55,9 @@ GO=(go.senan.xyz/cliphist@latest github.com/sqls-server/sqls@latest)
 TEX=(collection-latex collection-latexrecommended collection-latexextra collection-fontsrecommended
      collection-fontsextra collection-langeuropean latexmk)
 
-# Proot Debian: what Termux can't do natively (ddd: KU Leuven's gdb front-end)
+# Proot Debian: what Termux can't do natively (ddd: KU Leuven's gdb front-end; btop: not packaged)
 PROOT_DISTRO=debian
-PROOT_PACKAGES=(ddd)
+PROOT_PACKAGES=(ddd btop)
 
 # What the tablet checks out of the dotfiles (sparse checkout; NixOS and sway stay out)
 SPARSE='/.bashrc
@@ -82,6 +84,7 @@ SPARSE='/.bashrc
 /.config/xfce4/
 /.config/zed/
 /.config/fastfetch/
+/.config/nixos/eclipse/
 /.config/fetch/
 /.config/cava/'
 
@@ -279,6 +282,31 @@ say "Proot $PROOT_DISTRO: ${PROOT_PACKAGES[*]}"
 # Installed = it can log in (newer proot-distro versions keep containers elsewhere than installed-rootfs)
 proot-distro login "$PROOT_DISTRO" -- true 2>/dev/null || proot-distro install "$PROOT_DISTRO"
 proot-distro login "$PROOT_DISTRO" -- sh -c "apt-get update -q && apt-get install -y ${PROOT_PACKAGES[*]}"
+
+# Desktop apps with only Linux (glibc) builds, from their arm64 .deb releases, into the container;
+# reinstalled only when GitHub has a newer version. They run as normal windows via `pd`
+# deb_app <package> <GitHub repo> <release file pattern>
+deb_app() {
+    local url have
+    url=$(curl -s "https://api.github.com/repos/$2/releases/latest" | grep -o "https://[^\"]*$3" | head -1)
+    [ -n "$url" ] || { echo "No $1 release found"; return; }
+    have=$(proot-distro login "$PROOT_DISTRO" -- dpkg-query -W -f='${Version}' "$1" 2>/dev/null)
+    [ -n "$have" ] && [ "${url#*"$have"}" != "$url" ] && return
+    say "$1: $(basename "$url")"
+    curl -L -o "$PREFIX/tmp/$1.deb" "$url"
+    proot-distro login "$PROOT_DISTRO" --shared-tmp -- apt-get install -y "/tmp/$1.deb"
+    rm -f "$PREFIX/tmp/$1.deb"
+}
+deb_app vesktop Vencord/Vesktop 'vesktop_[^"/]*_arm64\.deb'
+deb_app claude-desktop aaddrick/claude-desktop-debian 'claude-desktop_[^"/]*_arm64\.deb'
+
+# rofi entries (Termux's apps don't see the container's): Vesktop and Claude through pd, Eclipse
+# with Termux's own Electron. --no-sandbox: Android has no user namespaces for Electron's sandbox
+apps=~/.local/share/applications; mkdir -p "$apps"
+entry() { printf '[Desktop Entry]\nType=Application\nName=%s\nExec=%s\nIcon=%s\nCategories=%s\n' "$@" > "$apps/$1.desktop"; }
+entry Vesktop "$HOME/.config/termux/bin/pd vesktop --no-sandbox" discord "Network;InstantMessaging;"
+entry Claude "$HOME/.config/termux/bin/pd claude-desktop --no-sandbox" claude "Utility;"
+entry Eclipse "electron42 --no-sandbox $HOME/.config/nixos/eclipse" "$HOME/.config/nixos/eclipse/icon.png" "AudioVideo;Audio;Player;"
 
 say "Done"
 cat <<'EOF'

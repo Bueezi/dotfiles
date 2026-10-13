@@ -1,0 +1,4 @@
+#!/data/data/com.termux/files/usr/bin/sh
+# btop isn't packaged for Termux: Debian's, from the proot container (termux.sh installs it).
+# Android hides /proc/stat from apps, so CPU usage may stay empty
+exec "$HOME/.config/termux/bin/pd" btop "$@"

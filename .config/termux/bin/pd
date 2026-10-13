@@ -3,5 +3,8 @@
 # (VirGL, started by `desktop`) and audio wired up.
 # Usage: pd               a shell in the container
 #        pd some-gui-app  run an app from the container on the desktop (pd ddd)
+# The desktop's D-Bus session too (notifications in dunst): its socket is in Termux's tmp, which
+# --shared-tmp makes the container's /tmp
 exec proot-distro login debian --shared-tmp -- env DISPLAY=:0 GALLIUM_DRIVER=virpipe \
-    PULSE_SERVER=127.0.0.1 "${@:-bash}"
+    PULSE_SERVER=127.0.0.1 DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS//$PREFIX\/tmp//tmp}" \
+    "${@:-bash}"

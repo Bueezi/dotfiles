@@ -374,7 +374,7 @@ in
     tailwindcss-language-server rust-analyzer bash-language-server shellcheck intelephense sqls nil
     # Apps
     librewolf ungoogled-chromium mpv vesktop qbittorrent
-    libreoffice filezilla github-desktop bazaar gearlever
+    libreoffice bazaar gearlever
     # Claude Desktop (community build; updates to the latest version on rebuild)
     (builtins.getFlake "github:aaddrick/claude-desktop-debian").packages.${stdenv.hostPlatform.system}.default
     # fetch by areofyl: spinning 3D distro logo + system info (not in 26.05 yet; follows main,
