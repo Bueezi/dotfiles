@@ -389,7 +389,7 @@ in
     })
     # Zed (`zeditor`), FHS variant: the language servers and extensions it downloads are generic
     # Linux binaries that need a normal /usr/lib
-    zed-editor.fhs
+    zed-editor.fhs vscodium
     helix nodejs rustc cargo podman-compose sqlite-interactive dbeaver-bin
     distrobox distroshelf
     # KUL
