@@ -22,7 +22,9 @@ exec --no-startup-id dunst
 # Compositor: xcompmgr, transparency only (the see-through bar, rofi, dunst and alacritty; no blur).
 # picom lagged (Termux:X11 has no direct GPU path to the screen: seconds per key press with blur)
 # and with xrender windows disappeared and came back
-exec --no-startup-id xcompmgr
+# 20s late: one started with the desktop froze the screen once, ~15s in (asleep, waiting for an
+# event it had missed); one started later never did. Until then windows are just opaque
+exec --no-startup-id sh -c 'sleep 20; exec xcompmgr'
 exec --no-startup-id $scripts/clipstore.sh
 exec --no-startup-id $scripts/wallpaper.sh restore
 # An empty slot at the tray's far end, the bar's gap on the right: i3bar's padding doesn't move the
@@ -52,6 +54,7 @@ bindsym $mod+t              exec i3-msg -q '[class="^Alacritty$"] focus' || $ter
 bindsym $mod+Shift+d        exec $scripts/open.sh vesktop "60 ppt" "70 ppt" vesktop
 bindsym $mod+Shift+w        exec $scripts/wallpaper.sh pick
 bindsym $mod+Shift+o        exec $scripts/wallpaper.sh slideshow
+bindsym $mod+Ctrl+w         exec $scripts/wallpaper.sh blur
 # Area screenshot like $mod+Shift+s (common.conf), which Android takes for its own screenshot
 bindsym $mod+Shift+a        exec $scripts/screenshot.sh
 # Alt+Tab: window list (sway's swayr doesn't exist here)
