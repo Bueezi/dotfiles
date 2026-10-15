@@ -1,0 +1,9 @@
+#!/bin/sh
+# copy: into the clipboard, whatever the session. `cat a.txt | copy` or `copy a.txt` (exact
+# contents, last newline included). wl-copy under Wayland (sway), xclip under X11 (the tablet's
+# desktop), Android's own clipboard in the plain Termux app (termux-clipboard-set, Termux:API)
+if [ -n "$WAYLAND_DISPLAY" ]; then cat "$@" | wl-copy
+elif [ -n "$DISPLAY" ]; then cat "$@" | xclip -selection clipboard
+elif [ -n "$TERMUX_VERSION" ]; then cat "$@" | termux-clipboard-set
+else echo "copy: no clipboard here (no Wayland, X11 or Termux)" >&2; exit 1
+fi

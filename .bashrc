@@ -12,6 +12,8 @@ path_add "$HOME/.local/bin"
 [ -d "$HOME/.lmstudio/bin" ] && case ":$PATH:" in *":$HOME/.lmstudio/bin:"*) ;; *) PATH="$PATH:$HOME/.lmstudio/bin" ;; esac
 export PATH
 unset -f path_add
+# make: all cores (its default is one job). Also in fish's config
+export MAKEFLAGS="-j$(nproc)"
 
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return

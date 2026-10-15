@@ -412,9 +412,10 @@ in
     # KUL
     (texliveBasic.withPackages (ps: with ps; [ collection-latex collection-latexrecommended collection-fontsrecommended collection-fontsextra collection-latexextra collection-langeuropean latexmk ])) ddd gdb openssl
     # LSP (Helix, ~/.config/helix/languages.toml): Python, C/C++, HTML/CSS/JSON, JS/TS, Tailwind,
-    # Rust, shell (+ shellcheck), PHP, SQL, Nix
+    # Rust, shell (+ shellcheck), PHP, SQL, Nix, LaTeX, TOML, YAML, Markdown
     basedpyright clang-tools vscode-langservers-extracted typescript-language-server typescript
     tailwindcss-language-server rust-analyzer bash-language-server shellcheck intelephense sqls nil
+    texlab taplo yaml-language-server marksman
     # Apps
     librewolf ungoogled-chromium mpv vesktop qbittorrent
     libreoffice bazaar gearlever

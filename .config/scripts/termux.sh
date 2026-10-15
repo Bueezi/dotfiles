@@ -35,8 +35,9 @@ PACKAGES=(
     # screenshots, clipboard tools, theme switching for GTK on X11 (xsettingsd)
     termux-x11-nightly i3 dbus xcompmgr dunst libnotify rofi alacritty feh scrot xclip xdotool xsettingsd xorg-xrdb
     pulseaudio pavucontrol
-    # GPU: Zink on Turnip (Adreno) for native apps, VirGL for the proot container
-    mesa-zink mesa-vulkan-icd-freedreno virglrenderer-android mesa-demos
+    # GPU: Zink on Turnip (Adreno) for native apps, VirGL for the proot container. Termux's own mesa
+    # (current, its Zink has kopper: real swapchains), not TUR's mesa-zink (Mesa 22.0 from 2022)
+    mesa mesa-vulkan-icd-freedreno virglrenderer-android mesa-demos
     # Apps
     librewolf chromium mpv-x qbittorrent libreoffice zed code-oss
     # Electron: the web apps (~/.config/nixos/webapps), Vesktop and Claude, natively (no proot)
@@ -46,10 +47,12 @@ PACKAGES=(
     papirus-icon-theme adwaita-icon-theme qt6ct dconf fontconfig-utils
     ttf-dejavu ttf-jetbrains-mono-nerd ttf-iosevka-nerd
     # Shell and CLI
-    fish starship helix git gh openssh wget curl less htop fastfetch cowsay jq ffmpeg zip unzip 7zip
+    fish starship helix helix-grammars git gh openssh wget curl less htop fastfetch cowsay jq ffmpeg zip unzip 7zip
     cava cmatrix pipes.sh freerdp manpages mandoc tesseract chafa fzf termux-api proot-distro
     # Development (KU Leuven list: TeX Live below, ddd in the proot container)
-    clang make pkg-config binutils python nodejs golang rust rust-analyzer sqlite gdb openssl shellcheck
+    clang make pkg-config binutils python nodejs golang rust rust-src rust-analyzer sqlite gdb openssl shellcheck
+    # Language servers Termux packages (the rest: npm and Go below): LaTeX, TOML, Markdown (.NET)
+    texlab taplo marksman
     texlive-installer
     # Only to build things below: libsensors (bison, flex), clipnotify (X11 headers)
     bison flex libx11 libxfixes
@@ -63,7 +66,7 @@ BASE=(apt bash bzip2 command-not-found coreutils curl dash debianutils diffutils
 
 # npm (global) and Go: the language servers Termux doesn't package, and cliphist
 NPM=(basedpyright vscode-langservers-extracted typescript typescript-language-server
-     @tailwindcss/language-server bash-language-server intelephense)
+     @tailwindcss/language-server bash-language-server intelephense yaml-language-server)
 GO=(go.senan.xyz/cliphist@latest github.com/sqls-server/sqls@latest)
 
 # TeX Live: KU Leuven's list (texlive-latex-base, -latex-recommended, -fonts-recommended,

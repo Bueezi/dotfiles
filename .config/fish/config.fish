@@ -5,6 +5,8 @@ fish_add_path -g ~/.cargo/bin ~/.local/bin
 fish_add_path -ga ~/.lmstudio/bin
 # The tablet (Termux): its launchers (desktop, debian)
 set -q TERMUX_VERSION; and fish_add_path -g ~/.config/termux/bin
+# make: all cores (its default is one job). Also in ~/.bashrc
+set -gx MAKEFLAGS -j(nproc)
 
 if status is-interactive
     # Light mode (darkmode.sh): switch this foot window to its [colors-light] before the first
