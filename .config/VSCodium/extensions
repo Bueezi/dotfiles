@@ -1,0 +1,6 @@
+# VSCodium's (PCs) and Code - OSS's (tablet) extensions, from Open VSX; rb installs the missing
+# ones, the editor keeps them updated. Others installed by hand stay
+jasew.vscode-helix-emulation
+usernamehw.errorlens
+raunofreiberg.vesper
+pkief.material-icon-theme

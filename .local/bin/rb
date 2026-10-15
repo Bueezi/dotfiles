@@ -2,4 +2,9 @@
 # rb: rebuild this machine from its config. NixOS: nixos-rebuild switch; the tablet: termux.sh
 if [ -n "$TERMUX_VERSION" ]; then exec "$HOME/.config/scripts/termux.sh" "$@"; fi
 # --no-reexec: not first building nixos-rebuild itself from the new config (a second evaluation)
-exec sudo nixos-rebuild switch --no-reexec "$@"
+sudo nixos-rebuild switch --no-reexec "$@" || exit
+# VSCodium's extensions (~/.config/VSCodium/extensions, shared with the tablet): the missing ones
+have=$(codium --list-extensions 2>/dev/null | tr 'A-Z' 'a-z')
+grep -v '^#' "$HOME/.config/VSCodium/extensions" | while read -r e; do
+    echo "$have" | grep -qx "$e" || codium --install-extension "$e" >/dev/null 2>&1 || echo "rb: no $e"
+done

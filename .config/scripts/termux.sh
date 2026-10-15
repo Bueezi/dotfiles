@@ -22,7 +22,7 @@ PACKAGES=(
     # GPU: Zink on Turnip (Adreno) for native apps, VirGL for the proot container
     mesa-zink mesa-vulkan-icd-freedreno virglrenderer-android mesa-demos
     # Apps
-    librewolf chromium mpv-x qbittorrent libreoffice zed
+    librewolf chromium mpv-x qbittorrent libreoffice zed code-oss
     # Electron: the web apps (~/.config/nixos/webapps), Vesktop and Claude, natively (no proot)
     electron42
     thunar thunar-archive-plugin gvfs tumbler file-roller eog evince
@@ -83,6 +83,8 @@ SPARSE='/.bashrc
 /.config/librewolf/
 /.config/xfce4/
 /.config/zed/
+/.config/VSCodium/User/settings.json
+/.config/VSCodium/extensions
 /.config/fastfetch/
 /.config/nixos/webapps/
 /.config/fetch/
@@ -269,6 +271,14 @@ termux-reload-settings
 mkdir -p ~/.config/librewolf/librewolf "$PREFIX/lib/librewolf/distribution"
 ln -sfn ~/.config/librewolf/prefs.js ~/.config/librewolf/librewolf/librewolf.overrides.cfg
 ln -sfn ~/.config/librewolf/policies.json "$PREFIX/lib/librewolf/distribution/policies.json"
+
+# ── Code - OSS (`codium` here too): VSCodium's settings and extensions from the PCs ──
+mkdir -p ~/".config/Code - OSS/User"
+ln -sfn ~/.config/VSCodium/User/settings.json ~/".config/Code - OSS/User/settings.json"
+have=$(code-oss --list-extensions 2>/dev/null | tr 'A-Z' 'a-z')
+grep -v '^#' ~/.config/VSCodium/extensions | while read -r e; do
+    echo "$have" | grep -qx "$e" || code-oss --install-extension "$e" >/dev/null 2>&1 || echo "No $e"
+done
 
 # ── TeX Live (once; later `tlmgr install` only adds what's missing) ──
 # Installed = the package database install-tl writes (texlive-bin already ships tlmgr before that)
