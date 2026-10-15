@@ -94,3 +94,11 @@ pref("browser.uiCustomization.state", JSON.stringify({
     currentVersion: 26,
     newElementCount: 10,
 }));
+
+// The tablet's desktop (Termux:X11, `desktop` sets GALLIUM_DRIVER=zink): software WebRender (Firefox's
+// own pick there) is faster than the GPU's: every GPU frame is copied back to the CPU for the X server
+// (testufo: ~25 fps on the GPU, 120 in software). Capped at 60 fps: less CPU and battery, and
+// Termux:X11 shows no more anyway. The PCs never match this
+if (getenv("GALLIUM_DRIVER") == "zink") {
+    defaultPref("layout.frame_rate", 60);
+}
