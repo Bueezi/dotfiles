@@ -69,6 +69,9 @@ for _ in $(seq 100); do xrdb -query >/dev/null 2>&1 && break; sleep 0.1; done
 show
 
 export GALLIUM_DRIVER=zink MESA_LOADER_DRIVER_OVERRIDE=zink TU_DEBUG=noconform
+# Frames to Termux:X11 by copy, not DRI3: Mesa 26's DRI3 path leaves stale bits of old frames on
+# screen (letters appearing and disappearing in alacritty). Apps still render on the GPU
+export MESA_VK_WSI_DEBUG=sw
 # The cursor grows with it (20 px at 96 dpi, like the desktop): for X11 apps, as X resources too
 # (some only read those), and GTK's through xsettingsd (darkmode.sh)
 export XCURSOR_THEME=Bibata-Modern-Classic XCURSOR_SIZE=$(( 20 * XFT_DPI / 96 ))
