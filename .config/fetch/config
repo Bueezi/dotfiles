@@ -16,6 +16,7 @@ memory
 disk
 disk=/mnt/hdd
 disk=/mnt/nvme
+disk=/storage/emulated
 
 label_color=white
 shading_mode=sextants

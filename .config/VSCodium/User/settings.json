@@ -1,7 +1,4 @@
 {
-    // Shared by VSCodium (PCs) and Code - OSS (the tablet links its settings here, termux.sh).
-    // Extensions: ../extensions, installed by rb
-    "workbench.colorTheme": "Vesper",
     "workbench.iconTheme": "material-icon-theme",
     // Grey folders, like Papirus on the desktop
     "material-icon-theme.folders.color": "#9e9e9e",
@@ -16,5 +13,6 @@
     "telemetry.telemetryLevel": "off",
     "update.mode": "none",
     "extensions.autoCheckUpdates": true,
-    "extensions.autoUpdate": true
+    "extensions.autoUpdate": true,
+    "workbench.colorTheme": "Vesper"
 }

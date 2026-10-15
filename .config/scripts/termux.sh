@@ -198,8 +198,8 @@ if ! command -v i3status-rs >/dev/null; then
     cargo install --locked i3status-rs --config "patch.crates-io.async-pidfd.path=\"$apd\""
     mkdir -p ~/.local/share/i3status-rust && cp -r ~/.cargo/registry/src/*/i3status-rs-*/files/* ~/.local/share/i3status-rust/ 2>/dev/null || true
 fi
-fetch_rev=2   # one up after changing the patches below: rebuilds once
-if [ "$(cat "$build/fetch.rev" 2>/dev/null)" != "$fetch_rev" ] || [ ! -x ~/.local/bin/fetch ]; then
+fetch_rev=3   # one up after changing the patches below: rebuilds once
+if [ "$(cat "$build/fetch.rev" 2>/dev/null)" != "$fetch_rev" ] || [ ! -x "$PREFIX/libexec/fetch" ]; then
     # Same as the desktop: logo in colour, grey usage percentages. Kernel without Android's long
     # suffix ("6.6.50-android15-8-g…-4k": 6.6.50), like fastfetch's config does
     say "fetch (areofyl)"
@@ -207,7 +207,12 @@ if [ "$(cat "$build/fetch.rev" 2>/dev/null)" != "$fetch_rev" ] || [ ! -x ~/.loca
     sed -i -E '/(pct|capacity) >=/ s/"(31|32|93)"/"38;5;248"/g' "$build/fetch/fetch.c"
     sed -i 's|add_info("Kernel", "%s %s", u.sysname, u.release);|{ char *a = strstr(u.release, "-android"); if (a) *a = 0; } &|' "$build/fetch/fetch.c"
     grep -q 'strstr(u.release, "-android")' "$build/fetch/fetch.c"
-    make -C "$build/fetch" && install -m 755 "$build/fetch/fetch" ~/.local/bin/fetch
+    # Its config from FETCH_CONFIG when set: the `fetch` in ~/.config/termux/bin passes one with
+    # fastfetch's Android fields filled in, and runs this program from $PREFIX/libexec
+    sed -i 's|snprintf(path, sizeof(path), "%s/.config/fetch/config", home);|&\n  if (getenv("FETCH_CONFIG")) snprintf(path, sizeof(path), "%s", getenv("FETCH_CONFIG"));|' "$build/fetch/fetch.c"
+    grep -q 'getenv("FETCH_CONFIG")' "$build/fetch/fetch.c"
+    make -C "$build/fetch" && install -D -m 755 "$build/fetch/fetch" "$PREFIX/libexec/fetch"
+    rm -f ~/.local/bin/fetch   # where it was before: first in the shell's PATH, it hid the wrapper
     echo "$fetch_rev" > "$build/fetch.rev"
 fi
 
@@ -355,7 +360,7 @@ bin=$HOME/.config/termux/bin
 entry Vesktop "$bin/vesktop" discord "Network;InstantMessaging;"   # Papirus (its .deb has no png)
 entry Claude "$bin/claude-desktop %u" "$PREFIX/opt/claude-desktop/icon.png" "Utility;" "x-scheme-handler/claude;"
 entry Eclipse "$bin/eclipse" "$HOME/.config/nixos/webapps/eclipse/icon.png" "AudioVideo;Audio;Player;"
-entry Toledo "$bin/toledo" "$HOME/.config/nixos/webapps/toledo/icon.png" "Education;"
+rm -f "$apps/Toledo.desktop"   # was a web app; now $mod+u opens it in LibreWolf
 # Termux's Chromium entry has unfilled placeholders (Exec=@@desktop_exec, Icon=@@desktop_icon): no
 # icon in rofi, no command. A copy here (same name: it replaces the system's) with both filled in
 c=$PREFIX/share/applications/chromium.desktop

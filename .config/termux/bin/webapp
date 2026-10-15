@@ -1,4 +1,4 @@
 #!/data/data/com.termux/files/usr/bin/sh
-# The web apps (~/.config/nixos/webapps: Eclipse Music, Toledo) on Termux's Electron. `eclipse` and
-# `toledo` next to this are links to it: the same commands as on the PCs (webapps.nix)
+# The web apps (~/.config/nixos/webapps: Eclipse Music) on Termux's Electron. `eclipse` next to
+# this is a link to it: the same command as on the PCs (webapps.nix)
 exec electron42 --no-sandbox "$HOME/.config/nixos/webapps/${0##*/}" "$@"

@@ -36,6 +36,9 @@ documents() {
         git -C "$d" reset -q --hard origin/main && echo "cu: took the other machines' ~/Documents/sync"
     elif [ -n "$mine" ]; then
         git -C "$d" reset -q --soft "$(git -C "$d" commit-tree "$(git -C "$d" write-tree)" -m sync)" &&
+            # A bitmap index first: the new commit doesn't descend from the old one, and without it
+            # git can't see the files GitHub already has, so it sent all of them (~100 MB) every time
+            git -C "$d" repack -q -a -d --write-bitmap-index &&
             git -C "$d" push -q --force-with-lease=main:"$old" origin HEAD:main && echo "cu: pushed ~/Documents/sync"
     fi
 }

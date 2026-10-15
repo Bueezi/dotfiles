@@ -1,0 +1,23 @@
+#!/data/data/com.termux/files/usr/bin/sh
+# fetch on Android: what its own code can't read here (no os-release, no DMI or DRM, no CPU model
+# in /proc/cpuinfo, /sys refused) comes from fastfetch, which knows Android, as fixed `custom_`
+# lines in a copy of ~/.config/fetch/config. The rest fetch reads itself. The program is built by
+# termux.sh into $PREFIX/libexec, patched to read the config named in FETCH_CONFIG
+t=${TMPDIR:-$PREFIX/tmp}
+cat > "$t/fetch-android.jsonc" <<'JSON'
+{ "logo": { "type": "none" }, "display": { "pipe": true, "separator": "=" },
+  "modules": [
+    { "type": "os",       "key": "custom_OS" },
+    { "type": "host",     "key": "custom_Host" },
+    { "type": "uptime",   "key": "custom_Uptime" },
+    { "type": "packages", "key": "custom_Packages" },
+    { "type": "display",  "key": "custom_Display", "format": "{width}x{height} @ {refresh-rate} Hz" },
+    { "type": "cpu",      "key": "custom_CPU" },
+    { "type": "gpu",      "key": "custom_GPU" }
+  ] }
+JSON
+# A field fastfetch gave replaces fetch's own line of the same name (os, host…); the others stay
+fastfetch -c "$t/fetch-android.jsonc" 2>/dev/null |
+    awk -F= 'NR == FNR { if (/^custom_/) v[tolower(substr($1, 8))] = $0; next }
+             { k = tolower($0); print (k in v) ? v[k] : $0 }' - ~/.config/fetch/config > "$t/fetch-config"
+FETCH_CONFIG=$t/fetch-config exec "$PREFIX/libexec/fetch" "$@"

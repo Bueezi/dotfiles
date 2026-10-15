@@ -5,7 +5,6 @@
 let
   apps = {
     eclipse = { name = "Eclipse"; comment = "Eclipse Music web player"; categories = [ "AudioVideo" "Audio" "Player" ]; };
-    toledo  = { name = "Toledo";  comment = "KU Leuven Toledo";         categories = [ "Education" ]; };
   };
 
   webapp = cmd: app: [

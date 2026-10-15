@@ -74,7 +74,7 @@ in
     /home/ben/.config/nixos/librewolf.nix
     /home/ben/.config/nixos/swayfx.nix  # latest swayfx from git
     /home/ben/.config/nixos/plymouth.nix  # boot splash (penguin video)
-    /home/ben/.config/nixos/webapps.nix   # Eclipse Music and Toledo as desktop apps
+    /home/ben/.config/nixos/webapps.nix   # Eclipse Music as a desktop app
     /home/ben/.config/nixos/hyprquickpaper.nix  # wallpaper picker ($mod+Shift+w)
   ];
 
