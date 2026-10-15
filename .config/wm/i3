@@ -52,6 +52,8 @@ bindsym $mod+t              exec i3-msg -q '[class="^Alacritty$"] focus' || $ter
 bindsym $mod+Shift+d        exec $scripts/open.sh vesktop "60 ppt" "70 ppt" vesktop
 bindsym $mod+Shift+w        exec $scripts/wallpaper.sh pick
 bindsym $mod+Shift+o        exec $scripts/wallpaper.sh slideshow
+# Area screenshot like $mod+Shift+s (common.conf), which Android takes for its own screenshot
+bindsym $mod+Shift+a        exec $scripts/screenshot.sh
 # Alt+Tab: window list (sway's swayr doesn't exist here)
 bindsym Mod1+Tab            exec rofi -show window
 

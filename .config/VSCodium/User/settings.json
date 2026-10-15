@@ -13,5 +13,7 @@
     "update.mode": "none",
     "extensions.autoCheckUpdates": true,
     "extensions.autoUpdate": true,
+    // Code - OSS (the tablet) now ships GitHub Copilot's chat and sign-in prompts; VSCodium hides them
+    "chat.disableAIFeatures": true,
     "workbench.colorTheme": "Ayu Dark"
 }
