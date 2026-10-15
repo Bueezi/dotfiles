@@ -9,10 +9,9 @@
     "editor.minimap.enabled": false,
     "editor.renderWhitespace": "trailing",
     "workbench.startupEditor": "none",
-    "window.menuBarVisibility": "toggle",
     "telemetry.telemetryLevel": "off",
     "update.mode": "none",
     "extensions.autoCheckUpdates": true,
     "extensions.autoUpdate": true,
-    "workbench.colorTheme": "Vesper"
+    "workbench.colorTheme": "Ayu Dark"
 }
