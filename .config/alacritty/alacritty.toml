@@ -11,7 +11,7 @@ live_config_reload = true
 program = "sh"
 args = ["-c", "command -v fish >/dev/null && exec fish || exec bash"]
 
-# See-through as much as foot (xcompmgr draws it; no blur on the tablet)
+# See-through as much as foot (picom draws it; no blur on the tablet)
 [window]
 padding = { x = 12, y = 12 }
 opacity = 0.80

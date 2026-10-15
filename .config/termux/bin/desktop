@@ -37,7 +37,6 @@ home() { am start -a android.intent.action.MAIN -c android.intent.category.HOME 
 running() { DISPLAY=:0 timeout 2 xrdb -query >/dev/null 2>&1; }
 stop() {
     pkill -f termux.x11; pkill -f virgl_test_server; pkill -f 'wallpaper\.sh loop( later)?$'
-    pkill -f 'sleep 60; exec xcompmg[r]'   # a compositor still waiting to start (below)
     for _ in $(seq 50); do running || break; sleep 0.1; done
     # A leftover socket made the next start look ready too early: i3 found no X (black screen)
     rm -f "$PREFIX/tmp/.X11-unix/X0" "$PREFIX/tmp/.X0-lock"
@@ -77,8 +76,4 @@ export MESA_VK_WSI_DEBUG=sw
 # (some only read those), and GTK's through xsettingsd (darkmode.sh)
 export XCURSOR_THEME=Bibata-Modern-Classic XCURSOR_SIZE=$(( 20 * XFT_DPI / 96 ))
 printf 'Xft.dpi: %s\nXcursor.theme: %s\nXcursor.size: %s\n' "$XFT_DPI" "$XCURSOR_THEME" "$XCURSOR_SIZE" | xrdb -merge
-# Compositor (transparency): xcompmgr, a minute in and outside i3. Started by i3, at login or 20s
-# later, it froze the screen (asleep, waiting on X; killing it unfroze); started a minute in from
-# outside i3 it didn't. Which of the two matters isn't known. Windows are opaque until then
-setsid -f sh -c 'sleep 60; exec xcompmgr' >/dev/null 2>&1 < /dev/null
 exec dbus-run-session -- i3

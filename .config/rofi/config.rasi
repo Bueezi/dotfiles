@@ -1,5 +1,5 @@
 /* rofi on the tablet: fuzzel's counterpart (~/.config/fuzzel/fuzzel.ini), same black and white look
-   (see-through, without blur: xcompmgr): white border, grey text, the selection inverted.
+   (see-through, without blur: picom): white border, grey text, the selection inverted.
    Built on an empty theme: rofi's default one styles the list rows itself (light rows otherwise). */
 @theme "/dev/null"
 
