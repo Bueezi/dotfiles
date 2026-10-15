@@ -132,6 +132,9 @@ in
 
   # Shells: bash stays the login shell (and for scripts); foot starts fish (~/.config/fish)
   programs.fish.enable = true;
+  # Not ~250 man-page-to-completion builds on every update (the long "fish-completions" part of
+  # rb): fish ships its own, packages bring theirs, and fish makes the rest itself on first start
+  programs.fish.generateCompletions = false;
   # ~/.local/bin (my commands: cu, term) in PATH for the whole session, not just shells: greetd
   # sources /etc/profile, so sway and everything it starts (Thunar's terminal, power.sh) find them
   environment.localBinInPath = true;
@@ -236,7 +239,7 @@ in
       brightnessctl playerctl pavucontrol
       networkmanager_dmenu networkmanagerapplet
       # GUI utilities
-      file-roller baobab eog zathura adwaita-icon-theme
+      file-roller baobab eog evince adwaita-icon-theme
       bibata-cursors papirusGrey
       adw-gtk3   # Mono-dark (~/.local/share/themes) imports its dark variant
     ];
@@ -310,7 +313,7 @@ in
     let each = app: types: lib.genAttrs types (_: app);
     in each "thunar.desktop" [ "inode/directory" ]
       // each "librewolf.desktop" [ "x-scheme-handler/http" "x-scheme-handler/https" "text/html" "application/xhtml+xml" ]
-      // each "org.pwmt.zathura-pdf-mupdf.desktop" [ "application/pdf" ]
+      // each "org.gnome.Evince.desktop" [ "application/pdf" ]
       // each "org.gnome.eog.desktop" (map (t: "image/${t}") [ "jpeg" "jpg" "png" "gif" "bmp" "webp" "tiff" ])
       // each "mpv.desktop" [ "video/mp4" "video/x-matroska" "video/webm" "video/quicktime" "video/x-msvideo"
                              "audio/mpeg" "audio/x-wav" "audio/flac" "audio/ogg" ]
@@ -369,6 +372,9 @@ in
     };
   };
   services.flatpak.enable = true;
+  # Flatpak turns on fonts.fontDir, which rebuilds Xwayland with that font path (minutes, on
+  # every update). The cached one: only old X11 core-font apps would miss those fonts
+  programs.xwayland.package = pkgs.xwayland;
 
   # ── Packages ────────────────────────────────────────
   nixpkgs.config.allowUnfree = true;

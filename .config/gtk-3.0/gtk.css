@@ -1,0 +1,7 @@
+/* Loaded after the theme (Mono-dark or adw-gtk3). Evince's text selection and search hits: grey
+   instead of the blue accent, on its white pages in both modes */
+evview.find-results:selected,
+evview.find-results:active {
+  background-color: #505050;
+  color: #ffffff;
+}

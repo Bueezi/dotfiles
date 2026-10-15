@@ -25,7 +25,7 @@ PACKAGES=(
     librewolf chromium mpv-x qbittorrent libreoffice zed
     # Electron: the web apps (~/.config/nixos/webapps), Vesktop and Claude, natively (no proot)
     electron42
-    thunar thunar-archive-plugin gvfs tumbler file-roller eog zathura zathura-pdf-mupdf
+    thunar thunar-archive-plugin gvfs tumbler file-roller eog evince
     # Look: icons, Qt palettes (qt6ct), dconf (dark mode's source of truth), fonts
     papirus-icon-theme adwaita-icon-theme qt6ct dconf fontconfig-utils
     ttf-dejavu ttf-jetbrains-mono-nerd ttf-iosevka-nerd
@@ -86,7 +86,6 @@ SPARSE='/.bashrc
 /.config/fastfetch/
 /.config/nixos/webapps/
 /.config/fetch/
-/.config/zathura/
 /.config/cava/'
 
 # ── Mirrors: the Europe group, before the first download. Without a group, pkg picks a random
@@ -359,7 +358,7 @@ c=$PREFIX/share/applications/chromium.desktop
 mime() { local app=$1 t; shift; for t; do gio mime "$t" "$app" >/dev/null || echo "No $app for $t"; done; }
 mime librewolf.desktop x-scheme-handler/http x-scheme-handler/https text/html application/xhtml+xml
 mime thunar.desktop inode/directory
-mime org.pwmt.zathura-pdf-mupdf.desktop application/pdf
+mime org.gnome.Evince.desktop application/pdf
 mime org.gnome.eog.desktop image/jpeg image/png image/gif image/bmp image/webp image/tiff
 mime mpv.desktop video/mp4 video/x-matroska video/webm audio/mpeg audio/flac audio/ogg
 
