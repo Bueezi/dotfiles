@@ -26,10 +26,10 @@ auth() {
 }
 
 update() {
-    # Tablet: Termux's packages, then its setup script applies the package list (like a rebuild)
+    # Tablet: rb (termux.sh) already updates everything, pkg included
     if [ -n "$TERMUX_VERSION" ]; then
         echo "==> Termux"
-        if pkg upgrade -y && bash ~/.config/scripts/termux.sh; then
+        if rb; then
             notify-send -a update -i emblem-ok-symbolic "Update" "Finished"
         else
             notify-send -u critical -a update -i dialog-error-symbolic "Update" "Failed"
@@ -39,15 +39,17 @@ update() {
         return
     fi
     auth Update
+    # Each part runs even if one before it failed; the failed ones are named at the end
+    failed=
     echo "==> NixOS"
-    sudo nixos-rebuild switch --upgrade
+    rb --upgrade || failed+=" NixOS"
     if [ "$(readlink /run/booted-system/kernel)" != "$(readlink /run/current-system/kernel)" ]; then
         echo "    New kernel installed, reboot to use it."
     fi
     echo; echo "==> Nix profile"
-    nix profile upgrade --all --refresh
+    nix profile upgrade --all --refresh || failed+=" Nix-profile"
     echo; echo "==> Flatpak"
-    flatpak update -y
+    flatpak update -y || failed+=" Flatpak"
     echo; echo "==> Firmware"
     fwupdmgr refresh >/dev/null 2>&1
     if fwupdmgr get-updates >/dev/null 2>&1; then
@@ -56,16 +58,21 @@ update() {
     else
         echo "No firmware updates."
     fi
-    notify-send -a update -i emblem-ok-symbolic "Update" "Finished"
     show
-    echo; read -rp "Done. Press Enter to close."
+    if [ -n "$failed" ]; then
+        notify-send -u critical -a update -i dialog-error-symbolic "Update" "Failed:$failed"
+        echo; read -rp "Failed:$failed (see above). Press Enter to close."
+    else
+        notify-send -a update -i emblem-ok-symbolic "Update" "Finished"
+        echo; read -rp "Done. Press Enter to close."
+    fi
 }
 
-# Rebuild the NixOS config (no channel upgrade) and report the result as a notification.
+# Rebuild the NixOS config with rb (no channel upgrade) and report the result as a notification.
 rebuild() {
     auth Rebuild
-    echo "==> nixos-rebuild switch"
-    if sudo nixos-rebuild switch; then
+    echo "==> rb"
+    if rb; then
         notify-send -a rebuild -i emblem-ok-symbolic "Rebuild" "nixos-rebuild switch succeeded"
         sleep 1
     else
@@ -76,10 +83,9 @@ rebuild() {
 }
 
 # Sync with `cu` (~/.local/bin/cu): dotfiles (commit tracked changes, pull, push), then ~/Documents/sync.
-# Full path: the sway session's PATH doesn't include ~/.local/bin (only shells add it)
 sync() {
     echo "==> Dotfiles sync (cu)"
-    if "$HOME/.local/bin/cu"; then
+    if cu; then
         notify-send -a sync -i emblem-ok-symbolic "Sync" "Dotfiles synced"
         echo; read -rp "Done. Press Enter to close."
     else

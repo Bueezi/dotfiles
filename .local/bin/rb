@@ -1,10 +1,15 @@
 #!/bin/sh
 # rb: rebuild this machine from its config. NixOS: nixos-rebuild switch; the tablet: termux.sh
 if [ -n "$TERMUX_VERSION" ]; then exec "$HOME/.config/scripts/termux.sh" "$@"; fi
+old=$(readlink /run/current-system)
 # --no-reexec: not first building nixos-rebuild itself from the new config (a second evaluation)
 sudo nixos-rebuild switch --no-reexec "$@" || exit
+# What changed: packages added, removed, updated (nothing to show when the system stayed the same)
+if [ "$old" != "$(readlink /run/current-system)" ] && command -v nvd >/dev/null; then
+    nvd diff "$old" /run/current-system
+fi
 # VSCodium's extensions (~/.config/VSCodium/extensions, shared with the tablet): the missing ones
 have=$(codium --list-extensions 2>/dev/null | tr 'A-Z' 'a-z')
-grep -v '^#' "$HOME/.config/VSCodium/extensions" | while read -r e; do
+grep -v '^\s*\(#\|$\)' "$HOME/.config/VSCodium/extensions" | while read -r e; do
     echo "$have" | grep -qx "$e" || codium --install-extension "$e" >/dev/null 2>&1 || echo "rb: no $e"
 done

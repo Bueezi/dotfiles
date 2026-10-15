@@ -72,5 +72,5 @@ in
   boot.initrd.kernelModules = [ "amdgpu" ]; # GPU driver early: no resolution switch mid-splash
   boot.initrd.verbose = false;
   boot.consoleLogLevel = 3;              # kernel errors still show, nothing else
-  boot.kernelParams = [ "quiet" "splash" "udev.log_level=3" "systemd.show_status=auto" ];
+  boot.kernelParams = [ "quiet" "udev.log_level=3" "systemd.show_status=auto" ];   # "splash": plymouth adds it
 }

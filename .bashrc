@@ -2,9 +2,16 @@
 # ~/.bashrc
 #
 
-export PATH="$HOME/.cargo/bin:$PATH"
+# Each directory once: shells started from a shell would add them again
+path_add() { case ":$PATH:" in *":$1:"*) ;; *) PATH="$1:$PATH" ;; esac; }
+path_add "$HOME/.cargo/bin"
 # The tablet (Termux): its launchers (desktop, debian)
-[ -n "$TERMUX_VERSION" ] && export PATH="$HOME/.config/termux/bin:$PATH"
+[ -n "$TERMUX_VERSION" ] && path_add "$HOME/.config/termux/bin"
+path_add "$HOME/.local/bin"
+# LM Studio's CLI (lms), on the desktop: its installer wrote this line
+[ -d "$HOME/.lmstudio/bin" ] && case ":$PATH:" in *":$HOME/.lmstudio/bin:"*) ;; *) PATH="$PATH:$HOME/.lmstudio/bin" ;; esac
+export PATH
+unset -f path_add
 
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
@@ -22,9 +29,3 @@ alias gc='gcc -std=c99 -Wall -Wextra -pedantic'
 alias hc='hx ~/.configuration.nix'
 alias hs='hx ~/.config/wm/sway'
 alias gitu='git commit -m "update" && git push'
-
-export PATH=$HOME/.local/bin:$PATH
-
-# Added by LM Studio CLI (lms)
-export PATH="$PATH:/home/ben/.lmstudio/bin"
-# End of LM Studio CLI section

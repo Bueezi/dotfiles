@@ -84,6 +84,8 @@ in
       timeout = 0;
       systemd-boot.enable = true;
       systemd-boot.configurationLimit = 3;
+      # No editing kernel options at the boot menu: anyone at the keyboard could boot init=/bin/sh as root
+      systemd-boot.editor = false;
       efi.canTouchEfiVariables = true;
     };
     kernelPackages = pkgs.linuxPackages_latest; # RDNA4 needs a recent kernel
@@ -135,6 +137,11 @@ in
   # Not ~250 man-page-to-completion builds on every update (the long "fish-completions" part of
   # rb): fish ships its own, packages bring theirs, and fish makes the rest itself on first start
   programs.fish.generateCompletions = false;
+  # Two more builds on every rebuild that changes a package: the man page index (fish turns it on;
+  # it's for `man -k`/apropos and fish's command descriptions) and the NixOS options manual
+  # (`man configuration.nix`, nixos-help): search.nixos.org instead
+  documentation.man.cache.enable = false;
+  documentation.nixos.enable = false;
   # ~/.local/bin (my commands: cu, term) in PATH for the whole session, not just shells: greetd
   # sources /etc/profile, so sway and everything it starts (Thunar's terminal, power.sh) find them
   environment.localBinInPath = true;
@@ -220,9 +227,8 @@ in
     wrapperFeatures.gtk = true;
     extraSessionCommands = ''
       export QT_QPA_PLATFORM="wayland;xcb"
-      # Proton: native Wayland in games. HDR does nothing yet: swayfx has no HDR output
-      export PROTON_ENABLE_WAYLAND=1
-      export PROTON_ENABLE_HDR=1
+      # Proton's native Wayland: per game (launch option `PROTON_ENABLE_WAYLAND=1 %command%`), not for
+      # all of them. No PROTON_ENABLE_HDR: swayfx has no HDR output
     '';
     extraPackages = with pkgs; [
       # session
@@ -362,6 +368,10 @@ in
     };
   };
 
+  # Programs downloaded outside Nix (VSCodium extensions' own binaries, pip/npm native modules,
+  # generic Linux builds) expect a normal dynamic loader in /lib64: nix-ld provides one
+  programs.nix-ld.enable = true;
+
   programs.appimage = {
     enable = true;
     binfmt = true;
@@ -387,6 +397,7 @@ in
     cava cmatrix pipes  # music visualiser (~/.config/cava/config), eye candy
     freerdp   # RDP into Windows: sdl-freerdp /v:<ip> /u:<user> /dynamic-resolution
     man-pages man-pages-posix # man
+    nvd   # rb: what each rebuild changed
     # Dev
     # Helix opens in foot from file managers (text/* defaults above)
     (makeDesktopItem {
@@ -409,10 +420,15 @@ in
     libreoffice bazaar gearlever
     # Claude Desktop (community build; updates to the latest version on rebuild)
     (builtins.getFlake "github:aaddrick/claude-desktop-debian").packages.${stdenv.hostPlatform.system}.default
-    # fetch by areofyl: spinning 3D distro logo + system info (not in 26.05 yet; follows main,
-    # built with the system nixpkgs). Logo in colour, grey usage percentages.
-    ((callPackage "${builtins.fetchTarball "https://github.com/areofyl/fetch/archive/main.tar.gz"}/nix/package.nix" { }).overrideAttrs (old: {
-      postPatch = ''sed -i -E '/(pct|capacity) >=/ s/"(31|32|93)"/"38;5;248"/g' fetch.c'';
+    # fetch by areofyl: spinning 3D distro logo + system info (not in 26.05 yet; built with the
+    # system nixpkgs). Pinned: newer = a newer rev + its hash (nix-prefetch-url --unpack <url>, then
+    # nix hash convert --hash-algo sha256 <it>). Logo in colour, grey usage percentages.
+    # The tablet builds the same commit (termux.sh, fetch_commit): change both together
+    ((callPackage "${builtins.fetchTarball {
+      url = "https://github.com/areofyl/fetch/archive/e3087810e2a131ed4093440e783ac96a101ad806.tar.gz";
+      sha256 = "sha256-hgoTIBD2pvZDJxefMz+g8ALs4lqsMHOPHH4wwiomsaA=";
+    }}/nix/package.nix" { }).overrideAttrs (old: {
+      postPatch = (old.postPatch or "") + ''sed -i -E '/(pct|capacity) >=/ s/"(31|32|93)"/"38;5;248"/g' fetch.c'';
     }))
   ]
   # ── Per-machine apps ────────────────────────────────
