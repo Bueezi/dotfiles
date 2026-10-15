@@ -1,6 +1,8 @@
 #!/bin/sh
-# rb: rebuild this machine from its config. NixOS: nixos-rebuild switch; the tablet: termux.sh
+# rb: rebuild this machine from its config. NixOS: nixos-rebuild switch; the tablet: termux.sh.
+# rb -u (or --upgrade): update too (NixOS: the channel first, so newer packages)
 if [ -n "$TERMUX_VERSION" ]; then exec "$HOME/.config/scripts/termux.sh" "$@"; fi
+[ "$1" = -u ] && { shift; set -- --upgrade "$@"; }
 old=$(readlink /run/current-system)
 # --no-reexec: not first building nixos-rebuild itself from the new config (a second evaluation)
 sudo nixos-rebuild switch --no-reexec "$@" || exit

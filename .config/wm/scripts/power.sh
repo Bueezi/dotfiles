@@ -26,10 +26,10 @@ auth() {
 }
 
 update() {
-    # Tablet: rb (termux.sh) already updates everything, pkg included
+    # Tablet: rb -u (termux.sh) updates everything, pkg included
     if [ -n "$TERMUX_VERSION" ]; then
         echo "==> Termux"
-        if rb; then
+        if rb -u; then
             notify-send -a update -i emblem-ok-symbolic "Update" "Finished"
         else
             notify-send -u critical -a update -i dialog-error-symbolic "Update" "Failed"
@@ -42,7 +42,7 @@ update() {
     # Each part runs even if one before it failed; the failed ones are named at the end
     failed=
     echo "==> NixOS"
-    rb --upgrade || failed+=" NixOS"
+    rb -u || failed+=" NixOS"
     if [ "$(readlink /run/booted-system/kernel)" != "$(readlink /run/current-system/kernel)" ]; then
         echo "    New kernel installed, reboot to use it."
     fi

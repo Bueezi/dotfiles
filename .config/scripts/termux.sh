@@ -1,10 +1,11 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # Tablet (Honor MagicPad 4, Termux) setup and "rebuild": like .configuration.nix on NixOS, the lists
-# below are what's installed. Re-running installs what's missing and removes packages that aren't
-# listed (apt shows the list and asks first), and updates everything: pkg, npm, Go, i3status-rs, the
-# proot Debian, TeX Live. `rb` and the power menu's update both run this.
+# below are what's installed. `rb` (this): installs what's missing and removes packages that aren't
+# listed (apt shows the list and asks first), nothing gets updated. `rb -u` (the power menu's
+# update) also updates everything: pkg, npm, Go, i3status-rs, TeX Live, the proot Debian, the
+# Electron apps. Like rb / rb -u on NixOS. The very first run upgrades too.
 # After the dotfiles, each part runs on its own: a failed one doesn't stop the others, and the failed
-# ones are named at the end. Everything also goes to $PREFIX/tmp/rb.log.
+# ones are named at the end, with how long each part took. Everything also goes to $PREFIX/tmp/rb.log.
 # Fresh tablet (Termux + Termux:X11 from F-Droid or GitHub, not the Play Store):
 #   curl -L https://raw.githubusercontent.com/Bueezi/dotfiles/main/.config/scripts/termux.sh | bash
 # That fetches the dotfiles first, then runs this file from them.
@@ -155,16 +156,29 @@ elif [ "$(md5sum < "$self")" != "$self_before" ]; then
 fi
 
 # ── The rest: one step each ──
-failed=()
+failed=() times=()
 # step <name> <function>: the function in a subshell with set -e of its own, so an error ends only
 # that step. (`( … ) || …` would turn set -e off inside it: bash ignores it left of || and &&)
 step() {
     say "$1"
+    local t=$SECONDS
     set +e; ( set -e; "$2" ); local rc=$?; set -e
+    times+=("$1 $((SECONDS - t))s")
     [ "$rc" = 0 ] || { failed+=("$1"); echo "==> $1: failed, carrying on"; }
 }
 
 build=~/.cache/termux-build; mkdir -p "$build"
+# -u (or --upgrade): update everything too. The first run always does (no record of an earlier one yet):
+# Termux's bootstrap is older than the packages it's about to install
+upgrade="" first=""
+case "${1:-}" in -u|--upgrade) upgrade=1 ;; esac
+[ -e "$build/last-upgrade" ] || upgrade=1 first=1
+# unchanged <name> <text>: the slow checks (tlmgr, Code - OSS, gio, proot) skip themselves when what
+# they depend on is the same as at their last successful run; `record <name> <text>` notes it.
+# Never with -u, which checks everything
+unchanged() { [ -z "$upgrade" ] && [ "$(cat "$build/$1.stamp" 2>/dev/null)" = "$(printf '%s' "$2" | md5sum)" ]; }
+record() { printf '%s' "$2" | md5sum > "$build/$1.stamp"; }
+installed_pkgs() { dpkg-query -W -f='${db:Status-Abbrev} ${Package}\n' | awk '$1 == "ii" { print $2 }' | sort -u; }
 # Downloads go to a temporary name first: an interrupted or failed one (404) isn't left behind
 # looking installed, and the next run tries again
 get() { curl -fL -o "$2.part" "$1" && mv "$2.part" "$2"; }
@@ -189,17 +203,25 @@ latest_release() {
 
 # ── Packages: install, then remove what isn't listed ──
 packages() {
+    local keep missing installed_keep extra
     # The X11 and TUR repositories first: apt plans a whole `pkg install` before installing anything,
     # so packages from a repository installed in the same command are "unable to locate"
-    pkg install -y x11-repo tur-repo
-    # A repository mid-sync ("File has unexpected size") fails the update; apt keeps the previous lists,
-    # so carry on instead of stopping
-    pkg update -y || echo "Some package lists didn't update (a repository syncing?); using the previous ones"
-    pkg upgrade -y -o Dpkg::Options::=--force-confold
-    pkg install -y "${PACKAGES[@]}" "${BASE[@]}"
-    local keep installed_keep extra
+    missing=$(comm -13 <(installed_pkgs) <(printf '%s\n' x11-repo tur-repo | sort))
+    if [ -n "$missing" ] || [ -n "$upgrade" ]; then
+        [ -z "$missing" ] || pkg install -y $missing
+        # A repository mid-sync ("File has unexpected size") fails the update; apt keeps the previous
+        # lists, so carry on instead of stopping
+        pkg update -y || echo "Some package lists didn't update (a repository syncing?); using the previous ones"
+    fi
+    [ -z "$upgrade" ] || pkg upgrade -y -o Dpkg::Options::=--force-confold
+    # Only the missing ones: `pkg install` of an installed package upgrades it, half an upgrade
     keep=$(printf '%s\n' "${PACKAGES[@]}" "${BASE[@]}" | sort -u)
-    installed_keep=$(comm -12 <(echo "$keep") <(dpkg-query -W -f='${Package}\n' | sort -u))
+    missing=$(comm -13 <(installed_pkgs) <(echo "$keep"))
+    if [ -n "$missing" ]; then
+        # Package lists from before a package got listed may not know it: update them, then again
+        pkg install -y $missing || { pkg update -y || true; pkg install -y $missing; }
+    fi
+    installed_keep=$(comm -12 <(echo "$keep") <(installed_pkgs))
     apt-mark manual $installed_keep >/dev/null
     extra=$(comm -23 <(apt-mark showmanual | sort -u) <(echo "$keep"))
     [ -z "$extra" ] || apt-mark auto $extra >/dev/null
@@ -214,7 +236,7 @@ npm_globals() {
     npm_have=$(npm ls -g --depth=0 --parseable 2>/dev/null | sed -n 's|.*/node_modules/||p')
     for p in "${NPM[@]}"; do grep -qxF "$p" <<<"$npm_have" || npm install -g "$p"; done
     # Only the listed ones: a plain `npm update -g` would replace pkg's own npm
-    npm update -g "${NPM[@]}"
+    [ -z "$upgrade" ] || npm update -g "${NPM[@]}"
     for p in $npm_have; do
         case " ${NPM[*]} npm corepack " in *" $p "*) ;; *) npm uninstall -g "$p" ;; esac
     done
@@ -223,20 +245,23 @@ step npm npm_globals
 
 go_programs() {
     export GOBIN=~/.local/bin
-    local m f p
-    # Every time: @latest is a quick question to Go's proxy, and the build cache makes an unchanged one fast
-    for m in "${GO[@]}"; do go install "$m"; done
+    local m f p have=
     # Unlisted ones go, like npm's. ~/.local/bin also has my scripts and the C builds below: only Go
     # programs count (`go version -m` names the package each was built from; the rest it can't read)
     for f in "$GOBIN"/*; do
         p=$(go version -m "$f" 2>/dev/null | awk '$1 == "path" { print $2 }') || true
         [ -n "$p" ] || continue
-        case " ${GO[*]%@*} " in *" $p "*) ;; *) echo "Removing ${f##*/} ($p): not in GO"; rm -f "$f" ;; esac
+        case " ${GO[*]%@*} " in *" $p "*) have+=" $p" ;; *) echo "Removing ${f##*/} ($p): not in GO"; rm -f "$f" ;; esac
+    done
+    # The missing ones; with -u all (@latest: the newest version)
+    for m in "${GO[@]}"; do
+        [ -n "$upgrade" ] || case "$have " in *" ${m%@*} "*) continue ;; esac
+        go install "$m"
     done
 }
 step Go go_programs
 
-# ── Built from source (only when missing; i3status-rs also when there's a new version) ──
+# ── Built from source (only when missing; i3status-rs also with -u, if there's a new version) ──
 builds() {
     if [ ! -x ~/.local/bin/clipnotify ]; then
         say "clipnotify (X11 clipboard watcher for clipstore.sh)"
@@ -272,7 +297,7 @@ builds() {
     if ! command -v i3status-rs >/dev/null; then
         say "i3status-rs (takes a while)"
         i3rs
-    else
+    elif [ -n "$upgrade" ]; then
         # Cargo only builds when crates.io has a newer version. One that needs another async-pidfd
         # than the patched 0.1.5 fails to build: the installed one stays and the rest carries on
         say "i3status-rs: update"
@@ -320,7 +345,7 @@ theming() {
         t="$PREFIX/share/tessdata/$l.traineddata"
         [ -f "$t" ] || get "https://github.com/tesseract-ocr/tessdata_fast/raw/main/$l.traineddata" "$t"
     done
-    fc-cache -f >/dev/null
+    fc-cache >/dev/null   # not -f: only the font folders that changed
 }
 step "Look" theming
 
@@ -374,11 +399,15 @@ app_settings() {
     # Code - OSS (`codium` here too): VSCodium's settings and extensions from the PCs
     mkdir -p ~/".config/Code - OSS/User"
     ln -sfn ~/.config/VSCodium/User/settings.json ~/".config/Code - OSS/User/settings.json"
-    local have
+    # The missing extensions, when the list changed (asking Code - OSS starts Electron: seconds)
+    local list have
+    list=$(grep -v '^\s*\(#\|$\)' ~/.config/VSCodium/extensions)
+    unchanged code-extensions "$list" && return 0
     have=$(code-oss --list-extensions 2>/dev/null | tr 'A-Z' 'a-z')
-    grep -v '^\s*\(#\|$\)' ~/.config/VSCodium/extensions | while read -r e; do
+    echo "$list" | while read -r e; do
         echo "$have" | grep -qx "$e" || code-oss --install-extension "$e" >/dev/null 2>&1 || echo "No $e"
     done
+    record code-extensions "$list"
 }
 step "LibreWolf, Code - OSS" app_settings
 
@@ -394,19 +423,24 @@ texlive() {
         termux-patch-texlive
     fi
     source "$PREFIX/etc/profile.d/texlive.sh"
-    # Only when a collection is missing: the font maps take minutes to rebuild
+    # Only when a collection is missing: the font maps take minutes to rebuild. Asked only when TEX
+    # changed (tlmgr takes seconds just to start)
     local missing
-    missing=$(comm -23 <(printf '%s\n' "${TEX[@]}" | sort) <(tlmgr info --only-installed --data name | sort))
-    if [ -n "$missing" ]; then
-        say "TeX Live: $(echo $missing)"
-        tlmgr install $missing
-        fmtutil-sys --quiet --byfmt pdflatex
-        updmap-sys --quiet
-        command -v texlinks >/dev/null && texlinks
+    if ! unchanged tex "${TEX[*]}"; then
+        missing=$(comm -23 <(printf '%s\n' "${TEX[@]}" | sort) <(tlmgr info --only-installed --data name | sort))
+        if [ -n "$missing" ]; then
+            say "TeX Live: $(echo $missing)"
+            tlmgr install $missing
+            fmtutil-sys --quiet --byfmt pdflatex
+            updmap-sys --quiet
+            command -v texlinks >/dev/null && texlinks
+        fi
+        record tex "${TEX[*]}"
     fi
-    # Updates (tlmgr itself first), then Termux's patches again on whatever got replaced (it skips the ones
-    # already applied). A new TeX Live year can't be updated into, only reinstalled: tlmgr says so, the
-    # rest carries on
+    # -u: updates (tlmgr itself first), then Termux's patches again on whatever got replaced (it
+    # skips the ones already applied). A new TeX Live year can't be updated into, only reinstalled:
+    # tlmgr says so, the rest carries on
+    [ -n "$upgrade" ] || return 0
     say "TeX Live: update"
     if tlmgr update --self --all; then termux-patch-texlive >/dev/null; else echo "TeX Live not updated"; fi
 }
@@ -414,37 +448,49 @@ step "TeX Live" texlive
 
 # ── Proot Debian ──
 proot_debian() {
+    # Only when the list changed, or with -u (everything in proot is slow, even starting it)
+    unchanged proot "$PROOT_DISTRO ${PROOT_PACKAGES[*]}" && return 0
     # Installed = it can log in (newer proot-distro versions keep containers elsewhere than installed-rootfs)
     proot-distro login "$PROOT_DISTRO" -- true 2>/dev/null || proot-distro install "$PROOT_DISTRO"
-    proot-distro login "$PROOT_DISTRO" -- sh -c "export DEBIAN_FRONTEND=noninteractive
-        apt-get update -q && apt-get full-upgrade -y -o Dpkg::Options::=--force-confold && apt-get install -y ${PROOT_PACKAGES[*]}"
+    local pk=${PROOT_PACKAGES[*]} cmd
+    if [ -n "$upgrade" ]; then
+        cmd="apt-get update -q && apt-get full-upgrade -y -o Dpkg::Options::=--force-confold && apt-get install -y $pk"
+    else
+        # A fresh container has no package lists yet: then update first
+        cmd="apt-get install -y $pk || { apt-get update -q && apt-get install -y $pk; }"
+    fi
+    proot-distro login "$PROOT_DISTRO" -- sh -c "export DEBIAN_FRONTEND=noninteractive; $cmd"
+    record proot "$PROOT_DISTRO ${PROOT_PACKAGES[*]}"
 }
 step "Proot $PROOT_DISTRO: ${PROOT_PACKAGES[*]}" proot_debian
 
 # Desktop apps with only Linux (glibc) builds: Electron apps, so the app inside their arm64 .deb
 # runs on Termux's own electron42 (launchers in .config/termux/bin: no proot, so the desktop's cursor,
-# dark mode and tray). Its resources are unpacked into $PREFIX/opt/<name>, again only when GitHub has
-# a newer release; Electron's files go next to them, like in the .deb: the app finds its own files
+# dark mode and tray). Its resources are unpacked into $PREFIX/opt/<name>, again with -u when
+# GitHub has a newer release; Electron's files go next to them, like in the .deb: the app finds its own files
 # (tray icon, translations) in the "resources" next to the program, and counts as installed only
 # when the program isn't called "electron". So a copy named after the app (Android allows no hard
 # links), renewed when electron42 updates.
 # electron_app <name> <GitHub repo> <release file pattern> <app folder inside the .deb>
 electron_app() {
     local url dir=$PREFIX/opt/$1 tmp=$PREFIX/tmp/$1 electron=$PREFIX/lib/electron42 f
-    # `|| true`: no match is an answer here, not an error (set -e ended the step)
-    url=$(latest_release "$2" | grep -o "https://[^\"]*$3" | head -1 || true)
-    [ -n "$url" ] || { echo "No $1 release found"; return; }
-    if [ "$(cat "$dir/release" 2>/dev/null)" != "$url" ]; then
-        say "$1: $(basename "$url")"
-        curl -fL -o "$tmp.deb" "$url"
-        rm -rf "$tmp" "$dir/resources"; mkdir -p "$dir"
-        dpkg-deb -x "$tmp.deb" "$tmp"
-        mv "$tmp/$4/resources" "$dir/"
-        # The biggest icon, for the rofi entry
-        find "$tmp/usr/share/icons" -name '*.png' -printf '%s %p\n' | sort -n | tail -1 | cut -d' ' -f2- |
-            xargs -r -I{} cp {} "$dir/icon.png"
-        echo "$url" > "$dir/release"
-        rm -rf "$tmp" "$tmp.deb"
+    # Without -u GitHub is only asked when the app is missing
+    if [ -n "$upgrade" ] || [ ! -e "$dir/release" ]; then
+        # `|| true`: no match is an answer here, not an error (set -e ended the step)
+        url=$(latest_release "$2" | grep -o "https://[^\"]*$3" | head -1 || true)
+        [ -n "$url" ] || { echo "No $1 release found"; return; }
+        if [ "$(cat "$dir/release" 2>/dev/null)" != "$url" ]; then
+            say "$1: $(basename "$url")"
+            curl -fL -o "$tmp.deb" "$url"
+            rm -rf "$tmp" "$dir/resources"; mkdir -p "$dir"
+            dpkg-deb -x "$tmp.deb" "$tmp"
+            mv "$tmp/$4/resources" "$dir/"
+            # The biggest icon, for the rofi entry
+            find "$tmp/usr/share/icons" -name '*.png' -printf '%s %p\n' | sort -n | tail -1 | cut -d' ' -f2- |
+                xargs -r -I{} cp {} "$dir/icon.png"
+            echo "$url" > "$dir/release"
+            rm -rf "$tmp" "$tmp.deb"
+        fi
     fi
     for f in "$electron"/*; do
         case ${f##*/} in electron|resources|chrome_sandbox) ;; *) ln -sfn "$f" "$dir/" ;; esac
@@ -469,6 +515,8 @@ entry() {
 # ~/.config/mimeapps.list): for Thunar and xdg-open. Else whatever claims the type, like Chromium
 mime() { local app=$1 t; shift; for t; do gio mime "$t" "$app" >/dev/null || echo "No $app for $t"; done; }
 desktop_entries() {
+    # Only when this part of the script changed (some 20 gio calls); -u always
+    unchanged entries "$(declare -f desktop_entries entry mime)" && return 0
     mkdir -p "$apps"
     local bin=$HOME/.config/termux/bin c
     entry Vesktop "$bin/vesktop" discord "Network;InstantMessaging;"   # Papirus (its .deb has no png)
@@ -486,11 +534,15 @@ desktop_entries() {
     mime org.gnome.Evince.desktop application/pdf
     mime org.gnome.eog.desktop image/jpeg image/png image/gif image/bmp image/webp image/tiff
     mime mpv.desktop video/mp4 video/x-matroska video/webm audio/mpeg audio/flac audio/ogg
+    record entries "$(declare -f desktop_entries entry mime)"
 }
 step "App entries, default apps" desktop_entries
 
 say "Done"
-cat <<'EOF'
+echo "Took: $(printf '%s, ' "${times[@]}" | sed 's/, $//')"
+# The first run: what's left to do by hand
+[ -z "$first" ] || cat <<'EOF'
+
 Once, on the Android side:
   - Developer options → "Disable child process restrictions" (else Android kills the desktop),
     and no battery optimisation for Termux and Termux:X11
@@ -503,4 +555,11 @@ if [ "${#failed[@]}" -gt 0 ]; then
     say "Failed: $(printf '%s, ' "${failed[@]}" | sed 's/, $//')"
     echo "The other steps ran. ${RB_LOG:+Details: $RB_LOG}"
     exit 1
+fi
+# A successful update is noted (the first run counts); a plain rb reminds after a week without one
+if [ -n "$upgrade" ]; then
+    touch "$build/last-upgrade"
+else
+    days=$(( ($(date +%s) - $(stat -c %Y "$build/last-upgrade")) / 86400 ))
+    [ "$days" -lt 7 ] || echo "Last update $days days ago: rb -u (the power menu's update)"
 fi
