@@ -1,4 +1,18 @@
 #!/data/data/com.termux/files/usr/bin/sh
 # Claude Desktop on Termux's own Electron (see vesktop next to this). Its native module is built for
 # glibc and can't load here: Claude runs without it (some local-file features may be missing)
+
+# The Code tab: Claude downloads Claude Code, a glibc binary Android can't start. Each one gets
+# ~/.config/termux/claude-code (runs it in the proot Debian) in its place: now, and every few seconds
+# while Claude runs, since it downloads new versions by itself
+wrap() {
+    for f in "$HOME"/.config/Claude/claude-code/*/*/claude; do
+        [ -f "$f" ] && [ ! -L "$f" ] && [ "$(head -c 4 "$f" | tail -c 3)" = ELF ] || continue
+        mv -f "$f" "$f.glibc" && ln -s "$HOME/.config/termux/claude-code" "$f"
+    done
+}
+wrap
+pid=$$   # still Claude's after the exec below
+(while kill -0 "$pid" 2>/dev/null; do sleep 2; wrap; done) >/dev/null 2>&1 &
+
 exec "$PREFIX/opt/claude-desktop/claude-desktop" --no-sandbox "$@"
