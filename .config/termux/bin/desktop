@@ -10,8 +10,9 @@
 # GPU: native apps use Zink on Turnip (Adreno's open Vulkan driver), the proot container (`debian`) uses
 # VirGL. If `glxinfo -B` shows llvmpipe, Zink isn't working: GALLIUM_DRIVER=virpipe instead.
 
-# Size of everything (fonts, bar, apps): X11's DPI, which i3, alacritty, rofi, dunst and Qt read
-# (xrdb below) and GTK through xsettingsd (darkmode.sh). 96 = 100 %, 144 = 150 %, 192 = 200 %
+# Size of everything (fonts, bar, apps): X11's DPI, which i3, alacritty, dunst and Qt read (xrdb
+# below), GTK through xsettingsd (darkmode.sh), rofi through bin/rofi. 96 = 100 %, 144 = 150 %,
+# 192 = 200 %
 export XFT_DPI=192
 
 # Termux:Widget runs this without a terminal's environment: the PATH a shell would have
