@@ -501,6 +501,10 @@ electron_app() {
 electron_apps() {
     electron_app vesktop Vencord/Vesktop 'vesktop_[^"/]*_arm64\.deb' opt/Vesktop
     electron_app claude-desktop aaddrick/claude-desktop-debian 'claude-desktop_[^"/]*_arm64\.deb' usr/lib/claude-desktop
+    # Claude starts Claude Code (Code tab) through `disclaimer`, a glibc helper that stops what a
+    # session leaves running: Android can't start it, so every session failed ("Claude Code couldn't
+    # start"). Without the file Claude starts Claude Code directly (a warning in its log)
+    rm -f "$PREFIX/opt/claude-desktop/resources/disclaimer"
 }
 step "Vesktop, Claude Desktop" electron_apps
 
