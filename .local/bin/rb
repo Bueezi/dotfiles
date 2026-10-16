@@ -15,3 +15,10 @@ have=$(codium --list-extensions 2>/dev/null | tr 'A-Z' 'a-z')
 grep -v '^\s*\(#\|$\)' "$HOME/.config/VSCodium/extensions" | while read -r e; do
     echo "$have" | grep -qx "$e" || codium --install-extension "$e" >/dev/null 2>&1 || echo "rb: no $e"
 done
+# Flatpak apps (~/.config/flatpak/apps): the missing ones, per user (no root needed)
+flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+have=$(flatpak list --user --app --columns=application 2>/dev/null)
+sed 's/#.*//' "$HOME/.config/flatpak/apps" | while read -r a; do
+    [ -n "$a" ] || continue
+    echo "$have" | grep -qx "$a" || flatpak install --user -y --noninteractive flathub "$a" || echo "rb: no $a"
+done
