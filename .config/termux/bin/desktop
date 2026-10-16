@@ -12,7 +12,7 @@
 
 # Size of everything (fonts, bar, apps): X11's DPI, which i3, alacritty, rofi, dunst and Qt read
 # (xrdb below) and GTK through xsettingsd (darkmode.sh). 96 = 100 %, 144 = 150 %, 192 = 200 %
-export XFT_DPI=168
+export XFT_DPI=192
 
 # Termux:Widget runs this without a terminal's environment: the PATH a shell would have
 # (i3status-rs is in ~/.cargo/bin, cliphist in ~/.local/bin), and no termux-exec, which makes
