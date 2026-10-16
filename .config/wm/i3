@@ -22,13 +22,15 @@ exec --no-startup-id xkbcomp -w0 ~/.config/termux/keymap.xkb $DISPLAY
 # Dark/light first: writes alacritty's colours and qt6ct's file, starts xsettingsd (GTK on X11)
 exec --no-startup-id $scripts/darkmode.sh apply
 exec --no-startup-id dunst
-# Compositor: picom, transparency only (the see-through bar, rofi, dunst and alacritty). No config
+# Compositor: off for now, it made the whole desktop slower (to look into). Without one the
+# see-through parts (bar, rofi, dunst, alacritty) are drawn solid. No xcompmgr either (below).
+# When on: picom, transparency only (the see-through bar, rofi, dunst and alacritty). No config
 # file (no shadows, fading or blur: blur cost seconds per key press here) and the xrender backend: GL
 # would send every frame back through the CPU. xcompmgr froze the screen within a minute (asleep,
 # waiting on X; killing it unfroze), wherever and whenever it was started.
 # --no-use-damage: the whole screen redrawn on every change. Redrawing only the changed parts
 # glitched and flickered here (--no-frame-pacing and --xrender-sync-fence didn't help); costs more CPU
-exec --no-startup-id picom --config /dev/null --backend xrender --no-use-damage
+# exec --no-startup-id picom --config /dev/null --backend xrender --no-use-damage
 exec --no-startup-id $scripts/clipstore.sh
 exec --no-startup-id $scripts/wallpaper.sh restore
 # An empty slot at the tray's far end, the bar's gap on the right: i3bar's padding doesn't move the
