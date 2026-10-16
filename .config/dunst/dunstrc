@@ -1,5 +1,5 @@
 # dunst on the tablet: mako's counterpart (~/.config/mako/config), same black and white look
-# (see-through like mako, without the blur: picom, see wm/i3).
+# (see-through like mako, without the blur: xcompmgr, see wm/i3).
 [global]
     font = JetBrainsMono Nerd Font 10
     origin = top-right

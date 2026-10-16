@@ -34,7 +34,7 @@ PACKAGES=(
     x11-repo tur-repo
     # Desktop: X server, i3 (+ i3bar), compositor, notifications, launcher, terminal, wallpaper,
     # screenshots, clipboard tools, theme switching for GTK on X11 (xsettingsd), keyboard remaps
-    termux-x11-nightly i3 dbus picom dunst libnotify rofi alacritty feh scrot xclip xdotool xsettingsd xorg-xrdb
+    termux-x11-nightly i3 dbus xcompmgr dunst libnotify rofi alacritty feh scrot xclip xdotool xsettingsd xorg-xrdb
     xorg-xkbcomp
     pulseaudio pavucontrol
     # GPU: Zink on Turnip (Adreno) for native apps, VirGL for the proot container. Termux's own mesa
