@@ -1,0 +1,10 @@
+#!/data/data/com.termux/files/usr/bin/sh
+# alacritty on the desktop (this folder comes first in its PATH, so every launch: i3's keys, rofi,
+# the scripts, `term`). Drawn by Mesa's software renderer (llvmpipe) instead of Zink on the GPU:
+# typing felt 20-30 ms quicker (~60 ms before), the GPU's frames come back through the CPU here
+# anyway (MESA_VK_WSI_DEBUG=sw in `desktop`). The shells in it get the desktop's GPU settings back,
+# so apps started from it still use the GPU
+[ -n "$GALLIUM_DRIVER" ] && set -- -o "env.GALLIUM_DRIVER=\"$GALLIUM_DRIVER\"" "$@"
+[ -n "$MESA_LOADER_DRIVER_OVERRIDE" ] && set -- -o "env.MESA_LOADER_DRIVER_OVERRIDE=\"$MESA_LOADER_DRIVER_OVERRIDE\"" "$@"
+exec env -u MESA_LOADER_DRIVER_OVERRIDE LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe \
+    "$PREFIX/bin/alacritty" -o 'env.LIBGL_ALWAYS_SOFTWARE="0"' "$@"
