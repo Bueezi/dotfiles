@@ -3,7 +3,7 @@
 # starts it. i3 can't use variables set in common.conf here, so the bar's colours are spelled out.
 
 # ── Variables ───────────────────────────────────────
-# Super, like the desktop: on the keyboard case the option key where a PC's Win key sits (setxkbmap
+# Super, like the desktop: on the keyboard case the option key where a PC's Win key sits (keymap
 # below). Some combos still need Termux:X11's "capture system shortcuts" (else Android takes them)
 set $mod        Mod4
 set $term       alacritty
@@ -16,11 +16,9 @@ set $scripts    ~/.config/wm/scripts
 include ~/.config/wm/common.conf
 
 # ── Autostart ───────────────────────────────────────
-# The keyboard case has an iPad layout (control, fn, option, cmd, space): made to work like a PC's.
-# Option (where Win sits) = Super, cmd next to space = Alt; the right cmd stays Super. No Esc key:
-# Caps Lock = Esc, Shift+Caps Lock = Caps Lock. Needs Termux:X11's "Prefer scancodes" (`desktop`
-# sets it), else Android keeps its own Caps Lock and the letters after it come out as capitals
-exec --no-startup-id setxkbmap -option altwin:swap_lalt_lwin -option caps:escape_shifted_capslock
+# The keyboard case like a PC's (~/.config/termux/keymap.xkb): option = Super, cmd = Alt, top left
+# = Esc (Shift: ~), Caps Lock = ` (Shift: Caps Lock)
+exec --no-startup-id xkbcomp -w0 ~/.config/termux/keymap.xkb $DISPLAY
 # Dark/light first: writes alacritty's colours and qt6ct's file, starts xsettingsd (GTK on X11)
 exec --no-startup-id $scripts/darkmode.sh apply
 exec --no-startup-id dunst

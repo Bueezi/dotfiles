@@ -67,7 +67,7 @@ export DISPLAY=:0
 # Ready = the X server answers (not just its socket file existing)
 for _ in $(seq 100); do xrdb -query >/dev/null 2>&1 && break; sleep 0.1; done
 show
-# The keyboard goes through X's keymap, not Android's layout: the remaps (setxkbmap in wm/i3) need
+# The keyboard goes through X's keymap, not Android's layout: the remaps (../keymap.xkb) need
 # it. The tool waits for the activity (hangs without it): after show, in the background
 timeout 10 termux-x11-preference "preferScancodes"="true" >/dev/null 2>&1 &
 

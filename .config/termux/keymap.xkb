@@ -1,0 +1,22 @@
+// The tablet's keyboard case (iPad layout: control, fn, option, cmd, space; no Esc key) made to
+// work like a PC's. Loaded by i3 (~/.config/wm/i3) with xkbcomp. Needs Termux:X11's "Prefer
+// scancodes" (`desktop` sets it), else Android types the letters in its own layout and the remaps
+// below never reach X.
+xkb_keymap {
+    xkb_keycodes { include "evdev+aliases(qwerty)" };
+    xkb_types    { include "complete" };
+    xkb_compat   { include "complete" };
+    // Option (where a PC's Win sits) = Super, the cmd key next to space = Alt; the right cmd stays Super
+    xkb_symbols  {
+        include "pc+us+inet(evdev)+altwin(swap_lalt_lwin)"
+        // Top left: Esc, Shift = ~
+        key <TLDE> { type = "TWO_LEVEL", [ Escape, asciitilde ] };
+        // Caps Lock: `, Shift = the real Caps Lock
+        key <CAPS> {
+            type = "TWO_LEVEL",
+            symbols[Group1] = [ grave, Caps_Lock ],
+            actions[Group1] = [ NoAction(), LockMods(modifiers = Lock) ]
+        };
+    };
+    xkb_geometry { include "pc(pc105)" };
+};

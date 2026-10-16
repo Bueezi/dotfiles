@@ -35,7 +35,7 @@ PACKAGES=(
     # Desktop: X server, i3 (+ i3bar), compositor, notifications, launcher, terminal, wallpaper,
     # screenshots, clipboard tools, theme switching for GTK on X11 (xsettingsd), keyboard remaps
     termux-x11-nightly i3 dbus picom dunst libnotify rofi alacritty feh scrot xclip xdotool xsettingsd xorg-xrdb
-    xorg-setxkbmap
+    xorg-xkbcomp
     pulseaudio pavucontrol
     # GPU: Zink on Turnip (Adreno) for native apps, VirGL for the proot container. Termux's own mesa
     # (current, its Zink has kopper: real swapchains), not TUR's mesa-zink (Mesa 22.0 from 2022)
