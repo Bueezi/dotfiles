@@ -66,9 +66,10 @@ bindsym $mod+Shift+m        exec desktop hide
 # ── Bar ─────────────────────────────────────────────
 bar {
     position top
-    workspace_min_width 30
+    workspace_min_width 40
     status_command i3status-rs ~/.config/wm/i3status-rs.toml
-    font pango:JetBrainsMono Nerd Font 11
+    # Bigger than the windows' titles (common.conf): it was hard to read at the tablet's size
+    font pango:JetBrainsMono Nerd Font 13
     # See-through background (xcompmgr draws the alpha)
     i3bar_command i3bar --transparency
     # No tray_output: "primary" showed no tray at all (Termux:X11's screen isn't marked primary)

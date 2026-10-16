@@ -1,16 +1,22 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # Claude Code for Claude Desktop's Code tab. Claude downloads Claude Code as one glibc binary
 # (linux-arm64), which Android can't start ("Claude Code couldn't start"), so it runs in the proot
-# Debian instead (`debian`, made by termux.sh). Termux's home and $PREFIX are at the same paths in
+# Debian instead (`debian`, made by termux.sh). Termux's home and prefix are at the same paths in
 # there, so the folders and files the app passes work as they are. bin/claude-desktop moves each
 # downloaded `claude` to `claude.glibc` and links this file in its place.
 # proot-distro starts from a clean environment: the app's variables (login, settings) are passed
 # on, but not Termux's PATH and LD_PRELOAD (Termux's libraries, which Debian's programs can't load).
-# Termux's commands stay reachable, last in PATH like in `debian`.
+# Termux's commands stay reachable, last in PATH like in `debian`. Termux's paths are spelled out:
+# the app's environment may not carry PREFIX or Termux's PATH.
+# Each start and its errors are logged in $PREFIX/tmp/claude-code.log (the app shows none of them)
+p=/data/data/com.termux/files/usr
+log=$p/tmp/claude-code.log
+echo "$(date '+%F %T') start in $PWD: ${0%/*}/claude.glibc $*" >> "$log"
+exec 2> >(tee -a "$log" >&2)
 vars=()
 while IFS= read -r v; do
     case $v in PATH|LD_*) ;; *) vars+=("$v=${!v}") ;; esac
 done < <(compgen -e)
-exec proot-distro login debian --shared-tmp -- env -i -C "$PWD" "${vars[@]}" \
-    PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:$PREFIX/bin" \
+exec "$p/bin/proot-distro" login debian --shared-tmp -- env -i -C "$PWD" "${vars[@]}" \
+    PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:$p/bin" \
     "${0%/*}/claude.glibc" "$@"

@@ -1,0 +1,5 @@
+#!/data/data/com.termux/files/usr/bin/sh
+# rofi on the desktop (this folder comes first in its PATH, so every launch: i3's keys and the
+# scripts). rofi ignores Xft.dpi and draws at 96 dpi: it gets the desktop's DPI (XFT_DPI, set in
+# `desktop`) instead, so its text is as big as everything else's
+exec "$PREFIX/bin/rofi" -dpi "${XFT_DPI:-96}" "$@"
