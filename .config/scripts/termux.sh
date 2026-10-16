@@ -5,7 +5,7 @@
 # update) also updates everything: pkg, npm, Go, i3status-rs, TeX Live, the proot Debian, the
 # Electron apps. Like rb / rb -u on NixOS. The very first run upgrades too.
 # After the dotfiles, each part runs on its own: a failed one doesn't stop the others, and the failed
-# ones are named at the end, with how long each part took. Everything also goes to $PREFIX/tmp/rb.log.
+# ones are named at the end, with how long each part took. Everything also goes to ~/.cache/rb.log.
 # Fresh tablet (Termux + Termux:X11 from F-Droid or GitHub, not the Play Store):
 #   curl -L https://raw.githubusercontent.com/Bueezi/dotfiles/main/.config/scripts/termux.sh | bash
 # That fetches the dotfiles first, then runs this file from them.
@@ -19,7 +19,8 @@ config() { git --git-dir="$HOME/.dotfiles" --work-tree="$HOME" "$@"; }
 
 # The log: through `script`, so the terminal keeps its colours and apt its questions (a pipe to tee
 # turns both off). Only when run from a terminal; the piped first install logs once it re-runs itself
-log=$PREFIX/tmp/rb.log
+# In ~/.cache, not $PREFIX/tmp: Termux empties that when it starts
+log=~/.cache/rb.log; mkdir -p ~/.cache
 if [ -z "$RB_LOG" ] && [ -t 0 ] && [ -t 1 ] && [ "${BASH_SOURCE[0]}" = "$self" ] && command -v script >/dev/null; then
     export RB_LOG=$log
     # SHELL: script runs the command with it, and Termux's is fish
@@ -246,6 +247,9 @@ step npm npm_globals
 
 go_programs() {
     export GOBIN=~/.local/bin
+    # Go's module downloads in ~/.cache, not ~/go (nothing in the root of ~). In Go's own settings
+    # (~/.config/go/env), so a `go install` by hand uses them too
+    go env -w GOPATH="$HOME/.cache/go" GOBIN="$GOBIN"
     local m f p have=
     # Unlisted ones go, like npm's. ~/.local/bin also has my scripts and the C builds below: only Go
     # programs count (`go version -m` names the package each was built from; the rest it can't read)

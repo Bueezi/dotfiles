@@ -8,11 +8,24 @@
     "terminal.integrated.fontFamily": "'JetBrainsMono Nerd Font'",
     "editor.minimap.enabled": false,
     "editor.renderWhitespace": "trailing",
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    // The system's shellcheck (Nix, termux.sh): the extension's own binary dies on Android (SIGSYS)
+    "shellcheck.executablePath": "shellcheck",
     "workbench.startupEditor": "none",
+    // Menu bar hidden until Alt
+    "window.menuBarVisibility": "toggle",
+    // Keys by what the layout makes of them, not the physical key: the tablet's Esc is the remapped
+    // ` key (~/.config/termux/keymap.xkb), which VS Code otherwise still saw as `
+    "keyboard.dispatch": "keyCode",
+    // The empty chat side bar newer versions open on the right, even with the AI features off
+    "workbench.secondarySideBar.defaultVisibility": "hidden",
     "telemetry.telemetryLevel": "off",
     "update.mode": "none",
+    // pkg (tablet) and Nix update it: no release notes tab on the next start
+    "update.showReleaseNotes": false,
     "extensions.autoCheckUpdates": true,
-    "extensions.autoUpdate": true,
+    "extensions.autoUpdate": "on",
     // Code - OSS (the tablet) now ships GitHub Copilot's chat and sign-in prompts; VSCodium hides them
     "chat.disableAIFeatures": true,
     "workbench.colorTheme": "Ayu Dark"

@@ -3,7 +3,9 @@
 [global]
     font = JetBrainsMono Nerd Font 10
     origin = top-right
-    offset = (10, 10)
+    # Below i3bar (i3 keeps no room for it, unlike sway's layers for mako): its 34 px at 192 dpi
+    # are 17 here, dunst's sizes grow with Xft.dpi too. Change it with the bar's font
+    offset = (10, 27)
     width = 300
     gap_size = 10
     padding = 10

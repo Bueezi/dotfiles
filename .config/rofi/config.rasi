@@ -20,7 +20,7 @@ configuration {
 }
 
 window {
-    width: 30em;
+    width: 24em;
     background-color: #000000b3;
     border: 2px;
     border-radius: 6px;

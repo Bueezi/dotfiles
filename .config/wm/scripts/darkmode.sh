@@ -42,8 +42,14 @@ dconf write $key/icon-theme "'$icons'"
 if [ -z "$SWAYSOCK" ]; then
     mkdir -p ~/.config/xsettingsd ~/.config/alacritty
     printf 'Net/ThemeName "%s"\nNet/IconThemeName "%s"\n' "$theme" "$icons" > ~/.config/xsettingsd/xsettingsd.conf
-    # GTK's size: the tablet's DPI (set in `desktop`), in XSETTINGS' 1/1024 units
-    [ -n "$XFT_DPI" ] && printf 'Xft/DPI %d\n' $(( XFT_DPI * 1024 )) >> ~/.config/xsettingsd/xsettingsd.conf
+    # GTK's size: the tablet's DPI (set in `desktop`), in XSETTINGS' 1/1024 units, the way GNOME
+    # sends it: Xft/DPI alone grew only the text (Thunar's icons and spacing stayed at 96 dpi), the
+    # scaling factor grows the rest, and the unscaled DPI keeps the text from growing twice
+    if [ -n "$XFT_DPI" ]; then
+        s=$(( XFT_DPI / 96 )); [ "$s" -ge 1 ] || s=1
+        printf 'Gdk/WindowScalingFactor %d\nGdk/UnscaledDPI %d\nXft/DPI %d\n' \
+            "$s" $(( XFT_DPI * 1024 / s )) $(( XFT_DPI * 1024 )) >> ~/.config/xsettingsd/xsettingsd.conf
+    fi
     # GTK apps' cursor, the one `desktop` sets for X11 (without it LibreWolf's was half the size)
     [ -n "$XCURSOR_SIZE" ] && printf 'Gtk/CursorThemeName "%s"\nGtk/CursorThemeSize %d\n' \
         "$XCURSOR_THEME" "$XCURSOR_SIZE" >> ~/.config/xsettingsd/xsettingsd.conf

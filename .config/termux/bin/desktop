@@ -2,7 +2,7 @@
 # `desktop`: the tablet's desktop. Termux:X11 (the X server, shown by its Android app) with i3 in
 # it (~/.config/wm/i3), inside a D-Bus session (dunst, dconf and notify-send need one).
 # Usage: desktop        start it in the background (the terminal stays free; log in
-#                       $PREFIX/tmp/desktop.log), or just show it if it's already running
+#                       ~/.cache/desktop.log), or just show it if it's already running
 #        desktop hide   back to Android's home screen; the desktop keeps running
 #        desktop stop   close the desktop; Termux keeps running
 #        desktop exit   close the desktop and exit Termux too
@@ -31,7 +31,9 @@ fi
 # every time, about a second for each Start/hide. Android's if Termux's isn't there or fails
 am() { termux-am "$@" 2>/dev/null || command am "$@"; }
 
-log="$PREFIX/tmp/desktop.log"
+# In ~/.cache, not $PREFIX/tmp: Termux empties that when it starts, which took the log of a start
+# from the widget with it
+log=~/.cache/desktop.log; mkdir -p ~/.cache
 show() { am start -n com.termux.x11/com.termux.x11.MainActivity >/dev/null 2>&1; }
 home() { am start -a android.intent.action.MAIN -c android.intent.category.HOME >/dev/null 2>&1; }
 # Running = the X server answers (its process name isn't reliable: Start restarted a running desktop)
@@ -58,12 +60,15 @@ esac
 
 stop
 
-# Audio; proot apps reach it over TCP
-pulseaudio --check 2>/dev/null || pulseaudio --start --exit-idle-time=-1 \
-    --load="module-native-protocol-tcp auth-ip-acl=127.0.0.1 auth-anonymous=1"
+# Audio; proot apps reach it over TCP. When the check fails, leftover daemons go first: they had
+# piled up (six at once, all but the newest without a socket)
+pulseaudio --check 2>/dev/null || { pkill -x pulseaudio; pulseaudio --start --exit-idle-time=-1 \
+    --load="module-native-protocol-tcp auth-ip-acl=127.0.0.1 auth-anonymous=1"; }
 
 virgl_test_server_android >/dev/null 2>&1 &
-termux-x11 :0 >/dev/null 2>&1 &
+# -noreset: X resets when its last client leaves, which wiped the xrdb resources below (Xft.dpi)
+# in the gap before i3 connects: i3, its bar and dunst then drew at 96 dpi
+termux-x11 :0 -noreset >/dev/null 2>&1 &
 export DISPLAY=:0
 # Ready = the X server answers (not just its socket file existing)
 for _ in $(seq 100); do xrdb -query >/dev/null 2>&1 && break; sleep 0.1; done

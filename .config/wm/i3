@@ -66,17 +66,18 @@ bindsym $mod+Shift+m        exec desktop hide
 # ── Bar ─────────────────────────────────────────────
 bar {
     position top
-    workspace_min_width 40
+    workspace_min_width 30
     status_command i3status-rs ~/.config/wm/i3status-rs.toml
-    # Bigger than the windows' titles (common.conf): it was hard to read at the tablet's size
-    font pango:JetBrainsMono Nerd Font 13
+    # Sizes here are at 96 dpi and grow with Xft.dpi (`desktop`: 192 = twice). The 13 before was
+    # tuned while the DPI got lost (drawn at 96); at the real DPI 8 was too big, 4.8 too small
+    font pango:JetBrainsMono Nerd Font 6
     # See-through background (xcompmgr draws the alpha)
     i3bar_command i3bar --transparency
     # No tray_output: "primary" showed no tray at all (Termux:X11's screen isn't marked primary)
     # Clear of the screen's rounded corners on the left (top, right, bottom, left). The right's gap is
     # tray-spacer's empty tray slot (autostart): padding there left the tray in the corner and, with
     # the slot, made that side's gap twice the left's
-    padding 0 0 0 24px
+    padding 0 0 0 12px
 
     colors {
         background         #000000b3
