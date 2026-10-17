@@ -126,7 +126,8 @@ in
   users.users.ben = {
     isNormalUser = true;
     description = "Ben";
-    extraGroups = [ "networkmanager" "wheel" "video" ] ++ lib.optional (!isLaptop) "i2c";
+    # dialout: /dev/ttyACM* (Web Serial flashing, e.g. the Xteink's ESP32)
+    extraGroups = [ "networkmanager" "wheel" "video" "dialout" ] ++ lib.optional (!isLaptop) "i2c";
   };
 
   # Git; identity, editor and GitHub login are in ~/.config/git/config (shared with the tablet)
