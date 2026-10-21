@@ -54,6 +54,9 @@ PACKAGES=(
     cava cmatrix pipes.sh freerdp manpages mandoc tesseract chafa fzf termux-api proot-distro
     # Development (KU Leuven list: TeX Live below, ddd in the proot container)
     clang make pkg-config binutils python nodejs golang rust rust-src rust-analyzer sqlite gdb openssl shellcheck
+    # Android apps (Tolly, ~/Documents/tolly): Gradle on openjdk-21, Termux's aapt2 (Google's is x86_64
+    # only), adb. The SDK: ANDROID_SDK below
+    openjdk-21 aapt2 android-tools
     # Language servers Termux packages (the rest: npm and Go below): LaTeX, TOML, Markdown (.NET)
     texlab taplo marksman
     texlive-installer
@@ -80,6 +83,10 @@ TEX=(collection-latex collection-latexrecommended collection-latexextra collecti
 # Proot Debian: what Termux can't do natively (ddd: KU Leuven's gdb front-end; btop: not packaged)
 PROOT_DISTRO=debian
 PROOT_PACKAGES=(ddd btop)
+
+# Android SDK packages (sdkmanager): what Tolly's CI installs (its compileSdk and build-tools), and
+# platform-tools, which Gradle otherwise downloads itself mid-build (adb: Termux's android-tools)
+ANDROID_SDK=("platforms;android-37.0" "build-tools;37.0.0" "platform-tools")
 
 # What the tablet checks out of the dotfiles (sparse checkout; NixOS and sway stay out)
 SPARSE='/.bashrc
@@ -450,6 +457,32 @@ texlive() {
     if tlmgr update --self --all; then termux-patch-texlive >/dev/null; else echo "TeX Live not updated"; fi
 }
 step "TeX Live" texlive
+
+# ── Android SDK: Gradle builds of Android apps. Google's command-line tools are Java and run here;
+# its build-tools are x86_64 programs, but the Android Gradle plugin only needs them present: aapt2
+# is Termux's (~/.gradle/gradle.properties), the rest runs inside Gradle. ANDROID_HOME: ~/.bashrc ──
+android_sdk() {
+    local sdk=$PREFIX/opt/android-sdk zip=$build/cmdline-tools.zip
+    if [ ! -x "$sdk/cmdline-tools/latest/bin/sdkmanager" ]; then
+        say "Android command-line tools"
+        get https://dl.google.com/android/repository/commandlinetools-linux-16111833_latest.zip "$zip"
+        # Google's checksum for it (dl.google.com/android/repository/repository2-3.xml)
+        echo "e025545c62a8e64c7559119566a569fb1dec5f60  $zip" | sha1sum -c --quiet
+        rm -rf "$build/cmdline-tools" && mkdir -p "$sdk/cmdline-tools"
+        unzip -q "$zip" -d "$build"
+        rm -rf "$sdk/cmdline-tools/latest" && mv "$build/cmdline-tools" "$sdk/cmdline-tools/latest"
+        rm "$zip"
+    fi
+    if ! unchanged android-sdk "${ANDROID_SDK[*]}"; then
+        "$sdk/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$sdk" --install "${ANDROID_SDK[@]}"
+        [ -z "$upgrade" ] || "$sdk/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$sdk" --update
+        record android-sdk "${ANDROID_SDK[*]}"
+    fi
+    # Written here, tablet only: the PCs' builds get their aapt2 from the project's flake
+    mkdir -p ~/.gradle
+    echo "android.aapt2FromMavenOverride=$PREFIX/bin/aapt2" > ~/.gradle/gradle.properties
+}
+step "Android SDK: ${ANDROID_SDK[*]}" android_sdk
 
 # ── Proot Debian ──
 proot_debian() {

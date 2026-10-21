@@ -5,6 +5,8 @@ fish_add_path -g ~/.cargo/bin ~/.local/bin
 fish_add_path -ga ~/.lmstudio/bin
 # The tablet (Termux): its launchers (desktop, debian)
 set -q TERMUX_VERSION; and fish_add_path -g ~/.config/termux/bin
+# Its Android SDK (termux.sh) for Gradle. Also in ~/.bashrc
+set -q TERMUX_VERSION; and set -gx ANDROID_HOME $PREFIX/opt/android-sdk
 # make: all cores (its default is one job). Also in ~/.bashrc
 set -gx MAKEFLAGS -j(nproc)
 

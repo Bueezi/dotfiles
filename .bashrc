@@ -7,6 +7,8 @@ path_add() { case ":$PATH:" in *":$1:"*) ;; *) PATH="$1:$PATH" ;; esac; }
 path_add "$HOME/.cargo/bin"
 # The tablet (Termux): its launchers (desktop, debian)
 [ -n "$TERMUX_VERSION" ] && path_add "$HOME/.config/termux/bin"
+# Its Android SDK (termux.sh) for Gradle. Also in fish's config
+[ -n "$TERMUX_VERSION" ] && export ANDROID_HOME="$PREFIX/opt/android-sdk"
 path_add "$HOME/.local/bin"
 # LM Studio's CLI (lms), on the desktop: its installer wrote this line
 [ -d "$HOME/.lmstudio/bin" ] && case ":$PATH:" in *":$HOME/.lmstudio/bin:"*) ;; *) PATH="$PATH:$HOME/.lmstudio/bin" ;; esac
