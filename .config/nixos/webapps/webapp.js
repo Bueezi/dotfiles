@@ -16,6 +16,11 @@ module.exports = ({ dir, title, url, domains, background }) => {
   };
   let win, tray;
   let quitting = false;
+  // Plain Chrome's user agent (without "<app>/<version>" and "Electron/…"): Google refuses to sign
+  // in from Electron
+  app.userAgentFallback = app.userAgentFallback
+    .replace(/(like Gecko\)).*?(?= Chrome\/)/, "$1")
+    .replace(/ Electron\/\S+/, "");
 
   // Already running? Its socket answers: it toggles, this one quits. Not Electron's
   // requestSingleInstanceLock: on the tablet (Termux) that let every launch open another window

@@ -1,5 +1,5 @@
 #!/data/data/com.termux/files/usr/bin/sh
-# Vesktop (Discord) on Termux's own Electron, like Eclipse: no proot, so the desktop's cursor, dark
+# Vesktop (Discord) on Termux's own Electron, like YouTube Music: no proot, so the desktop's cursor, dark
 # mode and tray. termux.sh sets up its app folder in $PREFIX/opt/vesktop (Electron named after it).
 # --no-sandbox: Android has no user namespaces for Electron's sandbox
 exec "$PREFIX/opt/vesktop/vesktop" --no-sandbox "$@"

@@ -4,7 +4,7 @@
 
 let
   apps = {
-    eclipse = { name = "Eclipse"; comment = "Eclipse Music web player"; categories = [ "AudioVideo" "Audio" "Player" ]; };
+    ytmusic = { name = "YouTube Music"; comment = "YouTube Music web player"; categories = [ "AudioVideo" "Audio" "Player" ]; };
   };
 
   webapp = cmd: app: [

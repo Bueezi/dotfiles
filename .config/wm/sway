@@ -114,8 +114,8 @@ for_window [app_id="^clipboard$"] floating enable, resize set 760 420, move posi
 # Scratchpad apps ($mod+Shift+Return / e, power.sh update/rebuild/sync): open floating in the
 # scratchpad, shown. The same key (or $mod+minus) hides/shows them again.
 for_window [app_id="^(scratch-.*|thunar|Thunar)$"] floating enable, resize set 900 600, move scratchpad, scratchpad show, move position center
-# Eclipse Music (web app, ~/.config/nixos/webapps): hides to its tray icon on close, $mod+m toggles
-for_window [app_id="^eclipse$"] floating enable, resize set 1100 750, move position center, focus
+# YouTube Music (web app, ~/.config/nixos/webapps): hides to its tray icon on close, $mod+m toggles
+for_window [app_id="^ytmusic$"] floating enable, resize set 1100 750, move position center, focus
 # Assetto Corsa's Content Manager floats like on Windows; the race (acs.exe, same Proton class) doesn't
 for_window [class="(?i)^(steam_app_244210|assettocorsa\.exe)$" title="(?i)content manager"] floating enable, resize set 1400 900, move position center
 # Steam main window only (dialogs and games have other titles/classes)

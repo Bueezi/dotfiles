@@ -74,7 +74,7 @@ in
     /home/ben/.config/nixos/librewolf.nix
     /home/ben/.config/nixos/swayfx.nix  # latest swayfx from git
     /home/ben/.config/nixos/plymouth.nix  # boot splash (penguin video)
-    /home/ben/.config/nixos/webapps.nix   # Eclipse Music as a desktop app
+    /home/ben/.config/nixos/webapps.nix   # YouTube Music as a desktop app
     /home/ben/.config/nixos/hyprquickpaper.nix  # wallpaper picker ($mod+Shift+w)
   ];
 
@@ -127,7 +127,8 @@ in
     isNormalUser = true;
     description = "Ben";
     # dialout: /dev/ttyACM* (Web Serial flashing, e.g. the Xteink's ESP32)
-    extraGroups = [ "networkmanager" "wheel" "video" "dialout" ] ++ lib.optional (!isLaptop) "i2c";
+    # kvm: hardware acceleration for the Android emulator
+    extraGroups = [ "networkmanager" "wheel" "video" "dialout" "kvm" ] ++ lib.optional (!isLaptop) "i2c";
   };
 
   # Git; identity, editor and GitHub login are in ~/.config/git/config (shared with the tablet)
@@ -389,6 +390,7 @@ in
 
   # ── Packages ────────────────────────────────────────
   nixpkgs.config.allowUnfree = true;
+  nixpkgs.config.android_sdk.accept_license = true;   # Android Studio's SDK
 
   environment.systemPackages = with pkgs; [
     # CLI
@@ -410,6 +412,7 @@ in
     zed-editor.fhs vscodium
     helix nodejs rustc cargo podman-compose sqlite-interactive dbeaver-bin
     distrobox distroshelf
+    android-studio android-tools   # Gradle's downloaded aapt2 runs through nix-ld (above)
     # KUL
     (texliveBasic.withPackages (ps: with ps; [ collection-latex collection-latexrecommended collection-fontsrecommended collection-fontsextra collection-latexextra collection-langeuropean latexmk ])) ddd gdb openssl
     # LSP (Helix, ~/.config/helix/languages.toml): Python, C/C++, HTML/CSS/JSON, JS/TS, Tailwind,

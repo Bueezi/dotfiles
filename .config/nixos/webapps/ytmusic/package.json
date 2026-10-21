@@ -1,0 +1,6 @@
+{
+  "name": "ytmusic",
+  "productName": "YouTube Music",
+  "desktopName": "ytmusic.desktop",
+  "main": "index.js"
+}

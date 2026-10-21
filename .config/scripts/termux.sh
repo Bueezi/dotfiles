@@ -530,7 +530,7 @@ desktop_entries() {
     local bin=$HOME/.config/termux/bin c
     entry Vesktop "$bin/vesktop" discord "Network;InstantMessaging;"   # Papirus (its .deb has no png)
     entry Claude "$bin/claude-desktop %u" "$PREFIX/opt/claude-desktop/icon.png" "Utility;" "x-scheme-handler/claude;"
-    entry Eclipse "$bin/eclipse" "$HOME/.config/nixos/webapps/eclipse/icon.png" "AudioVideo;Audio;Player;"
+    entry "YouTube Music" "$bin/ytmusic" "$HOME/.config/nixos/webapps/ytmusic/icon.png" "AudioVideo;Audio;Player;"
     # Termux's Chromium entry has unfilled placeholders (Exec=@@desktop_exec, Icon=@@desktop_icon): no
     # icon in rofi, no command. A copy here (same name: it replaces the system's) with both filled in
     c=$PREFIX/share/applications/chromium.desktop
