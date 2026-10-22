@@ -8,8 +8,12 @@
 # on, but not Termux's PATH and LD_PRELOAD (Termux's libraries, which Debian's programs can't load).
 # Termux's commands stay reachable, last in PATH like in `debian`. Termux's paths are spelled out:
 # the app's environment may not carry PREFIX or Termux's PATH.
+# DNS: Android's, like `debian` (see dns-relay): Debian's own asked Google's servers, and on networks
+# that refuse them Claude Code only said "Connection problem".
 # Each start and its errors are logged in $PREFIX/tmp/claude-code.log (the app shows none of them)
 p=/data/data/com.termux/files/usr
+t=/data/data/com.termux/files/home/.config/termux
+"$p/bin/python" "$t/dns-relay" </dev/null >/dev/null 2>&1
 log=$p/tmp/claude-code.log
 echo "$(date '+%F %T') start in $PWD: ${0%/*}/claude.glibc $*" >> "$log"
 exec 2> >(tee -a "$log" >&2)
@@ -17,6 +21,7 @@ vars=()
 while IFS= read -r v; do
     case $v in PATH|LD_*) ;; *) vars+=("$v=${!v}") ;; esac
 done < <(compgen -e)
-exec "$p/bin/proot-distro" login debian --shared-tmp -- env -i -C "$PWD" "${vars[@]}" \
+exec "$p/bin/proot-distro" login debian --shared-tmp --fix-low-ports --bind="$t/resolv.conf:/etc/resolv.conf" \
+    -- env -i -C "$PWD" "${vars[@]}" \
     PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:$p/bin" \
     "${0%/*}/claude.glibc" "$@"

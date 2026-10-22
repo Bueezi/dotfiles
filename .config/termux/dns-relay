@@ -1,0 +1,78 @@
+#!/data/data/com.termux/files/usr/bin/python
+# DNS for the proot Debian, answered by Android's own resolver: the one Termux's programs and Claude's
+# window use. Debian's glibc asks a DNS server itself (proot-distro wrote Google's in), and networks
+# that only allow their own refused that ("connection refused" from 8.8.8.8 and 1.1.1.1), while
+# Android hides from apps which server is theirs. So Debian asks this one instead (resolv.conf next to
+# this file), which looks names up like any Termux program and works on whatever network Android does.
+# Port 53 is root's: `proot-distro login --fix-low-ports` (bin/debian, claude-code) sends Debian's
+# 127.0.0.1:53 to 2053. Only over TCP (`options use-vc`): a UDP answer from 2053 isn't the port glibc
+# asked, and it drops it.
+# Started by bin/debian and claude-code before each login: it goes to the background, or does
+# nothing when one already runs (its port is taken)
+import os
+import socket
+import struct
+import sys
+import threading
+
+FAMILIES = {1: socket.AF_INET, 28: socket.AF_INET6}   # A, AAAA: all glibc's getaddrinfo asks
+
+
+def answer(query):
+    qid, flags = struct.unpack(">HH", query[:4])
+    end = 12
+    while query[end]:
+        end += query[end] + 1
+    name = query[12:end]
+    qtype, qclass = struct.unpack(">HH", query[end + 1:end + 5])
+    rcode, records = 0, []
+    family = FAMILIES.get(qtype)
+    if family and qclass == 1 and len(name) > 1:
+        labels, i = [], 0
+        while i < len(name):
+            labels.append(name[i + 1:i + 1 + name[i]].decode("ascii", "replace"))
+            i += name[i] + 1
+        try:
+            infos = socket.getaddrinfo(".".join(labels), None, family, socket.SOCK_STREAM)
+            for addr in dict.fromkeys(info[4][0] for info in infos):
+                rdata = socket.inet_pton(family, addr)
+                records.append(b"\xc0\x0c" + struct.pack(">HHIH", qtype, 1, 60, len(rdata)) + rdata)
+        except socket.gaierror as e:
+            # Offline: a failure Debian retries later. Unknown name: an empty answer (no such address)
+            rcode = 2 if e.errno == socket.EAI_AGAIN else 0
+    # QR + Debian's recursion-desired bit + recursion available; one question, no extra sections
+    head = struct.pack(">HHHHHH", qid, 0x8080 | flags & 0x0100 | rcode, 1, len(records), 0, 0)
+    return head + query[12:end + 5] + b"".join(records)
+
+
+def serve(conn):
+    # One connection can carry several queries (A and AAAA), each with its length in front
+    with conn:
+        try:
+            while True:
+                size = conn.recv(2, socket.MSG_WAITALL)
+                if len(size) < 2:
+                    return
+                query = conn.recv(struct.unpack(">H", size)[0], socket.MSG_WAITALL)
+                reply = answer(query)
+                conn.sendall(struct.pack(">H", len(reply)) + reply)
+        except (OSError, IndexError, struct.error):
+            return
+
+
+server = socket.socket()
+server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+try:
+    server.bind(("127.0.0.1", 2053))
+except OSError:
+    sys.exit(0)   # already running
+server.listen(16)
+if os.fork():
+    os._exit(0)   # listening already: the login after this can ask right away
+os.setsid()
+# Off the caller's terminal and pipes (Claude waits for its Claude Code's output to close)
+null = os.open(os.devnull, os.O_RDWR)
+for fd in 0, 1, 2:
+    os.dup2(null, fd)
+while True:
+    threading.Thread(target=serve, args=(server.accept()[0],), daemon=True).start()

@@ -498,7 +498,8 @@ proot_debian() {
         # A fresh container has no package lists yet: then update first
         cmd="apt-get install -y $pk || { apt-get update -q && apt-get install -y $pk; }"
     fi
-    proot-distro login "$PROOT_DISTRO" -- sh -c "export DEBIAN_FRONTEND=noninteractive; $cmd"
+    # Through `debian`: its DNS works on networks that refuse Debian's own (see .config/termux/dns-relay)
+    ~/.config/termux/bin/debian sh -c "export DEBIAN_FRONTEND=noninteractive; $cmd"
     record proot "$PROOT_DISTRO ${PROOT_PACKAGES[*]}"
 }
 step "Proot $PROOT_DISTRO: ${PROOT_PACKAGES[*]}" proot_debian
