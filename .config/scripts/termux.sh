@@ -474,9 +474,17 @@ android_sdk() {
         rm -rf "$sdk/cmdline-tools/latest" && mv "$build/cmdline-tools" "$sdk/cmdline-tools/latest"
         rm "$zip"
     fi
+    # Since cmdline-tools 23 `sdkmanager` only hands over to `android`, an x86_64 program: its Java
+    # sdkmanager is still in the jars, so that one directly (avdmanager's classpath + sdklib)
+    local lib=$sdk/cmdline-tools/latest/lib
+    sdkmanager() {
+        java -Dcom.android.sdkmanager.toolsdir="$sdk/cmdline-tools/latest" \
+            -cp "$lib/avdmanager-classpath.jar:$lib/sdklib/tools.sdklib.jar" \
+            com.android.sdklib.tool.sdkmanager.SdkManagerCli --sdk_root="$sdk" "$@"
+    }
     if ! unchanged android-sdk "${ANDROID_SDK[*]}"; then
-        "$sdk/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$sdk" --install "${ANDROID_SDK[@]}"
-        [ -z "$upgrade" ] || "$sdk/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$sdk" --update
+        sdkmanager --install "${ANDROID_SDK[@]}"
+        [ -z "$upgrade" ] || sdkmanager --update
         record android-sdk "${ANDROID_SDK[*]}"
     fi
     # Written here, tablet only: the PCs' builds get their aapt2 from the project's flake
@@ -503,6 +511,33 @@ proot_debian() {
     record proot "$PROOT_DISTRO ${PROOT_PACKAGES[*]}"
 }
 step "Proot $PROOT_DISTRO: ${PROOT_PACKAGES[*]}" proot_debian
+
+# ── Lean 4: glibc builds only, so elan and its toolchain run in the proot Debian; Code - OSS
+# reaches them through .config/termux/bin/lean (lake, elan). elan can't resolve names in there (a static
+# musl program, and dns-relay answers over TCP only), so the toolchain comes from here: the latest
+# stable, once, and again with -u, which also removes the older ones (3 GB each) ──
+lean4() {
+    local elan=~/.local/share/elan v
+    if [ ! -x "$elan/bin/elan" ]; then
+        say "elan"
+        get https://github.com/leanprover/elan/releases/latest/download/elan-aarch64-unknown-linux-gnu.tar.gz "$build/elan.tar.gz"
+        tar -xzf "$build/elan.tar.gz" -C "$build" && rm "$build/elan.tar.gz"
+        ~/.config/termux/bin/debian env ELAN_HOME="$elan" "$build/elan-init" -y --no-modify-path --default-toolchain none
+        rm "$build/elan-init"
+    fi
+    compgen -G "$elan/toolchains/*" >/dev/null && [ -z "$upgrade" ] && return 0
+    v=$(curl -fsSL https://release.lean-lang.org/ | jq -r '.stable[0].name')
+    if [ ! -d "$elan/toolchains/leanprover--lean4---$v" ]; then
+        say "Lean $v"
+        rm -rf "$build/lean-${v#v}-linux_aarch64"
+        curl -fL "https://releases.lean-lang.org/lean4/$v/lean-${v#v}-linux_aarch64.tar.zst" | zstd -dc | tar -x -C "$build"
+        mkdir -p "$elan/toolchains"
+        mv "$build/lean-${v#v}-linux_aarch64" "$elan/toolchains/leanprover--lean4---$v"
+    fi
+    ~/.config/termux/bin/elan default "leanprover/lean4:$v"
+    find "$elan/toolchains" -mindepth 1 -maxdepth 1 ! -name "leanprover--lean4---$v" -exec rm -rf {} +
+}
+step "Lean 4" lean4
 
 # Desktop apps with only Linux (glibc) builds: Electron apps, so the app inside their arm64 .deb
 # runs on Termux's own electron42 (launchers in .config/termux/bin: no proot, so the desktop's cursor,
@@ -590,7 +625,7 @@ echo "Took: $(printf '%s, ' "${times[@]}" | sed 's/, $//')"
 Once, on the Android side:
   - Developer options → "Disable child process restrictions" (else Android kills the desktop),
     and no battery optimisation for Termux and Termux:X11
-  - Termux:X11 → Preferences: capture system shortcuts (Super for i3), clipboard sharing
+  - Termux:X11 → Preferences: capture system shortcuts (Super for i3)
   - Apps: Termux:API (battery, volume), Termux:Widget (desktop buttons), Tailscale (homelab)
   - Termux → "Display over other apps": lets the Start button bring Termux:X11 to the front
 Then: `desktop` (or the Start button) starts X11 + i3 in the background.

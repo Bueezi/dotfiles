@@ -1,0 +1,21 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# Lean 4 (lean, lake, elan: links to this file) for Termux's Code - OSS. Lean only has
+# glibc builds, so elan and its toolchains live in the proot Debian (termux.sh), in
+# ~/.local/share/elan: Termux's home is at the same path in there, so the files and folders an editor
+# passes work as they are, and the language server talks over stdin/stdout like a local one.
+# Same environment handling as claude-code: the editor's variables go along, not Termux's PATH and
+# LD_PRELOAD (Termux's libraries, which Debian's programs can't load). DNS: Android's, for lake's
+# downloads (see dns-relay). elan's own downloads can't resolve names in there (a static musl
+# program: no `use-vc`), so termux.sh fetches the toolchain itself
+p=/data/data/com.termux/files/usr
+t=/data/data/com.termux/files/home/.config/termux
+elan=/data/data/com.termux/files/home/.local/share/elan
+"$p/bin/python" "$t/dns-relay" </dev/null >/dev/null 2>&1
+vars=()
+while IFS= read -r v; do
+    case $v in PATH|LD_*) ;; *) vars+=("$v=${!v}") ;; esac
+done < <(compgen -e)
+exec "$p/bin/proot-distro" login debian --shared-tmp --fix-low-ports --bind="$t/resolv.conf:/etc/resolv.conf" \
+    -- env -i -C "$PWD" "${vars[@]}" ELAN_HOME="$elan" \
+    PATH="$elan/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:$p/bin" \
+    "$elan/bin/${0##*/}" "$@"

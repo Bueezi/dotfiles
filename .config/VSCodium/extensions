@@ -1,6 +1,7 @@
 # VSCodium's (PCs) and Code - OSS's (tablet) extensions, from Open VSX; rb installs the missing
 # ones, the editor keeps them updated. Others installed by hand stay
-jasew.vscode-helix-emulation
+gregoire.dance
+gregoire.dance-helix
 usernamehw.errorlens
 teabyii.ayu
 jdinhlife.gruvbox
@@ -9,3 +10,4 @@ jnoortheen.nix-ide
 timonwong.shellcheck
 james-yu.latex-workshop
 tamasfe.even-better-toml
+leanprover.lean4

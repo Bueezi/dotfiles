@@ -84,8 +84,9 @@ pactl unload-module module-sles-source >/dev/null 2>&1
 pactl load-module module-sles-source >/dev/null 2>&1
 show
 # The keyboard goes through X's keymap, not Android's layout: the remaps (../keymap.xkb) need
-# it. The tool waits for the activity (hangs without it): after show, in the background
-timeout 10 termux-x11-preference "preferScancodes"="true" >/dev/null 2>&1 &
+# it. No clipboard sharing: the desktop's clipboard stays apart from Android's. The tool waits for
+# the activity (hangs without it): after show, in the background
+timeout 10 termux-x11-preference "preferScancodes"="true" "clipboardEnable"="false" >/dev/null 2>&1 &
 
 export GALLIUM_DRIVER=zink MESA_LOADER_DRIVER_OVERRIDE=zink TU_DEBUG=noconform
 # Frames to Termux:X11 by copy, not DRI3: Mesa 26's DRI3 path leaves stale bits of old frames on
