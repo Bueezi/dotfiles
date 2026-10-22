@@ -64,6 +64,10 @@ stop
 # piled up (six at once, all but the newest without a socket)
 pulseaudio --check 2>/dev/null || { pkill -x pulseaudio; pulseaudio --start --exit-idle-time=-1 \
     --load="module-native-protocol-tcp auth-ip-acl=127.0.0.1 auth-anonymous=1"; }
+# Microphone, part 1: Android lets Termux record in the background (pulseaudio) only once Termux's
+# own window has been in front since its service started; Termux:X11 is another app and doesn't
+# count. From the widget Termux isn't, so it's shown for the X server's start; the mic loads after
+am start -n com.termux/.app.TermuxActivity >/dev/null 2>&1
 
 virgl_test_server_android >/dev/null 2>&1 &
 # -noreset: X resets when its last client leaves, which wiped the xrdb resources below (Xft.dpi)
@@ -72,6 +76,12 @@ termux-x11 :0 -noreset >/dev/null 2>&1 &
 export DISPLAY=:0
 # Ready = the X server answers (not just its socket file existing)
 for _ in $(seq 100); do xrdb -query >/dev/null 2>&1 && break; sleep 0.1; done
+# Microphone, part 2: Termux itself doesn't ask for it, Termux:API does, and the Termux apps share
+# one user: with Termux:API's microphone permission on (Android's settings) this works, else it
+# just fails. Reloaded: one opened before Termux was in front stays silent. Not a --load above: a
+# module that fails there stops pulseaudio, sound and all
+pactl unload-module module-sles-source >/dev/null 2>&1
+pactl load-module module-sles-source >/dev/null 2>&1
 show
 # The keyboard goes through X's keymap, not Android's layout: the remaps (../keymap.xkb) need
 # it. The tool waits for the activity (hangs without it): after show, in the background

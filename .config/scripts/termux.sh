@@ -91,6 +91,7 @@ ANDROID_SDK=("platforms;android-37.0" "build-tools;37.0.0" "platform-tools")
 # What the tablet checks out of the dotfiles (sparse checkout; NixOS and sway stay out)
 SPARSE='/.bashrc
 /.bash_profile
+/.ssh/config
 /.local/bin/
 /.local/share/themes/Mono-dark/
 /.config/CLAUDE.md
