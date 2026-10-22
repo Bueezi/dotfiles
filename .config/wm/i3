@@ -57,6 +57,8 @@ bindsym $mod+Shift+w        exec $scripts/wallpaper.sh pick
 bindsym $mod+Shift+o        exec $scripts/wallpaper.sh slideshow
 # Area screenshot like $mod+Shift+s (common.conf), which Android takes for its own screenshot
 bindsym $mod+Shift+a        exec $scripts/screenshot.sh
+# Clipboard sharing with Android on/off, next to the clipboard history ($mod+Shift+v)
+bindsym $mod+Control+v      exec $scripts/clipshare.sh
 # Alt+Tab: window list (sway's swayr doesn't exist here)
 bindsym Mod1+Tab            exec rofi -show window
 
