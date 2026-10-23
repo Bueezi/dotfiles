@@ -71,7 +71,10 @@ BASE=(apt bash bzip2 command-not-found coreutils curl dash debianutils diffutils
       xz-utils)
 
 # npm (global) and Go: the language servers Termux doesn't package, and cliphist
-NPM=(basedpyright vscode-langservers-extracted typescript typescript-language-server
+# A version after a name holds it there. typescript@6: TypeScript 7 is a native program with no
+# Android build (npm skips its linux-arm64 one: Node says "android") and no tsserver.js, which
+# typescript-language-server needs: Helix lost JS/TS completion with it
+NPM=(basedpyright vscode-langservers-extracted typescript@6 typescript-language-server
      @tailwindcss/language-server bash-language-server intelephense yaml-language-server)
 GO=(go.senan.xyz/cliphist@latest github.com/sqls-server/sqls@latest)
 
@@ -242,13 +245,20 @@ packages() {
 step Packages packages
 
 npm_globals() {
-    local npm_have p
-    npm_have=$(npm ls -g --depth=0 --parseable 2>/dev/null | sed -n 's|.*/node_modules/||p')
-    for p in "${NPM[@]}"; do grep -qxF "$p" <<<"$npm_have" || npm install -g "$p"; done
-    # Only the listed ones: a plain `npm update -g` would replace pkg's own npm
-    [ -z "$upgrade" ] || npm update -g "${NPM[@]}"
+    local npm_have p rest name version names=()
+    # name@version per line
+    npm_have=$(npm ls -g --depth=0 --parseable --long 2>/dev/null | sed -n 's|.*/node_modules/[^:]*:||p')
+    for p in "${NPM[@]}"; do
+        # The name ends at the version's @ (not a scope's, which comes first: @tailwindcss/…)
+        rest=${p:1} name=${p:0:1}${rest%%@*} version=${rest#"${rest%%@*}"}
+        names+=("$name")
+        case $'\n'$npm_have in *$'\n'"$name@${version:+${version#@}.}"*) ;; *) npm install -g "$p" ;; esac
+    done
+    # install, not update: `npm update` ignores the held versions (TypeScript 7 came back), and a
+    # plain `npm update -g` would replace pkg's own npm
+    [ -z "$upgrade" ] || npm install -g "${NPM[@]}"
     for p in $npm_have; do
-        case " ${NPM[*]} npm corepack " in *" $p "*) ;; *) npm uninstall -g "$p" ;; esac
+        case " ${names[*]} npm corepack " in *" ${p%@*} "*) ;; *) npm uninstall -g "${p%@*}" ;; esac
     done
 }
 step npm npm_globals
