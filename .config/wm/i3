@@ -1,6 +1,6 @@
 # i3 on the tablet (Termux:X11). The looks and window keys shared with sway are in
-# ~/.config/wm/common.conf. ~/.config/i3/config is a symlink to this file; `desktop` (~/.config/termux/bin)
-# starts it. i3 can't use variables set in common.conf here, so the bar's colours are spelled out.
+# ~/.config/wm/common.conf. `desktop` (~/.config/termux/bin) starts i3 with this file (-c).
+# i3 can't use variables set in common.conf here, so the bar's colours are spelled out.
 
 # ── Variables ───────────────────────────────────────
 # Super, like the desktop: on the keyboard case the option key where a PC's Win key sits (keymap
@@ -23,8 +23,8 @@ exec --no-startup-id xkbcomp -w0 ~/.config/termux/keymap.xkb $DISPLAY
 exec --no-startup-id $scripts/darkmode.sh apply
 exec --no-startup-id dunst
 # Compositor: xcompmgr, transparency only (the see-through bar, rofi, dunst and alacritty; no blur).
-# picom made the whole desktop slower, even without blur. The screen that "froze" with xcompmgr was
-# Honor's battery manager freezing Termux 15-30 s after a start from the widget, not xcompmgr
+# picom made the whole desktop slower, even without blur. A frozen screen is Honor's battery
+# manager freezing Termux, not xcompmgr
 exec --no-startup-id xcompmgr
 exec --no-startup-id $scripts/clipstore.sh
 exec --no-startup-id $scripts/wallpaper.sh restore
@@ -70,8 +70,7 @@ bar {
     position top
     workspace_min_width 30
     status_command i3status-rs ~/.config/wm/i3status-rs.toml
-    # Sizes here are at 96 dpi and grow with Xft.dpi (`desktop`: 192 = twice). The 13 before was
-    # tuned while the DPI got lost (drawn at 96); at the real DPI 8 was too big, 4.8 too small
+    # Sizes here are at 96 dpi and grow with Xft.dpi (`desktop`: 192 = twice); 8 was too big, 4.8 too small
     font pango:JetBrainsMono Nerd Font 6
     # See-through background (xcompmgr draws the alpha)
     i3bar_command i3bar --transparency

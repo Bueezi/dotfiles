@@ -1,5 +1,5 @@
 # swaylock-effects: blurred snapshot of the desktop fading in, clock inside the ring.
-# (The fade used to start ~1s late; patched in .configuration.nix, see swaylockFx)
+# (The fade starts at once thanks to a patch: swaylockFx in ~/.config/nixos/sway.nix)
 screenshots
 effect-blur=9x5
 effect-vignette=0.4:0.9

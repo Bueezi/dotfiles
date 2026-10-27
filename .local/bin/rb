@@ -15,6 +15,10 @@ have=$(codium --list-extensions 2>/dev/null | tr 'A-Z' 'a-z')
 grep -v '^\s*\(#\|$\)' "$HOME/.config/VSCodium/extensions" | while read -r e; do
     echo "$have" | grep -qx "$e" || codium --install-extension "$e" >/dev/null 2>&1 || echo "rb: no $e"
 done
+# Lean 4: a default toolchain once (elan has none at first; projects pick theirs in lean-toolchain)
+if command -v elan >/dev/null && elan toolchain list | grep -q '^no installed'; then
+    elan toolchain install stable && elan default stable
+fi
 # Flatpak apps (~/.config/flatpak/apps): the missing ones, per user (no root needed)
 flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 have=$(flatpak list --user --app --columns=application 2>/dev/null)

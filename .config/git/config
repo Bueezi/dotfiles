@@ -1,4 +1,4 @@
-# Git for all machines (was in Nix's /etc/gitconfig and an untracked ~/.gitconfig)
+# Git for all machines
 [user]
 	name = Bueezi
 	email = mail@b3n.me

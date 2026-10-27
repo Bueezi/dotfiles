@@ -97,4 +97,4 @@ export MESA_VK_WSI_DEBUG=sw
 # (some only read those), and GTK's through xsettingsd (darkmode.sh)
 export XCURSOR_THEME=Bibata-Modern-Classic XCURSOR_SIZE=$(( 20 * XFT_DPI / 96 ))
 printf 'Xft.dpi: %s\nXcursor.theme: %s\nXcursor.size: %s\n' "$XFT_DPI" "$XCURSOR_THEME" "$XCURSOR_SIZE" | xrdb -merge
-exec dbus-run-session -- i3
+exec dbus-run-session -- i3 -c "$HOME/.config/wm/i3"

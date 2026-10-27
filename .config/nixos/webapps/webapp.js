@@ -2,12 +2,14 @@
 // keeps playing); quit from the tray menu. Launching it again (app menu, its key) shows/hides the
 // running window. Each app is a folder next to this file (package.json, icon.png, index.js with its
 // page); NixOS: ../webapps.nix, the tablet: .config/termux/bin/webapp.
-const { app, BrowserWindow, Menu, Tray, shell } = require("electron");
+// Optional per app: `block`, URL patterns never loaded (ads), and `preload`, a script in its folder
+// that runs before the page's own (ytmusic: removes ads from the player's data).
+const { app, BrowserWindow, Menu, Tray, session, shell } = require("electron");
 const fs = require("fs");
 const net = require("net");
 const path = require("path");
 
-module.exports = ({ dir, title, url, domains, background }) => {
+module.exports = ({ dir, title, url, domains, background, block, preload }) => {
   const icon = path.join(dir, "icon.png");
   // Pages on these domains (and sign-in popups) stay in the app, other links open in the browser
   const inApp = (link) => {
@@ -28,6 +30,9 @@ module.exports = ({ dir, title, url, domains, background }) => {
     net.createServer((s) => { s.end(); toggle(); }).on("error", () => {}).listen(sock);
     app.on("before-quit", () => { quitting = true; });
     app.whenReady().then(() => {
+      if (block) {
+        session.defaultSession.webRequest.onBeforeRequest({ urls: block }, (_, done) => done({ cancel: true }));
+      }
       createWindow();
       createTray();
     });
@@ -41,6 +46,7 @@ module.exports = ({ dir, title, url, domains, background }) => {
       height: 750,
       backgroundColor: background,
       autoHideMenuBar: true,
+      webPreferences: preload ? { preload: path.join(dir, preload) } : {},
     });
     win.removeMenu();
     win.loadURL(url);

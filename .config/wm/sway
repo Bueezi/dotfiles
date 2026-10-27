@@ -1,6 +1,6 @@
 # Sway (SwayFX) on the desktop and laptop. The looks and window keys shared with the tablet's i3
-# are in ~/.config/wm/common.conf. ~/.config/sway/config is a symlink to this file, so plain `sway`
-# and `swaymsg reload` find it.
+# are in ~/.config/wm/common.conf. The login (greetd, ~/.config/nixos/sway.nix) starts sway with
+# this file (-c), and `swaymsg reload` rereads it.
 
 # ── Variables ───────────────────────────────────────
 set $mod        Mod4

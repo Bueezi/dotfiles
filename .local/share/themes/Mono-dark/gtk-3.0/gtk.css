@@ -2,7 +2,7 @@
    stays: selections, buttons). GTK4/libadwaita gets the same from ~/.config/gtk-4.0/gtk.css, Qt
    from the qt6ct palettes. darkmode.sh ($mod+Shift+t) switches between this and adw-gtk3.
    The import is relative: adw-gtk3-dark sits next to this theme (NixOS: a link to the system's,
-   made at login by .configuration.nix; the tablet: downloaded by termux.sh). */
+   made at login by ~/.config/nixos/sway.nix; the tablet: downloaded by termux.sh). */
 @import url("../../adw-gtk3-dark/gtk-3.0/gtk.css");
 @define-color window_bg_color black;
 @define-color view_bg_color black;

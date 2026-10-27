@@ -1,5 +1,5 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# Tablet (Honor MagicPad 4, Termux) setup and "rebuild": like .configuration.nix on NixOS, the lists
+# Tablet (Honor MagicPad 4, Termux) setup and "rebuild": like ~/.config/nixos on NixOS, the lists
 # below are what's installed. `rb` (this): installs what's missing and removes packages that aren't
 # listed (apt shows the list and asks first), nothing gets updated. `rb -u` (the power menu's
 # update) also updates everything: pkg, npm, Go, i3status-rs, TeX Live, the proot Debian, the
@@ -330,7 +330,7 @@ builds() {
     local i3rs_src
     i3rs_src=$(printf '%s\n' ~/.cargo/registry/src/*/i3status-rs-*/ | sort -V | tail -1)
     mkdir -p ~/.local/share/i3status-rust && cp -r "$i3rs_src"files/* ~/.local/share/i3status-rust/ 2>/dev/null || true
-    # The same commit as the PCs (.configuration.nix, fetch's url): change both together.
+    # The same commit as the PCs (~/.config/nixos/packages.nix, fetch's url): change both together.
     # fetch_rev: one up after changing the patches below (rebuilds once)
     local fetch_commit=e3087810e2a131ed4093440e783ac96a101ad806 fetch_rev=2
     if [ "$(cat "$build/fetch.rev" 2>/dev/null)" != "$fetch_commit $fetch_rev" ] || [ ! -x ~/.local/bin/fetch ]; then

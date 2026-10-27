@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Power menu ($mod+Shift+p). NixOS: sleep, hibernate (laptop), reboot, power off, update, rebuild,
-# sync. The tablet (Termux, i3): hide, close desktop, exit Termux, update, sync; Android does the rest.
+# sync. The tablet (Termux, i3): hide, close desktop, exit Termux, update, rebuild, sync; Android does
+# the rest. Update and rebuild sync first (cu), so they build the newest config from all machines.
 # Update, rebuild and sync run in a scratchpad terminal (hide/show with $mod+minus) so you can see
 # output and type your sudo password. Once the password is in (sudo caches it), the terminal hides
 # itself and comes back only when it needs you: a failure, a firmware prompt, or the end of an update.
@@ -25,22 +26,42 @@ auth() {
     notify-send -a power -i system-run-symbolic "$1" "Started, running in the background"
 }
 
+# cu before rb: the other machines' config changes in, this one's out. A failed sync (offline, a
+# conflict) doesn't stop what follows, which then uses the local copy; it's named at the end
+sync_first() {
+    echo "==> Sync (cu)"
+    cu || { failed+=" Sync"; echo "    Sync failed, using the local config"; }
+    echo
+    # cu took long (the first clone of ~/Documents/sync): sudo's cached password may have run out
+    [ -n "$TERMUX_VERSION" ] || sudo -n true 2>/dev/null || { show; sudo -v; hide; }
+}
+
+# The end of update/rebuild: a notification, and the terminal back when something failed ($2 = the
+# message when all went well)
+report() {
+    show
+    if [ -n "$failed" ]; then
+        notify-send -u critical -a "${1,,}" -i dialog-error-symbolic "$1" "Failed:$failed"
+        echo; read -rp "Failed:$failed (see above). Press Enter to close."
+    else
+        notify-send -a "${1,,}" -i emblem-ok-symbolic "$1" "$2"
+    fi
+}
+
 update() {
+    # Each part runs even if one before it failed; the failed ones are named at the end
+    failed=
     # Tablet: rb -u (termux.sh) updates everything, pkg included
     if [ -n "$TERMUX_VERSION" ]; then
+        sync_first
         echo "==> Termux"
-        if rb -u; then
-            notify-send -a update -i emblem-ok-symbolic "Update" "Finished"
-        else
-            notify-send -u critical -a update -i dialog-error-symbolic "Update" "Failed"
-        fi
-        show
-        echo; read -rp "Done. Press Enter to close."
+        rb -u || failed+=" Termux"
+        report Update Finished
+        [ -n "$failed" ] || { echo; read -rp "Done. Press Enter to close."; }
         return
     fi
     auth Update
-    # Each part runs even if one before it failed; the failed ones are named at the end
-    failed=
+    sync_first
     echo "==> NixOS"
     rb -u || failed+=" NixOS"
     if [ "$(readlink /run/booted-system/kernel)" != "$(readlink /run/current-system/kernel)" ]; then
@@ -58,27 +79,23 @@ update() {
     else
         echo "No firmware updates."
     fi
-    show
-    if [ -n "$failed" ]; then
-        notify-send -u critical -a update -i dialog-error-symbolic "Update" "Failed:$failed"
-        echo; read -rp "Failed:$failed (see above). Press Enter to close."
-    else
-        notify-send -a update -i emblem-ok-symbolic "Update" "Finished"
-        echo; read -rp "Done. Press Enter to close."
-    fi
+    report Update Finished
+    [ -n "$failed" ] || { echo; read -rp "Done. Press Enter to close."; }
 }
 
-# Rebuild the NixOS config with rb (no channel upgrade) and report the result as a notification.
+# Apply the config with rb, nothing upgraded (NixOS: nixos-rebuild switch; the tablet: termux.sh).
+# Stays hidden when all went well
 rebuild() {
-    auth Rebuild
+    failed=
+    [ -n "$TERMUX_VERSION" ] || auth Rebuild
+    sync_first
     echo "==> rb"
-    if rb; then
-        notify-send -a rebuild -i emblem-ok-symbolic "Rebuild" "nixos-rebuild switch succeeded"
-        sleep 1
+    rb || failed+=" Rebuild"
+    if [ -n "$failed" ]; then
+        report Rebuild
     else
-        notify-send -u critical -a rebuild -i dialog-error-symbolic "Rebuild" "nixos-rebuild switch failed"
-        show
-        echo; read -rp "Failed. Press Enter to close."
+        notify-send -a rebuild -i emblem-ok-symbolic "Rebuild" "Synced and rebuilt"
+        sleep 1
     fi
 }
 
@@ -113,7 +130,7 @@ slideshow() {
 case "$1" in slideshow|sync|update|rebuild) "$1"; exit ;; esac
 
 if [ -n "$TERMUX_VERSION" ]; then
-    choice=$(printf "󰓎  hide desktop\n󰍃  close desktop\n󰐥  exit termux\n󰚰  update\n󰓦  sync" |
+    choice=$(printf "󰓎  hide desktop\n󰍃  close desktop\n󰐥  exit termux\n󰚰  update\n󱄅  rebuild\n󰓦  sync" |
       rofi -dmenu -i -p power)
 else
     # Hibernate only on the laptop: the desktop has no swap partition to resume from (zram only)

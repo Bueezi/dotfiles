@@ -10,6 +10,8 @@ defaultPref("privacy.resistFingerprinting", false);
 defaultPref("browser.toolbars.bookmarks.visibility", "never");
 // Firefox Sync
 defaultPref("identity.fxaccounts.enabled", true);
+// The old look, not the "Nova" redesign (on by default in LibreWolf 158)
+defaultPref("browser.nova.enabled", false);
 // Settings > Passwords: "Ask to save passwords" + "Save and autofill usernames and passwords"
 defaultPref("signon.rememberSignons", true);
 defaultPref("signon.autofillForms", true);
