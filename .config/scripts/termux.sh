@@ -60,8 +60,9 @@ PACKAGES=(
     # Language servers Termux packages (the rest: npm and Go below): LaTeX, TOML, Markdown (.NET)
     texlab taplo marksman
     texlive-installer
-    # Only to build things below: libsensors (bison, flex), clipnotify (X11 headers)
-    bison flex libx11 libxfixes
+    # Only to build things below: libsensors (bison, flex), clipnotify (X11 headers), i3status-rs
+    # (cmake: its boring-sys builds BoringSSL)
+    bison flex libx11 libxfixes cmake
 )
 # Termux's own base: what a fresh install starts with (termux-packages' generate-bootstraps.sh), kept
 # and installed even though no listed package needs it (`which` is in debianutils, for example)
@@ -305,7 +306,8 @@ builds() {
     fi
     # Its sway/i3 connection (swayipc-async) needs async-pidfd, which refuses every target but
     # "linux": Android's kernel has pidfd, only Rust calls it "android". Build against a copy with
-    # that one check widened (cargo keeps i3status-rs's pinned versions with it)
+    # that one check widened (cargo keeps i3status-rs's pinned versions with it). A target dir that
+    # stays: cargo install otherwise builds in a temporary one, every crate again on each try
     local apd="$build/async-pidfd"
     if ! grep -qs 'target_os = "android"' "$apd/src/lib.rs"; then
         rm -rf "$apd" && mkdir -p "$apd"
@@ -316,15 +318,17 @@ builds() {
         sed -i 's/#\[cfg(not(target_os = "linux"))\]/#[cfg(not(any(target_os = "linux", target_os = "android")))]/' "$apd/src/lib.rs"
         grep -q 'target_os = "android"' "$apd/src/lib.rs"
     fi
-    i3rs() { cargo install --locked i3status-rs --config "patch.crates-io.async-pidfd.path=\"$apd\""; }
+    i3rs() { cargo install --locked i3status-rs --target-dir "$build/i3status-rs-target" \
+        --config "patch.crates-io.async-pidfd.path=\"$apd\""; }
     if ! command -v i3status-rs >/dev/null; then
         say "i3status-rs (takes a while)"
         i3rs
     elif [ -n "$upgrade" ]; then
-        # Cargo only builds when crates.io has a newer version. One that needs another async-pidfd
-        # than the patched 0.1.5 fails to build: the installed one stays and the rest carries on
+        # Cargo only builds when crates.io has a newer version. One that fails to build (another
+        # async-pidfd than the patched 0.1.5, a new build dependency): the installed one stays and
+        # the rest carries on
         say "i3status-rs: update"
-        i3rs || echo "Couldn't build the new i3status-rs (another async-pidfd version?), keeping the installed one"
+        i3rs || echo "Couldn't build the new i3status-rs (the error above), keeping the installed one"
     fi
     # Its icon and theme files, from the newest version cargo has unpacked
     local i3rs_src
@@ -517,7 +521,9 @@ proot_debian() {
         cmd="apt-get install -y $pk || { apt-get update -q && apt-get install -y $pk; }"
     fi
     # Through `debian`: its DNS works on networks that refuse Debian's own (see .config/termux/dns-relay)
-    ~/.config/termux/bin/debian sh -c "export DEBIAN_FRONTEND=noninteractive; $cmd"
+    # dpkg --configure -a first: a run Android killed halfway leaves dpkg unfinished, and apt then
+    # refuses everything until it's done (nothing to do otherwise)
+    ~/.config/termux/bin/debian sh -c "export DEBIAN_FRONTEND=noninteractive; dpkg --configure -a && $cmd"
     record proot "$PROOT_DISTRO ${PROOT_PACKAGES[*]}"
 }
 step "Proot $PROOT_DISTRO: ${PROOT_PACKAGES[*]}" proot_debian
