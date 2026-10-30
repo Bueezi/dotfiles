@@ -73,6 +73,16 @@
   services.fwupd.enable = true;
   services.blueman.enable = true;
 
+  # Gamakay NS68 (and its 2.4G dongle): its config tool is the web page gearhub.top, which
+  # talks to the keyboard over WebHID (Chromium, not LibreWolf). hidraw is root-only, so this
+  # gives the logged-in user access. A 70- file: uaccess must come before 73-seat-late, and
+  # extraRules lands in 99-local
+  services.udev.packages = [
+    (pkgs.writeTextDir "lib/udev/rules.d/70-gamakay.rules" ''
+      KERNEL=="hidraw*", ATTRS{idVendor}=="3151", ATTRS{idProduct}=="502f|5026", TAG+="uaccess"
+    '')
+  ];
+
   # ── Audio ───────────────────────────────────────────
   security.rtkit.enable = true;
   services.pulseaudio.enable = false;
