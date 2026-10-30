@@ -47,21 +47,24 @@ in
       enable = true;
       remotePlay.openFirewall = true;               # Steam Remote Play
       localNetworkGameTransfers.openFirewall = true; # copy games between PCs on the LAN
-      extraCompatPackages = [
-        pkgs.proton-ge-bin   # Proton-GE, pick it per game in Properties > Compatibility
-        # Assetto Corsa only: Wine 10+ blocks writing to executable memory (W^X), so Custom Shaders
-        # Patch can't patch acs.exe ("Failed to tweak Assetto Corsa: Can't find ..."). The last Wine 9 GE
-        ((pkgs.proton-ge-bin.override { steamDisplayName = "GE-Proton9-20"; }).overrideAttrs {
-          version = "GE-Proton9-20";
-          src = pkgs.fetchzip {
-            url = "https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton9-20/GE-Proton9-20.tar.gz";
-            hash = "sha256-1twCv81KO1fcRcIb4H7VtAjtcKrX+DymsYdf885eOWo=";
-          };
-        })
-      ];
+      # Proton-GE, pick it per game in Properties > Compatibility. (Assetto Corsa runs on Valve's
+      # Proton 9.0, installed from Steam: Wine 10+ blocks writing to executable memory (W^X), so
+      # Custom Shaders Patch can't patch acs.exe, and GE-Proton9-20's DXVK can't share video textures)
+      extraCompatPackages = [ pkgs.proton-ge-bin ];
     };
-    # Performance mode while a game runs: launch option `gamemoderun %command%`
-    programs.gamemode.enable = true;
+    # Performance mode while a game runs: launch option `gamemoderun %command%`.
+    # Its CPU/GPU changes go through polkit, which allows them only for the gamemode group
+    programs.gamemode = {
+      enable = true;
+      # GPU held at full clocks: under a frame cap it idles between frames and downclocks,
+      # so the next heavy frame comes late (uneven fps)
+      settings.gpu = {
+        apply_gpu_optimisations = "accept-responsibility";
+        gpu_device = 1;   # /sys/class/drm/card1, the RX 9070 XT
+        amd_performance_level = "high";
+      };
+    };
+    users.users.ben.extraGroups = [ "gamemode" ];
     # Micro-compositor for games: HDR, frame limiting, upscaling (`gamescope --hdr-enabled -- %command%`)
     # (No capSysNice: its capability wrapper can't run inside Steam's sandbox, so gamescope
     # fails with "failed to inherit capabilities" and the game exits)
