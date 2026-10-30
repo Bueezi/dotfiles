@@ -3,23 +3,33 @@
 
 let
   # Assetto Corsa: acmanager:// links on websites (NoHesi "Join", server lists) open in Content
-  # Manager. CM registers them only inside its Proton prefix, so the browser had no handler. The link
-  # goes through Steam (-applaunch), which starts AC normally (its Proton, launch options) with the
-  # link as argument, like CM's own Windows handler. Only while CM is closed: Steam won't start a
-  # running game twice, and nothing outside Steam's sandbox can reach a running CM (its wineserver
-  # socket is in the sandbox's private /tmp; protontricks-launch started hidden copies instead)
+  # Manager. CM registers them only inside its Proton prefix, so the browser had no handler. CM closed:
+  # the link goes through Steam (-applaunch), which starts AC normally (its Proton, launch options)
+  # with the link as argument, like CM's own Windows handler. CM open: Steam won't start a running game
+  # twice, and its wineserver socket is in the sandbox's private /tmp. So the launch option
+  # STEAM_COMPAT_LAUNCHER_SERVICE=proton makes Proton run Valve's launcher service in the game's
+  # container (D-Bus com.steampowered.App244210); a second CM started through it, in the same
+  # wineserver, hands the link to the open one (CM is single-instance)
   acmanagerLinks = pkgs.makeDesktopItem {
     name = "acmanager";
     desktopName = "Content Manager link";
     noDisplay = true;
     mimeTypes = [ "x-scheme-handler/acmanager" ];
     exec = "${pkgs.writeShellScript "acmanager" ''
-      if ${pkgs.procps}/bin/pgrep -f 'AssettoCorsa\.exe' >/dev/null; then
-        ${pkgs.libnotify}/bin/notify-send -a acmanager -i dialog-information-symbolic "Content Manager is open" \
-          "Close it and click the link again, or join from its Online tab"
+      if ! ${pkgs.procps}/bin/pgrep -f 'AssettoCorsa\.exe' >/dev/null; then
+        exec ${config.programs.steam.package}/bin/steam -applaunch 244210 "$1"
+      fi
+      # Steam's own copy (runs through nix-ld)
+      client=~/.local/share/Steam/steamrt64/pv-runtime/steam-runtime-steamrt/pressure-vessel/bin/steam-runtime-launch-client
+      if ${pkgs.systemd}/bin/busctl --user status com.steampowered.App244210 >/dev/null 2>&1 &&
+         "$client" --inside-app=244210 \
+           -c 'cd "$STEAM_COMPAT_INSTALL_PATH" && exec wine AssettoCorsa.exe "$1"' acmanager "$1"; then
+        ${config.programs.sway.package}/bin/swaymsg -q \
+          '[class="(?i)^(steam_app_244210|assettocorsa\.exe)$" title="(?i)content manager"] focus'
         exit 0
       fi
-      exec ${config.programs.steam.package}/bin/steam -applaunch 244210 "$1"
+      ${pkgs.libnotify}/bin/notify-send -a acmanager -i dialog-information-symbolic "Content Manager is open" \
+        "Can't pass it the link: add STEAM_COMPAT_LAUNCHER_SERVICE=proton to AC's launch options, or close CM and click again"
     ''} %u";
   };
 

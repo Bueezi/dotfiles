@@ -74,7 +74,7 @@ NixOS 26.05, channel-based (not a flake system). Per machine: `laptop.nix` / `de
 - YouTube Music keeps Electron's own user agent: Google then serves its embedded-browser sign-in (`WebLiteSignIn`); a Chrome one gets the full flow, which rejects Electron as "may not be secure".
 - Steam games run in a sandbox with a private `/tmp`: nothing outside can talk to a running Wine app.
 - Discord (Vesktop's arRPC) detects games by process name from Discord's list, which often has only the Windows `.exe`: native Linux games need a rename like `factorio-rpc`.
-- Assetto Corsa: GE-Proton9-20 (Wine 10+ blocks CSP's patching), launch options `WINEDLLOVERRIDES="dwrite=n,b" %command%` (no gamescope), its prefix's `Steam/config/loginusers.vdf` symlinks to Steam's, hidden CSP caches off in the prefix's `Documents/Assetto Corsa/cfg/extension/general.ini`. `acmanager://` links work only while Content Manager is closed.
+- Assetto Corsa: GE-Proton9-20 (Wine 10+ blocks CSP's patching), launch options `STEAM_COMPAT_LAUNCHER_SERVICE=proton WINEDLLOVERRIDES="dwrite=n,b" %command%` (no gamescope; the launcher service is how `acmanager://` links reach an open Content Manager, see `gaming.nix`), its prefix's `Steam/config/loginusers.vdf` symlinks to Steam's, hidden CSP caches off in the prefix's `Documents/Assetto Corsa/cfg/extension/general.ini`.
 - Compiled Lean programs fail inside Claude Desktop's FHS sandbox (its `/usr/lib` glibc is newer): run them from foot/VSCodium.
 
 **Tablet** (can't be run from here: only checked in Xvfb)
