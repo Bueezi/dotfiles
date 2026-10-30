@@ -53,17 +53,10 @@ in
       extraCompatPackages = [ pkgs.proton-ge-bin ];
     };
     # Performance mode while a game runs: launch option `gamemoderun %command%`.
-    # Its CPU/GPU changes go through polkit, which allows them only for the gamemode group
-    programs.gamemode = {
-      enable = true;
-      # GPU held at full clocks: under a frame cap it idles between frames and downclocks,
-      # so the next heavy frame comes late (uneven fps)
-      settings.gpu = {
-        apply_gpu_optimisations = "accept-responsibility";
-        gpu_device = 1;   # /sys/class/drm/card1, the RX 9070 XT
-        amd_performance_level = "high";
-      };
-    };
+    # Its CPU changes go through polkit, which allows them only for the gamemode group.
+    # (No GPU settings: its amd_performance_level=high made the RX 9070 XT's clock swing
+    # between 78 and 2520 MHz, with artefacts and ~120 fps in CS2)
+    programs.gamemode.enable = true;
     users.users.ben.extraGroups = [ "gamemode" ];
     # Micro-compositor for games: HDR, frame limiting, upscaling (`gamescope --hdr-enabled -- %command%`)
     # (No capSysNice: its capability wrapper can't run inside Steam's sandbox, so gamescope
