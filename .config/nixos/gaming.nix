@@ -1,4 +1,4 @@
-# Games, desktop PC only: Steam and its Protons, the G920 wheel, Assetto Corsa's links
+# Games, desktop PC only: Steam and its Protons, the G920 wheel, Assetto Corsa's links, Discord presence
 { config, lib, pkgs, isLaptop, ... }:
 
 let
@@ -33,12 +33,10 @@ let
     ''} %u";
   };
 
-  # Factorio in Discord (Vesktop's arRPC finds games by process name, and Discord knows Factorio
-  # only as Windows' factorio.exe): launch option `factorio-rpc %command%` runs the Linux game
-  # under that name. Steam's wrappers in %command% stay in front; its last word is the game's
-  # bin/x64/factorio, a script that starts bin/x64_/factorio
-  factorioRpc = pkgs.writeShellScriptBin "factorio-rpc" ''
-    exec "''${@:1:$#-1}" bash -c 'exec -a "''${0%/*}/factorio.exe" "''${0%/*}/../x64_/factorio" "$@"' "''${!#}"
+  # Discord's game list, name -> application id, for steam-rpc.py (taken from Vesktop's arRPC)
+  steamRpcGames = pkgs.runCommand "steam-rpc-games.tsv" { nativeBuildInputs = [ pkgs.asar ]; } ''
+    asar extract-file ${pkgs.vesktop}/opt/Vesktop/resources/app.asar dist/js/arRpcWorker.js.map
+    ${pkgs.python3}/bin/python3 -I ${./steam-rpc.py} --build arRpcWorker.js.map > $out
   '';
 in
 {
@@ -68,9 +66,20 @@ in
       protontricks          # Windows fonts/libs into a game's Proton prefix (Content Manager)
       acmanagerLinks        # acmanager:// links (NoHesi "Join") → Content Manager, see the let
       oversteer             # G920 settings: rotation, force feedback, pedal test
-      factorioRpc           # Factorio's launch option, see the let
     ];
     xdg.mime.defaultApplications."x-scheme-handler/acmanager" = "acmanager.desktop";
+
+    # Native Steam games in Discord (arRPC only spots Windows .exe names), see steam-rpc.py
+    systemd.user.services.steam-rpc = {
+      description = "Discord Rich Presence for native Steam games";
+      wantedBy = [ "default.target" ];
+      path = [ pkgs.coreutils ];
+      serviceConfig = {
+        ExecStart = "${pkgs.python3}/bin/python3 -I ${./steam-rpc.py} ${steamRpcGames}";
+        Restart = "always";
+        RestartSec = 10;
+      };
+    };
 
     # Logitech G920: switch it out of Xbox mode so it shows up as a wheel
     hardware.usb-modeswitch.enable = true;
