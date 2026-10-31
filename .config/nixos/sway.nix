@@ -1,6 +1,6 @@
 # The desktop session: SwayFX and its tools, login, screen sharing, themes, default apps, fonts.
 # Sway's own config is ~/.config/wm/sway
-{ lib, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   # Cursor and icon themes for sway (XCURSOR_*), GTK and dconf below. To revert: "Adwaita" for both
@@ -171,6 +171,13 @@ in
       // each "mpv.desktop" [ "video/mp4" "video/x-matroska" "video/webm" "video/quicktime" "video/x-msvideo"
                              "audio/mpeg" "audio/x-wav" "audio/flac" "audio/ogg" ]
       // each "helix.desktop" [ "text/plain" "text/x-c" "text/x-c++" "text/x-java" "text/x-python" "application/x-shellscript" ];
+  # The same list in share/applications, read through XDG_DATA_DIRS: sandboxes with their own /etc
+  # (Claude Desktop's bwrap) never see /etc/xdg and opened links in Chromium
+  environment.systemPackages = [
+    (pkgs.runCommand "mimeapps" { } ''
+      install -Dm644 ${config.environment.etc."xdg/mimeapps.list".source} $out/share/applications/mimeapps.list
+    '')
+  ];
 
   # File manager + thumbnails, mounting, trash
   programs.thunar = {
