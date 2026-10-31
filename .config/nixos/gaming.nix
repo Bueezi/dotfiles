@@ -38,6 +38,22 @@ let
     asar extract-file ${pkgs.vesktop}/opt/Vesktop/resources/app.asar dist/js/arRpcWorker.js.map
     ${pkgs.python3}/bin/python3 -I ${./steam-rpc.py} --build arRpcWorker.js.map > $out
   '';
+
+  # gamescope in a window, for Steam launch options: `gamescope-sdl <gamescope options> -- %command%`.
+  # Its SDL backend instead of the default Wayland one: that one only copies the game's clipboard out
+  # (nothing pasted in), and in CS2 it slowed to ~120 fps / 50 ms after ~25 minutes. Steam's
+  # LD_LIBRARY_PATH (its runtime's libSDL2) breaks that backend and its LD_PRELOAD (the overlay)
+  # crashes gamescope's reaper, so gamescope runs without both and the game gets them back.
+  # (gamemoderun goes after `--` for the same reason. "terminate called without an active
+  # exception" when the game quits is gamescope's SDL backend shutting down: harmless)
+  gamescopeSdl = pkgs.writeShellScriptBin "gamescope-sdl" ''
+    opts=()
+    while [ $# -gt 0 ] && [ "$1" != -- ]; do opts+=("$1"); shift; done
+    shift
+    exec ${pkgs.coreutils}/bin/env -u LD_PRELOAD -u LD_LIBRARY_PATH \
+      ${config.programs.gamescope.package}/bin/gamescope --backend sdl "''${opts[@]}" -- \
+      ${pkgs.coreutils}/bin/env LD_PRELOAD="''${LD_PRELOAD-}" LD_LIBRARY_PATH="''${LD_LIBRARY_PATH-}" "$@"
+  '';
 in
 {
   config = lib.mkIf (!isLaptop) {
@@ -56,7 +72,9 @@ in
     # between 78 and 2520 MHz, with artefacts and ~120 fps in CS2)
     programs.gamemode.enable = true;
     users.users.ben.extraGroups = [ "gamemode" ];
-    # Micro-compositor for games: HDR, frame limiting, upscaling (`gamescope --hdr-enabled -- %command%`)
+    # Micro-compositor for games: HDR, frame limiting, upscaling, 4:3 stretched (CS2, through
+    # gamescope-sdl in the let: `gamescope-sdl --force-grab-cursor -w 1920 -h 1440 -W 2560 -H 1440
+    # -S stretch -f -r 180 -- gamemoderun %command%`)
     # (No capSysNice: its capability wrapper can't run inside Steam's sandbox, so gamescope
     # fails with "failed to inherit capabilities" and the game exits)
     programs.gamescope.enable = true;
@@ -65,6 +83,7 @@ in
       mangohud              # in-game FPS/temps overlay: `mangohud %command%` in Steam
       protontricks          # Windows fonts/libs into a game's Proton prefix (Content Manager)
       acmanagerLinks        # acmanager:// links (NoHesi "Join") → Content Manager, see the let
+      gamescopeSdl          # gamescope with a working clipboard (CS2), see the let
       oversteer             # G920 settings: rotation, force feedback, pedal test
     ];
     xdg.mime.defaultApplications."x-scheme-handler/acmanager" = "acmanager.desktop";
