@@ -136,6 +136,7 @@ bindsym {
     # Apps
     $mod+Shift+n        exec networkmanager_dmenu
     $mod+x              exec swaymsg '[app_id="librewolf"] focus' || $browser
+    $mod+Shift+c        exec swaymsg '[app_id="com.anthropic.Claude"] focus' || claude-desktop
     $mod+Shift+d        exec $scripts/open.sh vesktop 1200 800 $discord
     $mod+i              exec $scripts/open.sh steam 1400 900 steam
     $mod+t              exec swaymsg '[app_id="foot"] focus' || $term
