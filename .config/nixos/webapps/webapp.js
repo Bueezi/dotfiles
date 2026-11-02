@@ -57,6 +57,9 @@ module.exports = ({ dir, title, url, domains, background, block, preload }) => {
       return { action: "deny" };
     });
 
+    // A page's "leave site?" (beforeunload) would silently cancel Quit: there's no dialog to answer
+    win.webContents.on("will-prevent-unload", (e) => e.preventDefault());
+
     win.on("close", (e) => {
       if (quitting) return;
       e.preventDefault();
