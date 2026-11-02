@@ -5,6 +5,7 @@
 //    into the first page (ytInitialPlayerResponse).
 // 2. An ad that still starts (YouTube changes these fields now and then): jumped to its end, or its
 //    skip button clicked.
+// Below: what's playing, for Discord (discord.js).
 require("electron").contextBridge.executeInMainWorld({
   func: () => {
     const adKeys = ["adPlacements", "playerAds", "adSlots", "adBreakHeartbeatParams"];
@@ -37,3 +38,24 @@ require("electron").contextBridge.executeInMainWorld({
     }, 500);
   },
 });
+
+// Every 2 s, sent when the song, play/pause or the position (a seek) changes. This side shares the
+// page's DOM and media session, not its JavaScript
+const { ipcRenderer } = require("electron");
+let sent = null;
+const changed = (a, b) => !a || !b ? a !== b : a.title !== b.title || a.artist !== b.artist || Math.abs(a.start - b.start) > 3000;
+setInterval(() => {
+  const video = document.querySelector("video");
+  const meta = navigator.mediaSession.metadata;
+  const ad = document.querySelector("#movie_player.ad-showing");
+  const now = video && meta && !video.paused && !ad ? {
+    title: meta.title,
+    artist: meta.artist,
+    album: meta.album,
+    art: meta.artwork.at(-1)?.src,
+    start: Math.round(Date.now() - video.currentTime * 1000),
+    duration: Math.round(video.duration * 1000),
+  } : null;
+  if (changed(now, sent)) ipcRenderer.send("now-playing", now);
+  sent = now;
+}, 2000);

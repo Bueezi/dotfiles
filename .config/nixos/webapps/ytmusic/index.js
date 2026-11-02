@@ -1,4 +1,4 @@
-// YouTube Music (see ../webapp.js). Google's sign-in pages stay in the window
+// YouTube Music (see ../webapp.js). Google's sign-in pages stay in the window. Discord: discord.js
 require("../webapp.js")({
   dir: __dirname,
   title: "YouTube Music",
@@ -17,3 +17,4 @@ require("../webapp.js")({
   ],
   preload: "preload.js",
 });
+require("./discord.js");
