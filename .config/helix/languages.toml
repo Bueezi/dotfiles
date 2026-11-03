@@ -28,3 +28,7 @@ command = "sqls"
 [[language]]
 name = "sql"
 language-servers = ["sqls"]
+
+[[language]]
+name = "latex"
+soft-wrap.enable = true

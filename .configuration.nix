@@ -17,5 +17,6 @@
     ./.config/nixos/plymouth.nix        # boot splash (penguin video)
     ./.config/nixos/webapps.nix         # YouTube Music as a desktop app
     ./.config/nixos/hyprquickpaper.nix  # wallpaper picker ($mod+Shift+w), slideshow
+    ./.config/nixos/noctalia.nix        # trial: Noctalia shell on Umbriel, a second session
   ];
 }

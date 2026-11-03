@@ -1,0 +1,82 @@
+{
+  "nodes": {
+    "noctalia": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1793300732,
+        "narHash": "sha256-j6EccQtLK45fYjA5uyUHXW8jxz0gYVxW2SE+pn5UA0Y=",
+        "owner": "noctalia-dev",
+        "repo": "noctalia",
+        "rev": "815aebe1cfd79c9a18197441eea92f0b275035fc",
+        "type": "github"
+      },
+      "original": {
+        "owner": "noctalia-dev",
+        "ref": "v5.4.1",
+        "repo": "noctalia",
+        "type": "github"
+      }
+    },
+    "portal": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1793547787,
+        "narHash": "sha256-wWrHrvqEnrI0XhizNPdutwNyi+P+qvsMovm1ptlR4gY=",
+        "owner": "noctalia-dev",
+        "repo": "xdg-desktop-portal-umbriel",
+        "rev": "79f087598d596ae8a81dff1036d0ab3b5c446584",
+        "type": "github"
+      },
+      "original": {
+        "owner": "noctalia-dev",
+        "repo": "xdg-desktop-portal-umbriel",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "noctalia": "noctalia",
+        "portal": "portal",
+        "umbriel": "umbriel",
+        "wlroots": "wlroots"
+      }
+    },
+    "umbriel": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1793669697,
+        "narHash": "sha256-zQ+Kb+qj8s+HGAU/7h2pE9gnQKeZd7jiTN+3inaCY5w=",
+        "owner": "noctalia-dev",
+        "repo": "umbriel",
+        "rev": "e0da106317b10831e709618f52cc00bd7a9dc793",
+        "type": "github"
+      },
+      "original": {
+        "owner": "noctalia-dev",
+        "repo": "umbriel",
+        "type": "github"
+      }
+    },
+    "wlroots": {
+      "flake": false,
+      "locked": {
+        "host": "gitlab.freedesktop.org",
+        "lastModified": 1783460769,
+        "narHash": "sha256-VdYymvzYp6/R255AK20j4xTd+JbCZgNiRfgeRJD+UZY=",
+        "owner": "wlroots",
+        "repo": "wlroots",
+        "rev": "d783533489e1f75d6886c2ab5c5960090ef268f8",
+        "type": "gitlab"
+      },
+      "original": {
+        "host": "gitlab.freedesktop.org",
+        "owner": "wlroots",
+        "ref": "0.20.2",
+        "repo": "wlroots",
+        "type": "gitlab"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}

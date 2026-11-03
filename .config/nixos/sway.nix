@@ -86,7 +86,8 @@ in
 
   # ── Login ───────────────────────────────────────────
   # greetd + tuigreet, black and white with a big "nixos" greeting. Sway gets its config's real
-  # path (-c), so ~/.config/sway/config isn't needed
+  # path (-c), so ~/.config/sway/config isn't needed. Other sessions (F3) stay one-off picks: no
+  # --remember-session, sway stays the default
   services.greetd = {
     enable = true;
     settings.default_session = {
@@ -100,6 +101,7 @@ in
         ];
       in "${pkgs.writeShellScript "tuigreet" ''
         exec ${pkgs.tuigreet}/bin/tuigreet --cmd 'sway -c /home/ben/.config/wm/sway' --remember --asterisks \
+          --sessions ${config.services.displayManager.sessionData.desktops}/share/wayland-sessions \
           --time --time-format '%a %d/%m  %H:%M' \
           --greeting '${greeting}' --window-padding 2 --container-padding 2 \
           --theme 'border=white;text=gray;prompt=white;time=gray;action=darkgray;button=white;container=black;input=white;greet=white'
