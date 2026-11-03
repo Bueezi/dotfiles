@@ -3,6 +3,8 @@
 #   run.sh focus <app_id> <command...>  focus a window of <app_id> (from the scratchpad too), else run <command>
 #   run.sh hdr                          DP-2's HDR: "auto" (only for fullscreen HDR content) <-> "on"
 #                                       (always). In a state file the config includes, so it stays as is
+#   run.sh slideshow                    Noctalia's wallpaper rotation on/off: a random one every 5 minutes,
+#                                       like sway's slideshow (folder: Noctalia's wallpaper setting)
 case "$1" in
 focus)
     app=$2; shift 2
@@ -19,4 +21,13 @@ hdr)
         printf '[output.DP-2]\nhdr = "on"\n' > "$f"
         notify-send -a hdr -i video-display-symbolic "HDR: on" "Always on"
     fi ;;
+slideshow)
+    if [ "$(noctalia msg config-get wallpaper.automation.enabled)" = true ]; then
+        noctalia msg config-set wallpaper.automation.enabled false
+        notify-send -a slideshow -i preferences-desktop-wallpaper-symbolic "Slideshow off"
+    else
+        noctalia msg config-set wallpaper.automation.interval_seconds 300
+        noctalia msg config-set wallpaper.automation.enabled true
+        notify-send -a slideshow -i preferences-desktop-wallpaper-symbolic "Slideshow on" "A new wallpaper every 5 minutes"
+    fi >/dev/null ;;
 esac

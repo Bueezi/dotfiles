@@ -58,12 +58,18 @@ default_extent_fraction = 1.0
 match.app_id = "^scratch-(float|power)$"
 default_floating = true
 
+# Yazi: floating, like Thunar was in sway
+[[window_rule]]
+match.app_id = "^yazi$"
+default_floating = true
+default_floating_size_px = { width = 1400, height = 850 }
+
 # Half-width columns for the apps that floated in sway
 [[window_rule]]
 match.app_id = ["^ytmusic$", "^vesktop$", "^steam$"]
 default_scrolling_extent = 0.5
 
-# Added to the packaged binds, mostly as in sway. Replaced packaged ones: Mod+Escape (quit, now
+# Added to the packaged binds, mostly as in sway; menus are Noctalia's (no fuzzel here). Replaced packaged ones: Mod+Escape (quit, now
 # Mod+Shift+M), Mod+Shift+R (width cycle back). Kept Umbriel's: Mod+T (float), Mod+P (pin),
 # Mod+M (maximize), Mod+O (overview)
 [keybinds]
@@ -74,7 +80,8 @@ default_scrolling_extent = 0.5
 "Mod+Shift+C" = { action = "spawn ~/.config/umbriel/run.sh focus com.anthropic.Claude claude-desktop", repeat = false }
 "Mod+Shift+D" = { action = "spawn ~/.config/umbriel/run.sh focus vesktop vesktop", repeat = false }
 "Mod+I" = { action = "spawn ~/.config/umbriel/run.sh focus steam steam", repeat = false }
-"Mod+Shift+E" = { action = "spawn thunar", repeat = false }
+"Mod+Shift+E" = { action = "spawn foot --app-id=yazi yazi", repeat = false }
+"Mod+E" = { action = "spawn thunar", repeat = false }   # the backup, for drag and drop
 "Mod+U" = { action = "spawn librewolf https://toledo.kuleuven.be/portal/", repeat = false }
 "Mod+Y" = { action = "spawn ytmusic", repeat = false }   # Mod+M is maximize here; ytmusic shows/hides itself
 "Mod+Shift+S" = { action = "spawn noctalia msg screenshot-region", repeat = false }
@@ -82,10 +89,11 @@ default_scrolling_extent = 0.5
 "Mod+Shift+R" = { action = "spawn ~/.config/wm/scripts/record.sh", repeat = false }
 "Mod+Shift+V" = { action = "spawn noctalia msg panel-toggle clipboard", repeat = false }
 "Mod+Shift+W" = { action = "spawn noctalia msg panel-toggle wallpaper", repeat = false }
+"Mod+Shift+O" = { action = "spawn ~/.config/umbriel/run.sh slideshow", repeat = false }
 "Mod+Shift+P" = { action = "spawn ~/.config/wm/scripts/power.sh", repeat = false }   # with rebuild/update
-"Mod+Shift+N" = { action = "spawn networkmanager_dmenu", repeat = false }
-"Mod+Shift+B" = { action = "spawn ~/.config/wm/scripts/bluetooth.sh", repeat = false }
-"Mod+Shift+A" = { action = "spawn ~/.config/wm/scripts/audio_switch.sh", repeat = false }
+"Mod+Shift+N" = { action = "spawn noctalia msg panel-toggle control-center network", repeat = false }
+"Mod+Shift+B" = { action = "spawn noctalia msg panel-toggle control-center bluetooth", repeat = false }
+"Mod+Shift+A" = { action = "spawn noctalia msg panel-toggle control-center audio", repeat = false }
 "Mod+Shift+T" = { action = "spawn noctalia msg theme-mode-toggle", repeat = false }
 "Mod+Shift+I" = { action = "spawn noctalia msg caffeine-toggle", repeat = false }
 "Mod+N" = { action = "spawn noctalia msg nightlight-toggle", repeat = false }

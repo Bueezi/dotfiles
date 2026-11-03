@@ -7,7 +7,7 @@
 # itself and comes back only when it needs you: a failure, a firmware prompt, or the end of an update.
 
 # Sway: foot, fuzzel, swaymsg, the window found by app_id. i3: alacritty, rofi, i3-msg, by class.
-# Umbriel (first: a sway session can leave SWAYSOCK behind): its window id, from app_id
+# Umbriel (first: a sway session can leave SWAYSOCK behind): Noctalia's picker, the window id from app_id
 if [ -n "$UMBRIEL_SOCKET" ]; then
     term=(foot --app-id=scratch-power)
     win() { umbriel windows --json | jq -r 'map(select(.app_id == "scratch-power")) | first | .id // empty'; }
@@ -144,7 +144,7 @@ else
     # Hibernate only on the laptop: the desktop has no swap partition to resume from (zram only)
     hibernate=; [ -d /sys/class/power_supply/BAT0 ] && hibernate="󰋊  hibernate\n"
     choice=$(printf "${hibernate}󰜉  reboot\n󰒲  sleep\n󰐥  power off\n󰚰  update\n󱄅  rebuild\n󰓦  sync" |
-      fuzzel --dmenu --width 20 --lines 7)
+      if [ -n "$UMBRIEL_SOCKET" ]; then noctalia dmenu -p power; else fuzzel --dmenu --width 20 --lines 7; fi)
 fi
 
 [ "$choice" ] || exit 0

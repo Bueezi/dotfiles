@@ -15,6 +15,7 @@
     # Apps
     librewolf ungoogled-chromium mpv vesktop qbittorrent
     libreoffice bazaar gearlever
+    yazi   # terminal file manager, with its preview tools (Umbriel: Mod+Shift+E); Thunar in sway.nix
     # Claude Desktop (community build; updates to the latest version on rebuild)
     (builtins.getFlake "github:aaddrick/claude-desktop-debian").packages.${stdenv.hostPlatform.system}.default
     # fetch by areofyl: spinning 3D distro logo + system info (not in 26.05 yet; built with the
