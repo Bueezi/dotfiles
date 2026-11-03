@@ -1,0 +1,99 @@
+# Umbriel (PCs): upstream's packaged config, plus only what's mine below. Included files are
+# applied first and this file last: tables merge by key, so the packaged keybinds and rules stay.
+# Reloads on save; check with `umbriel config validate`. Reference: https://docs.noctalia.dev/umbriel/
+# Noctalia does wallpaper, notifications, night light, idle/lock, clipboard, battery and polkit:
+# none of the sway tools are started here.
+
+[include]
+files = ["/run/current-system/sw/share/umbriel/config.toml"]   # linked by ~/.config/nixos/noctalia.nix
+
+[include.optional]
+files = ["~/.local/state/umbriel/hdr.toml"]   # DP-2's hdr, written by run.sh hdr (Mod+Shift+H)
+
+[general]
+autostart = [
+  "noctalia",
+  "librewolf",
+  # Desktop only: Vesktop and Steam in the tray. Laptop only: start muted
+  "sh -c 'test -d /sys/class/power_supply/BAT0 || exec vesktop --start-minimized'",
+  "sh -c 'test -d /sys/class/power_supply/BAT0 || exec steam -silent'",
+  "sh -c 'test -d /sys/class/power_supply/BAT0 && sleep 2 && wpctl set-volume @DEFAULT_AUDIO_SINK@ 0'",
+]
+
+# Outputs: names from `umbriel outputs`
+[output.DP-2]
+mode = "2560x1440@180"
+vrr = "fullscreen"
+tearing = true
+bit_depth = 10
+# hdr: in the state file above (this file is applied last, it would win): "auto" = HDR for fullscreen
+# content that has it (games, video), "on" = always. No state file yet = off
+
+[output.eDP-1]
+scale = 1.35
+bit_depth = 10
+
+# Same cursor as GTK/dconf (sway.nix: cursorTheme, cursorSize), else apps and desktop differ
+[input.cursor]
+theme = "Bibata-Modern-Classic"
+size = 20
+
+[input.touchpad]
+tap = true
+natural_scroll = true
+disable_while_typing = true
+scroll_factor = 0.65
+
+[[input.device]]
+name = "CX Wireless mouse -1k dongle Mouse"
+accel_profile = "flat"
+sensitivity = 0.0
+
+# New windows fill the screen; Mod+R still cycles 1/3, 1/2, 2/3
+[layout.scrolling]
+default_extent_fraction = 1.0
+
+# Mod+Shift+Return's terminal, and the power menu's (~/.config/wm/scripts/power.sh)
+[[window_rule]]
+match.app_id = "^scratch-(float|power)$"
+default_floating = true
+
+# Half-width columns for the apps that floated in sway
+[[window_rule]]
+match.app_id = ["^ytmusic$", "^vesktop$", "^steam$"]
+default_scrolling_extent = 0.5
+
+# Added to the packaged binds, mostly as in sway. Replaced packaged ones: Mod+Escape (quit, now
+# Mod+Shift+M), Mod+Shift+R (width cycle back). Kept Umbriel's: Mod+T (float), Mod+P (pin),
+# Mod+M (maximize), Mod+O (overview)
+[keybinds]
+"Mod+Return" = { action = "spawn foot", repeat = false }
+"Mod+Shift+Return" = { action = "spawn foot --app-id=scratch-float", repeat = false }
+"Mod+D" = { action = "spawn noctalia msg panel-toggle launcher", repeat = false }
+"Mod+X" = { action = "spawn ~/.config/umbriel/run.sh focus librewolf librewolf", repeat = false }
+"Mod+Shift+C" = { action = "spawn ~/.config/umbriel/run.sh focus com.anthropic.Claude claude-desktop", repeat = false }
+"Mod+Shift+D" = { action = "spawn ~/.config/umbriel/run.sh focus vesktop vesktop", repeat = false }
+"Mod+I" = { action = "spawn ~/.config/umbriel/run.sh focus steam steam", repeat = false }
+"Mod+Shift+E" = { action = "spawn thunar", repeat = false }
+"Mod+U" = { action = "spawn librewolf https://toledo.kuleuven.be/portal/", repeat = false }
+"Mod+Y" = { action = "spawn ytmusic", repeat = false }   # Mod+M is maximize here; ytmusic shows/hides itself
+"Mod+Shift+S" = { action = "spawn noctalia msg screenshot-region", repeat = false }
+"Mod+Shift+X" = { action = "spawn ~/.config/wm/scripts/screenshot.sh ocr", repeat = false }
+"Mod+Shift+R" = { action = "spawn ~/.config/wm/scripts/record.sh", repeat = false }
+"Mod+Shift+V" = { action = "spawn noctalia msg panel-toggle clipboard", repeat = false }
+"Mod+Shift+W" = { action = "spawn noctalia msg panel-toggle wallpaper", repeat = false }
+"Mod+Shift+P" = { action = "spawn ~/.config/wm/scripts/power.sh", repeat = false }   # with rebuild/update
+"Mod+Shift+N" = { action = "spawn networkmanager_dmenu", repeat = false }
+"Mod+Shift+B" = { action = "spawn ~/.config/wm/scripts/bluetooth.sh", repeat = false }
+"Mod+Shift+A" = { action = "spawn ~/.config/wm/scripts/audio_switch.sh", repeat = false }
+"Mod+Shift+T" = { action = "spawn noctalia msg theme-mode-toggle", repeat = false }
+"Mod+Shift+I" = { action = "spawn noctalia msg caffeine-toggle", repeat = false }
+"Mod+N" = { action = "spawn noctalia msg nightlight-toggle", repeat = false }
+"Mod+Shift+H" = { action = "spawn ~/.config/umbriel/run.sh hdr", repeat = false }
+"Mod+Escape" = { action = "spawn noctalia msg session lock", repeat = false }
+"Mod+Shift+M" = "session-quit"
+"Print" = { action = "spawn systemctl sleep", repeat = false }
+"XF86AudioMicMute" = { action = "spawn noctalia msg mic-mute", allow_when_locked = true, repeat = false }
+"Mod+Next" = { action = "spawn noctalia msg brightness-down", allow_when_locked = true }
+"Mod+Prior" = { action = "spawn noctalia msg brightness-up", allow_when_locked = true }
+"Mod+Slash" = { action = "cheatsheet-toggle", repeat = false }

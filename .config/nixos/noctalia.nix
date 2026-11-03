@@ -1,14 +1,14 @@
-# Trying out Noctalia (shell) on Umbriel (its team's compositor), next to sway, with upstream's
-# defaults: nothing here follows the sway look. Pick "Umbriel" in tuigreet (F3), or run
-# `umbriel-nested` inside sway for a window (Mod is Alt there, Super in a real session).
-# Packages: ./noctalia/flake.nix. To drop it all: remove this file from ~/.configuration.nix.
+# The PCs' desktop: Noctalia (shell) on Umbriel (its team's compositor), logged into through
+# Noctalia Greeter. Sway stays as a fallback: pick it in the greeter's session list. Umbriel's
+# config: ~/.config/umbriel/config.toml. `umbriel-nested` runs it in a window inside another
+# session (Mod is Alt there). Packages: ./noctalia/flake.nix.
 { pkgs, ... }:
 
 let
   flake = builtins.getFlake (toString ./noctalia);
 in
 {
-  imports = [ flake.nixosModules.umbriel flake.nixosModules.noctalia ];
+  imports = with flake.nixosModules; [ umbriel noctalia greeter ];
   nixpkgs.overlays = [ flake.overlays.default ];
 
   programs.umbriel = {
@@ -21,18 +21,23 @@ in
     package = pkgs.noctalia;
   };
 
-  # Umbriel's packaged config, plus starting Noctalia (upstream leaves that to the user). In
-  # /etc/xdg, so a ~/.config/umbriel/config.toml (e.g. a copy of the packaged one) takes over
-  environment.etc."xdg/umbriel/config.toml".text = ''
-    [include]
-    files = ["${pkgs.umbriel}/share/umbriel/config.toml"]
+  # The packaged config at a fixed path, for ~/.config/umbriel/config.toml's include
+  # (upstream's module links only share/umbriel/effects)
+  environment.pathsToLink = [ "/share/umbriel" ];
 
-    [general]
-    autostart = ["noctalia"]
-  '';
+  # Looks are its own; Noctalia's Sync copies wallpaper, colours and monitors over
+  services.displayManager.noctalia-greeter = {
+    enable = true;
+    package = pkgs.noctalia-greeter;
+    settings = {
+      session.default = "umbriel";
+      cursor = { theme = "Bibata-Modern-Classic"; size = 20; path = pkgs.bibata-cursors; };   # as in sway.nix
+      keyboard.layout = "us";
+    };
+    passwordless-sync-users = [ "ben" ];   # the appearance-only sync, without a root prompt
+  };
 
   environment.systemPackages = [
-    pkgs.kitty   # Umbriel's default terminal (Mod+Return)
     # Umbriel in a window inside sway, on its own D-Bus session so Noctalia doesn't take
     # notifications or the tray from mako/swaybar. No SWAYSOCK/I3SOCK: scripts started in it
     # would drive the real sway. Bus config by path: dbus-run-session looks in /etc/dbus-1, which

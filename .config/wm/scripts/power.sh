@@ -6,14 +6,22 @@
 # output and type your sudo password. Once the password is in (sudo caches it), the terminal hides
 # itself and comes back only when it needs you: a failure, a firmware prompt, or the end of an update.
 
-# Sway: foot, fuzzel, swaymsg, the window found by app_id. i3: alacritty, rofi, i3-msg, by class
-if [ -n "$SWAYSOCK" ]; then
-    msg=swaymsg crit='app_id="^scratch-power$"' term=(foot --app-id=scratch-power)
+# Sway: foot, fuzzel, swaymsg, the window found by app_id. i3: alacritty, rofi, i3-msg, by class.
+# Umbriel (first: a sway session can leave SWAYSOCK behind): its window id, from app_id
+if [ -n "$UMBRIEL_SOCKET" ]; then
+    term=(foot --app-id=scratch-power)
+    win() { umbriel windows --json | jq -r 'map(select(.app_id == "scratch-power")) | first | .id // empty'; }
+    hide() { umbriel msg window-focus "$(win)" && umbriel msg window-move-to-scratchpad; } >/dev/null
+    show() { umbriel msg window-focus "$(win)" >/dev/null; }
 else
-    msg=i3-msg crit='class="^scratch-power$"' term=(alacritty --class scratch-power -e)
+    if [ -n "$SWAYSOCK" ]; then
+        msg=swaymsg crit='app_id="^scratch-power$"' term=(foot --app-id=scratch-power)
+    else
+        msg=i3-msg crit='class="^scratch-power$"' term=(alacritty --class scratch-power -e)
+    fi
+    hide() { $msg -q "[$crit] move scratchpad"; }
+    show() { $msg -q "[$crit] focus"; }
 fi
-hide() { $msg -q "[$crit] move scratchpad"; }
-show() { $msg -q "[$crit] focus"; }
 
 # Ask for the sudo password up front, then hide and say it started. $1 = name for the notification
 auth() {

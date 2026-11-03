@@ -1,7 +1,7 @@
 #!/bin/sh
 # Region screenshot to the clipboard ($mod+Shift+s), or with `ocr` the text in it ($mod+Shift+x;
 # tesseract: English, French, Dutch). Esc while selecting cancels.
-# Sway: wayfreeze covers the screen with a still image first, so video/animations stand still
+# Sway/Umbriel: wayfreeze covers the screen with a still image first, so video/animations stand still
 # while you select (slurp), then grim. i3 (X11, the tablet): scrot --select, frozen the same way.
 
 # $1 = the screenshot, $2 = ocr for its text instead of the picture
@@ -9,13 +9,13 @@ finish() {
     if [ "$2" = ocr ]; then
         text=$(tesseract "$1" - -l eng+fra+nld 2>/dev/null | tr -d '\f')
         if [ -n "$text" ]; then
-            if [ -n "$SWAYSOCK" ]; then printf '%s' "$text" | wl-copy
+            if [ -n "$SWAYSOCK$UMBRIEL_SOCKET" ]; then printf '%s' "$text" | wl-copy
             else printf '%s' "$text" | xclip -selection clipboard; fi
             notify-send "Text in clipboard" "$(printf '%s' "$text" | head -3 | cut -c1-80)"
         else
             notify-send "No text found"
         fi
-    elif [ -n "$SWAYSOCK" ]; then
+    elif [ -n "$SWAYSOCK$UMBRIEL_SOCKET" ]; then
         wl-copy < "$1" && notify-send "Screenshot in clipboard"
     else
         xclip -selection clipboard -t image/png -i "$1" && notify-send "Screenshot in clipboard"
@@ -35,7 +35,7 @@ if [ "$1" = grab ]; then   # sway: runs under wayfreeze; $2 = ocr for text
     exit 0
 fi
 
-if [ -n "$SWAYSOCK" ]; then
+if [ -n "$SWAYSOCK$UMBRIEL_SOCKET" ]; then
     exec wayfreeze --hide-cursor --after-freeze-cmd "$0 grab $1"
 fi
 

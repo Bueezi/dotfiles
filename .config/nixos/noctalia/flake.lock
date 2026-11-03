@@ -1,5 +1,22 @@
 {
   "nodes": {
+    "greeter": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792405679,
+        "narHash": "sha256-ILFIjvpGFxwt6y9GDESlNcVm2t0Q2Ku108vWiqCsWfM=",
+        "owner": "noctalia-dev",
+        "repo": "noctalia-greeter",
+        "rev": "af0bf4b1e1c40738db917b04c9c0563b4f718953",
+        "type": "github"
+      },
+      "original": {
+        "owner": "noctalia-dev",
+        "ref": "v1.7.0",
+        "repo": "noctalia-greeter",
+        "type": "github"
+      }
+    },
     "noctalia": {
       "flake": false,
       "locked": {
@@ -35,6 +52,7 @@
     },
     "root": {
       "inputs": {
+        "greeter": "greeter",
         "noctalia": "noctalia",
         "portal": "portal",
         "umbriel": "umbriel",

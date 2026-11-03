@@ -1,6 +1,6 @@
 # Dotfiles
 
-My real config (not a template): a bare Git repo `~/.dotfiles` with `$HOME` as work tree. NixOS + a SwayFX desktop on two machines, and a tablet with Termux + i3 that checks out part of it. This file is the map, the rules and the dead ends; how each part works is in that file's own header comments.
+My real config (not a template): a bare Git repo `~/.dotfiles` with `$HOME` as work tree. NixOS + an Umbriel/Noctalia desktop (SwayFX as fallback) on two machines, and a tablet with Termux + i3 that checks out part of it. This file is the map, the rules and the dead ends; how each part works is in that file's own header comments.
 
 | | Desktop | Laptop | Tablet |
 |---|---|---|---|
@@ -35,18 +35,19 @@ NixOS 26.05, channel-based (not a flake system). Per machine: `laptop.nix` / `de
 - `.configuration.nix`: the entry point, only a list of the parts below. Imported by the `/etc/nixos` stub `.config/scripts/configuration.nix` (sets `hostName`, `isLaptop`; on a fresh install it fetches the whole repo from GitHub).
 - `.config/nixos/`, one file per topic:
   - `base.nix`: boot, network, Tailscale, users, Nix, audio, power, nix-ld/AppImage/Flatpak.
-  - `sway.nix`: the session (SwayFX + its tools, greetd/tuigreet starting `sway -c ~/.config/wm/sway`, portals, themes, default apps, fonts).
+  - `noctalia.nix` + `noctalia/` (pinned flake): the desktop. Umbriel (compositor, git) + Noctalia (shell) + Noctalia Greeter (greetd; Umbriel default, Sway in its session list), all built against the system nixpkgs (Umbriel gets its own wlroots 0.20.2). Umbriel's config: `.config/umbriel/config.toml` (includes the packaged one, then only my changes; reloads on save, `umbriel config validate`). Noctalia does wallpaper, notifications, night light, idle/lock, clipboard, battery, polkit: none of the sway tools run there. `umbriel-nested`: Umbriel in a window.
+  - `sway.nix`: the fallback session (SwayFX + its tools, portals, themes, default apps, fonts; greetd itself is enabled here).
   - `packages.nix`: apps and CLI tools. `dev.nix`: editors, language servers, containers, Android, Lean (elan), KU Leuven's LaTeX.
   - `laptop.nix`, `desktop.nix` (drives, RGB, monitor, GPU, LM Studio), `gaming.nix` (Steam, Protons, G920, Assetto Corsa links, `steam-rpc.py` for Discord).
   - Self-contained extras: `librewolf.nix` (bakes in `.config/librewolf/prefs.js` + `policies.json`, the files the tablet links), `swayfx.nix` + `swayfx/` (SwayFX from git, pinned flake, swayfx#557 patch), `plymouth.nix` (boot splash), `hyprquickpaper.nix` (wallpaper picker + slideshow), `webapps.nix` + `webapps/` (YouTube Music as an Electron app, see `webapp.js`; ads blocked by its `block` list and `ytmusic/preload.js`; Discord presence: `ytmusic/discord.js`).
 - `.config/scripts/`: install scripts served by URL (`nix.b3n.me` → the NixOS stub; `termux.sh`; `arch.sh`/`void.sh` kept for future installs).
 - `.local/bin/rb`: rebuild (`nixos-rebuild switch`, `nvd diff`, VSCodium extensions, Lean's default toolchain, Flatpak apps in `.config/flatpak/apps`); `rb -u` upgrades. On the tablet it runs `termux.sh`. Power menu (PCs and tablet): *rebuild* = `cu` then `rb`, *update* = `cu` then `rb -u` and the rest; a failed `cu` doesn't stop them.
 
-**Window manager** (`.config/wm/`)
+**Window manager** (`.config/wm/`: sway on the PCs (fallback), i3 on the tablet)
 - `common.conf`: what sway and the tablet's i3 share; only syntax both accept (plain `bindsym`, `split h`, `60 px`).
 - `sway`: the sway-only rest (SwayFX, outputs, rules, keys, bar). `i3`: the tablet's (started with `-c` by `desktop`). `i3status-rs.toml`: both bars.
 - `scripts/`: each header says what it does; `$mod+/` lists all keys. Scripts bound in `common.conf` branch on `$SWAYSOCK` (foot/fuzzel/wl-copy/wtype vs alacritty/rofi/xclip/xdotool).
-- `.config/sway/config` and `.config/i3/config` are leftover links to these: delete them once both PCs log in through the new greetd command (after a rebuild) and the tablet has restarted `desktop`.
+- `.config/sway/config` is a link to `wm/sway`: keep it, the greeter's Sway entry runs plain `sway`. `.config/i3/config` is a leftover link: delete it once the tablet has restarted `desktop`.
 
 **Tablet** (`.config/termux/`, `.config/scripts/termux.sh`)
 - `termux.sh`: setup and "rebuild" (`rb`, `rb -u`); its package lists are the source of truth like the Nix files. Install: `curl -L https://raw.githubusercontent.com/Bueezi/dotfiles/main/.config/scripts/termux.sh | bash`.
@@ -64,13 +65,14 @@ NixOS 26.05, channel-based (not a flake system). Per machine: `laptop.nix` / `de
 ## Gotchas (don't re-investigate)
 
 **PCs**
+- **Umbriel's cursor** must match dconf's (`sway.nix` `cursorTheme`/`cursorSize`, set in `[input.cursor]`): its default is 24 and apps then draw a different one. After a sway session, `SWAYSOCK` can linger in the systemd user environment, so under Umbriel scripts that branch on it think they're in sway. Umbriel/Noctalia are young: config keys can change on `nix flake update`.
 - **Don't add `output * bg`:** swaybg restarts on every reload and covers awww.
-- **No HDR:** scenefx disables colour transforms. **swaybar has no dbusmenu** (Steam's tray menu can't work; Electron menus go through `tray-menu.sh`). **LibreWolf** quits with its last window.
+- **No HDR in sway:** scenefx disables colour transforms (Umbriel has it). **swaybar has no dbusmenu** (Steam's tray menu can't work; Electron menus go through `tray-menu.sh`). **LibreWolf** quits with its last window.
 - `~/.local/bin` is in the sway session's PATH (`environment.localBinInPath`, from `/etc/profile`, which greetd sources): scripts call `rb`/`cu` by name.
 - Tried and disliked: dimming unfocused windows, Qt's `gtk3` platform theme (old greys), foot `include=` of a state file (errors when missing), `GTK_THEME` (pins one theme), zathura (Evince everywhere).
 - `~/.config/xdg-desktop-portal-wlr/config` is ignored: the picker is set in Nix (`xdg.portal.wlr.settings`).
 - Tailscale needs `services.resolved`, or it takes over all DNS.
-- **rb speed:** whatever isn't on cache.nixos.org gets built on every nixpkgs update. Avoid overrides of big packages (`papirusGrey` links instead of rebuilding Papirus). Already avoided: Flatpak's `fonts.fontDir` (rebuilt Xwayland), fish's generated completions, the man page index, the NixOS manual. Outside fetches are pinned (rev + hash), except Claude Desktop's flake (latest on purpose). Still built locally: SwayFX/scenefx, the TeX Live set, unfree repackaging (Steam, Claude, LM Studio).
+- **rb speed:** whatever isn't on cache.nixos.org gets built on every nixpkgs update. Avoid overrides of big packages (`papirusGrey` links instead of rebuilding Papirus). Already avoided: Flatpak's `fonts.fontDir` (rebuilt Xwayland), fish's generated completions, the man page index, the NixOS manual. Outside fetches are pinned (rev + hash), except Claude Desktop's flake (latest on purpose). Still built locally: Umbriel/Noctalia/its greeter (and Umbriel's wlroots), SwayFX/scenefx, the TeX Live set, unfree repackaging (Steam, Claude, LM Studio).
 - YouTube Music keeps Electron's own user agent: Google then serves its embedded-browser sign-in (`WebLiteSignIn`); a Chrome one gets the full flow, which rejects Electron as "may not be secure".
 - Steam games run in a sandbox with a private `/tmp`: nothing outside can talk to a running Wine app.
 - Discord (Vesktop's arRPC) detects games by process name from Discord's list, which often has only the Windows `.exe`: native Linux games get it from `steam-rpc.py` (Steam's log + arRPC's IPC socket).
