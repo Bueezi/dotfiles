@@ -1,0 +1,49 @@
+# Noctalia (the shell on Umbriel), both machines. Only what differs from its defaults.
+# Settings and IPC (`noctalia msg config-set`) write to ~/.local/state/noctalia/settings.toml, which
+# wins over this file: move a change worth keeping here, then drop it there. Reference:
+# https://docs.noctalia.dev/noctalia/configuration/
+
+# Like sway's swayidle (~/.config/wm/scripts/idle.sh): lock at 3 min (moving within the 5 s fade
+# cancels it), screens off at 3m10s, or 2 min after a manual lock. Sleep at 15 min (desktop) / 5 min
+# (laptop), held off while audio plays: `idle.sh nap` waits for silence, and its PID file lets
+# activity cancel it. Before any sleep Noctalia locks (lock_before_suspend)
+[idle]
+behavior_order = ["lock", "screen-off", "lock-and-suspend"]
+pre_action_fade_seconds = 5
+
+[idle.behavior.lock]
+action = "lock"
+enabled = true
+timeout = 180
+
+[idle.behavior.screen-off]
+action = "screen_off"
+enabled = true
+timeout = 190
+locked_timeout = 120
+
+[idle.behavior.lock-and-suspend]
+action = "command"
+command = "~/.config/wm/scripts/idle.sh nap noctalia"
+resume_command = "f=$XDG_RUNTIME_DIR/idle-nap.pid; test -f $f && kill $(cat $f); rm -f $f"
+enabled = true
+timeout = 300
+
+# The lock screen's fade (default much slower)
+[lockscreen]
+transition_duration = 400
+
+# The audio border effect (Umbriel's Mod+Ctrl+E) follows the music through this
+[shell]
+umbriel_audio_provider_enabled = true
+
+[theme]
+source = "wallpaper"
+
+# The wallpaper folder. The slideshow (Umbriel's Mod+Shift+O, ~/.config/umbriel/run.sh)
+# turns automation on and off in settings.toml; the current wallpaper is there too
+[wallpaper]
+directory = "/home/ben/Documents/sync/wp/active/wallpapers_upscaled"
+
+[wallpaper.automation]
+interval_seconds = 300

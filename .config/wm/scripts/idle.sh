@@ -6,9 +6,12 @@
 # in those 5s dismisses it without the password. Manual and sleep locks don't.
 # Playing audio holds off the sleep (not the lock or screen off): `idle.sh nap` waits
 # until no speaker is in use, and the resume cancels it through its PID file.
+# Umbriel: Noctalia's idle does the same (~/.config/noctalia/config.toml). Its config is shared by
+# both machines, so it runs `idle.sh nap noctalia` at the laptop's 5 min and the desktop waits 10 more.
 pidfile="$XDG_RUNTIME_DIR/idle-nap.pid"
 if [ "$1" = nap ]; then
     echo $$ >"$pidfile"
+    if [ "$2" = noctalia ] && [ ! -d /sys/class/power_supply/BAT0 ]; then sleep 600; fi
     while pw-dump | jq -e 'any(.[]; .info.props["media.class"]? == "Audio/Sink" and .info.state? == "running")' >/dev/null; do
         sleep 10
     done

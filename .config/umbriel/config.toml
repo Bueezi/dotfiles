@@ -5,7 +5,15 @@
 # none of the sway tools are started here.
 
 [include]
-files = ["/run/current-system/sw/share/umbriel/config.toml"]   # linked by ~/.config/nixos/noctalia.nix
+files = [
+  "/run/current-system/sw/share/umbriel/config.toml",   # linked by ~/.config/nixos/noctalia.nix
+  # Bundled effect shaders, used under [effects] and [animation] below
+  "/run/current-system/sw/share/umbriel/effects/animation/reveal/effect.toml",
+  "/run/current-system/sw/share/umbriel/effects/animation/squash/effect.toml",
+  "/run/current-system/sw/share/umbriel/effects/animation/workspace_wipe/effect.toml",
+  "/run/current-system/sw/share/umbriel/effects/border/pulse/effect.toml",
+  "/run/current-system/sw/share/umbriel/effects/border/audio/effect.toml",
+]
 
 [include.optional]
 files = ["~/.local/state/umbriel/hdr.toml"]   # DP-2's hdr, written by run.sh hdr (Mod+Shift+H)
@@ -53,10 +61,59 @@ sensitivity = 0.0
 [layout.scrolling]
 default_extent_fraction = 1.0
 
-# Mod+Shift+Return's terminal, and the power menu's (~/.config/wm/scripts/power.sh)
+# Eye candy on top of the default animations. Border: pulse, or audio (follows the music through
+# Noctalia's audio provider); Mod+Ctrl+E cycles them. No cursor effect: tried, disliked
+[effects.pool.borders]
+kind = "border"
+choose = ["pulse", "audio"]
+selection = "round_robin"
+
+[effects]
+border = "pulse"
+
+[animation.windows_in]
+effect = "reveal"
+duration_ms = 300
+curve = "easeout"
+
+[animation.windows_out]
+effect = "reveal"
+duration_ms = 250
+curve = "easeout"
+
+[animation.windows_move]
+effect = "squash"
+
+[animation.workspaces]
+style = "reveal"
+effect = "workspace_wipe"
+duration_ms = 300
+curve = "easeout"
+
+# Noctalia's panels, launcher and notifications animate in and out
+[animation.layers]
+enabled = true
+
+# Dragged windows wobble like a sheet and settle
+[animation.windows_drag]
+physics = true
+
+# The power menu's terminal (~/.config/wm/scripts/power.sh)
 [[window_rule]]
-match.app_id = "^scratch-(float|power)$"
+match.app_id = "^scratch-power$"
 default_floating = true
+
+# Mod+Shift+Return's terminal: a half-width column beside the current window
+[[window_rule]]
+match.app_id = "^foot-side$"
+default_scrolling_extent = 0.5
+
+# Floating windows blur what's really behind them. The packaged rule blurs a cached copy of the
+# wallpaper (cheap, right for tiled windows: they only sit on the wallpaper), so floating ones
+# showed the wallpaper instead of the windows under them
+[[window_rule]]
+match.is_floating = true
+blur_optimized = false
 
 # Yazi: floating, like Thunar was in sway
 [[window_rule]]
@@ -64,20 +121,32 @@ match.app_id = "^yazi$"
 default_floating = true
 default_floating_size_px = { width = 1400, height = 850 }
 
+# Terminals at 3/4 width (centred when alone)
+[[window_rule]]
+match.app_id = "^foot$"
+default_scrolling_extent = 0.90
+
+# Games in gamescope (CS2, 4:3 stretched) keep running on a hidden workspace: suspended, gamescope
+# stalled and CS2 played only its music, no game sounds
+[[window_rule]]
+match.app_id = "gamescope"
+background_render = true
+
 # Half-width columns for the apps that floated in sway
 [[window_rule]]
 match.app_id = ["^ytmusic$", "^vesktop$", "^steam$"]
 default_scrolling_extent = 0.5
 
-# Added to the packaged binds, mostly as in sway; menus are Noctalia's (no fuzzel here). Replaced packaged ones: Mod+Escape (quit, now
-# Mod+Shift+M), Mod+Shift+R (width cycle back). Kept Umbriel's: Mod+T (float), Mod+P (pin),
+# Added to the packaged binds, mostly as in sway; menus are Noctalia's (no fuzzel here). Replaced
+# packaged ones: Mod+Escape (quit, now Mod+Shift+M), Mod+Shift+R (width cycle back). Kept Umbriel's: Mod+T (float), Mod+P (pin),
 # Mod+M (maximize), Mod+O (overview)
 [keybinds]
 "Mod+Return" = { action = "spawn foot", repeat = false }
-"Mod+Shift+Return" = { action = "spawn foot --app-id=scratch-float", repeat = false }
+"Mod+Shift+Return" = { action = "spawn foot --app-id=foot-side", repeat = false }
 "Mod+D" = { action = "spawn noctalia msg panel-toggle launcher", repeat = false }
 "Mod+X" = { action = "spawn ~/.config/umbriel/run.sh focus librewolf librewolf", repeat = false }
-"Mod+Shift+C" = { action = "spawn ~/.config/umbriel/run.sh focus com.anthropic.Claude claude-desktop", repeat = false }
+"Mod+C" = { action = "spawn ~/.config/umbriel/run.sh focus com.anthropic.Claude claude-desktop", repeat = false }
+"Mod+Z" = { action = "spawn ~/.config/umbriel/run.sh game", repeat = false }
 "Mod+Shift+D" = { action = "spawn ~/.config/umbriel/run.sh focus vesktop vesktop", repeat = false }
 "Mod+I" = { action = "spawn ~/.config/umbriel/run.sh focus steam steam", repeat = false }
 "Mod+Shift+E" = { action = "spawn foot --app-id=yazi yazi", repeat = false }
@@ -105,3 +174,4 @@ default_scrolling_extent = 0.5
 "Mod+Next" = { action = "spawn noctalia msg brightness-down", allow_when_locked = true }
 "Mod+Prior" = { action = "spawn noctalia msg brightness-up", allow_when_locked = true }
 "Mod+Slash" = { action = "cheatsheet-toggle", repeat = false }
+"Mod+Ctrl+E" = { action = "effect-border-cycle borders", repeat = false }

@@ -1,0 +1,6 @@
+# Yazi (Umbriel's Mod+Shift+E). Only what differs from its defaults.
+# Text files in Helix, in the same terminal: $EDITOR is NixOS's default, nano
+[opener]
+edit = [
+	{ run = "hx %s", desc = "Helix", for = "unix", block = true },
+]
