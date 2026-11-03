@@ -11,20 +11,13 @@
     "title",
     "separator",
     { "type": "os",       "key": "OS" },
-    { "type": "host",     "key": "Host" },
     // Kernel without Android's long suffix on the tablet ("6.6.50-android15-8-g…-4k": 6.6.50)
     { "type": "command",  "key": "Kernel", "text": "uname -sr | sed 's/-android.*//'" },
     { "type": "uptime",   "key": "Uptime" },
     { "type": "packages", "key": "Packages" },
-    { "type": "shell",    "key": "Shell" },
-    { "type": "display",  "key": "Resolution", "format": "{width}x{height}" },
-    { "type": "wm",       "key": "WM", "format": "SwayFX ({protocol-name})" },
-    { "type": "theme",    "key": "Theme" },
-    { "type": "icons",    "key": "Icons" },
-    { "type": "terminal", "key": "Terminal" },
+    { "type": "wm",       "key": "WM" },
     { "type": "cpu",      "key": "CPU" },
     { "type": "gpu",      "key": "GPU" },
-    { "type": "memory",   "key": "Memory", "format": "{used} / {total}" },
-    { "type": "disk",     "key": "Disk ({mountpoint})", "format": "{size-used} / {size-total}" }
+    { "type": "memory",   "key": "Memory", "format": "{used} / {total}" }
   ]
 }

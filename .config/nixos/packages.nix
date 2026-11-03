@@ -1,5 +1,5 @@
 # Apps and command-line tools on both machines. Development: dev.nix; one machine only: desktop.nix,
-# gaming.nix; the session's own tools: sway.nix
+# gaming.nix; the desktop's own tools: session.nix, noctalia.nix
 { pkgs, ... }:
 
 {
@@ -15,7 +15,7 @@
     # Apps
     librewolf ungoogled-chromium mpv vesktop qbittorrent
     libreoffice bazaar gearlever
-    yazi   # terminal file manager, with its preview tools (Umbriel: Mod+Shift+E); Thunar in sway.nix
+    yazi   # terminal file manager, with its preview tools (Umbriel: Mod+E, Mod+Shift+E); Thunar in session.nix
     # Claude Desktop (community build; updates to the latest version on rebuild)
     (builtins.getFlake "github:aaddrick/claude-desktop-debian").packages.${stdenv.hostPlatform.system}.default
     # fetch by areofyl: spinning 3D distro logo + system info (not in 26.05 yet; built with the

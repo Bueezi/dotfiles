@@ -6,17 +6,15 @@
 {
   imports = [
     ./.config/nixos/base.nix      # boot, network, users, Nix, audio, power
-    ./.config/nixos/sway.nix      # the session: SwayFX, login, portals, themes, default apps, fonts
+    ./.config/nixos/session.nix   # login keyring, portals, themes, default apps, fonts, file manager
     ./.config/nixos/packages.nix  # apps and command-line tools
     ./.config/nixos/dev.nix       # editors, language servers, containers, Android, Lean, LaTeX
     ./.config/nixos/laptop.nix
     ./.config/nixos/desktop.nix
     ./.config/nixos/gaming.nix
     ./.config/nixos/librewolf.nix       # LibreWolf with ~/.config/librewolf's prefs and policies
-    ./.config/nixos/swayfx.nix          # latest SwayFX from git
     ./.config/nixos/plymouth.nix        # boot splash (penguin video)
     ./.config/nixos/webapps.nix         # YouTube Music as a desktop app
-    ./.config/nixos/hyprquickpaper.nix  # wallpaper picker ($mod+Shift+w), slideshow
-    ./.config/nixos/noctalia.nix        # the desktop: Noctalia on Umbriel, Noctalia Greeter (sway: fallback)
+    ./.config/nixos/noctalia.nix        # the desktop: Noctalia on Umbriel, Noctalia Greeter
   ];
 }

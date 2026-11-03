@@ -4,7 +4,7 @@
 
 {
   environment.systemPackages = with pkgs; [
-    # Helix opens in foot from file managers (text/* defaults in sway.nix)
+    # Helix opens in foot from file managers (text/* defaults in session.nix)
     (makeDesktopItem {
       name = "helix"; desktopName = "Helix"; exec = "foot hx %F";
       mimeTypes = [ "text/plain" ]; categories = [ "Development" "TextEditor" ];

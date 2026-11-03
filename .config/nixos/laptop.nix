@@ -16,7 +16,7 @@
       options rtw89_pci disable_aspm_l1=y disable_aspm_l1ss=y disable_clkreq=y
     '';
 
-    hardware.bluetooth.powerOnBoot = false;   # radio off until you need it (bluetooth.sh)
+    hardware.bluetooth.powerOnBoot = false;   # radio off until you need it (Noctalia's Bluetooth panel)
 
     services.logind.settings.Login.HandleLidSwitch = "suspend-then-hibernate";
     # How long to sleep before switching to hibernate

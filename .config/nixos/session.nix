@@ -1,25 +1,15 @@
-# The desktop session: SwayFX and its tools, login, screen sharing, themes, default apps, fonts.
-# Sway's own config is ~/.config/wm/sway
+# What the desktop (Umbriel + Noctalia, noctalia.nix) runs on: login keyring, portals, themes,
+# default apps, fonts, the file manager, and the tools ~/.config/wm/scripts call
 { config, lib, pkgs, ... }:
 
 let
-  # Cursor and icon themes for sway (XCURSOR_*), GTK and dconf below. To revert: "Adwaita" for both
-  # (and `seat * xcursor_theme` in the sway config)
+  # Cursor and icon themes for XCURSOR_*, GTK and dconf below; Umbriel's [input.cursor] (written
+  # below) and the greeter (noctalia.nix) use the same. To revert: "Adwaita" for both
   cursorTheme = "Bibata-Modern-Classic";
-  cursorSize = 20;   # also in `seat * xcursor_theme` in the sway config
-  # Dark is the default; darkmode.sh ($mod+Shift+t) switches to adw-gtk3 / Papirus and back
+  cursorSize = 20;   # also in ~/.config/gtk-3.0/settings.ini (X11 apps' fallback)
+  # Dark is the default
   iconTheme = "Papirus-Dark";   # grey folders instead of blue (papirusGrey below)
   gtkTheme = "Mono-dark";   # adw-gtk3-dark in black: ~/.local/share/themes/Mono-dark (a real file)
-
-  # swaylock-effects only starts redrawing on its first clock tick (~1s after locking), so the
-  # fade-in sits on the unblurred screenshot until then. Start redrawing once the lock surface
-  # is configured, so the fade begins immediately.
-  swaylockFx = pkgs.swaylock-effects.overrideAttrs (old: {
-    postPatch = (old.postPatch or "") + ''
-      sed -i '/ext_session_lock_surface_v1_ack_configure(lock_surface, serial);/{n;n;s/$/\n\tdamage_surface(surface);/}' main.c
-      grep -A3 'ext_session_lock_surface_v1_ack_configure(lock_surface, serial);' main.c | grep -q damage_surface
-    '';
-  });
 
   # Papirus with grey folders, like papirus-folders (papirus-icon-theme.override { color = "grey"; })
   # but in seconds: that rebuilt the whole theme (~80k icons) on every machine at every nixpkgs
@@ -47,36 +37,36 @@ let
   '';
 in
 {
-  # ── Sway ────────────────────────────────────────────
-  programs.sway = {
-    enable = true;
-    package = pkgs.swayfx; # latest git via swayfx.nix (no HDR: scenefx renderer)
-    wrapperFeatures.gtk = true;
-    extraSessionCommands = ''
-      export QT_QPA_PLATFORM="wayland;xcb"
-      # Proton's native Wayland: per game (launch option `PROTON_ENABLE_WAYLAND=1 %command%`), not for
-      # all of them. No PROTON_ENABLE_HDR: swayfx has no HDR output
-    '';
-    extraPackages = with pkgs; [
-      # session
-      swaylockFx swayidle awww wdisplays wlsunset lxqt.lxqt-policykit
-      # terminal, launcher, bar, notifications
-      foot fuzzel i3status-rust mako libnotify swayr bzmenu
-      # clipboard picker (fzf + sixel image preview) and auto-paste
-      fzf chafa wtype
-      # screenshots, recording, clipboard
-      grim slurp wayfreeze wf-recorder cliphist
-      # OCR ($mod+Shift+x, screenshot.sh ocr): only these languages, all of them is huge
-      (tesseract.override { enableLanguages = [ "eng" "fra" "nld" ]; })
-      # hardware controls, media keys (osd.sh)
-      brightnessctl playerctl pavucontrol
-      networkmanager_dmenu networkmanagerapplet
-      # GUI utilities
-      file-roller baobab eog evince adwaita-icon-theme
-      bibata-cursors papirusGrey
-      adw-gtk3   # Mono-dark (~/.local/share/themes) imports its dark variant
-    ];
-  };
+  environment.systemPackages = with pkgs; [
+    foot libnotify
+    # Mod+Shift+X (screenshot.sh ocr): wayfreeze stills the screen, slurp + grim grab, tesseract
+    # reads it (only these languages, all of them is huge). Mod+Shift+R: wf-recorder (record.sh)
+    grim slurp wayfreeze wf-recorder
+    (tesseract.override { enableLanguages = [ "eng" "fra" "nld" ]; })
+    # GUI utilities (nm-connection-editor: VPNs and what Noctalia's network panel doesn't show)
+    pavucontrol networkmanagerapplet file-roller baobab eog evince adwaita-icon-theme
+    bibata-cursors papirusGrey
+    # Umbriel's cursor, included by ~/.config/umbriel/config.toml: its default (24) differs from
+    # what apps draw
+    (writeTextDir "share/umbriel/cursor.toml" ''
+      [input.cursor]
+      theme = "${cursorTheme}"
+      size = ${toString cursorSize}
+    '')
+    adw-gtk3   # Mono-dark (~/.local/share/themes) imports its dark variant
+    # The same default-apps list in share/applications, read through XDG_DATA_DIRS: sandboxes with
+    # their own /etc (Claude Desktop's bwrap) never see /etc/xdg and opened links in Chromium
+    (runCommand "mimeapps" { } ''
+      install -Dm644 ${config.environment.etc."xdg/mimeapps.list".source} $out/share/applications/mimeapps.list
+    '')
+  ];
+
+  # Not nm-applet (networkmanagerapplet's autostart): Noctalia has the network panel, its tray and the
+  # Wi-Fi/802.1X password prompts. /etc/xdg comes first in XDG_CONFIG_DIRS, so Hidden here wins
+  environment.etc."xdg/autostart/nm-applet.desktop".text = ''
+    [Desktop Entry]
+    Hidden=true
+  '';
 
   environment.sessionVariables = {
     XCURSOR_THEME = cursorTheme;
@@ -84,30 +74,17 @@ in
     NIXOS_OZONE_WL = "1";    # Electron/Chromium on Wayland
   };
 
-  # ── Login ───────────────────────────────────────────
-  # greetd with Noctalia Greeter (noctalia.nix); sway is in its session list
-  services.greetd.enable = true;
-
-  # Keyring unlocked at login via PAM
+  # Keyring unlocked at login via PAM (greetd: Noctalia Greeter, noctalia.nix)
   services.gnome.gnome-keyring.enable = true;
   security.pam.services.greetd.enableGnomeKeyring = true;
-  # swaylock: no ~2s pause after a wrong password (pam_unix's default). swaylock ignores keys
-  # while it checks, so you had to wait before retyping; now a wrong one is rejected at once
-  security.pam.services.swaylock.nodelay = true;
   security.polkit.enable = true;
 
-  # Screen sharing, file pickers, Flatpak integration
+  # File pickers and Flatpak integration next to Umbriel's own portal (screen sharing), which
+  # noctalia.nix's Umbriel module adds
   xdg.portal = {
     enable = true;
-    wlr.enable = true;
-    # Screen-share picker (screens + windows). Full path: the portal service's PATH doesn't
-    # include the sway packages, and NixOS ignores ~/.config/xdg-desktop-portal-wlr/config.
-    wlr.settings.screencast = {
-      chooser_type = "dmenu";
-      chooser_cmd = "${lib.getExe pkgs.fuzzel} --dmenu --prompt 'share ❯ '";
-    };
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
-    config.common.default = [ "wlr" "gtk" ];
+    config.common.default = [ "gtk" ];
   };
 
   # ── Themes ──────────────────────────────────────────
@@ -151,15 +128,8 @@ in
       // each "mpv.desktop" [ "video/mp4" "video/x-matroska" "video/webm" "video/quicktime" "video/x-msvideo"
                              "audio/mpeg" "audio/x-wav" "audio/flac" "audio/ogg" ]
       // each "helix.desktop" [ "text/plain" "text/x-c" "text/x-c++" "text/x-java" "text/x-python" "application/x-shellscript" ];
-  # The same list in share/applications, read through XDG_DATA_DIRS: sandboxes with their own /etc
-  # (Claude Desktop's bwrap) never see /etc/xdg and opened links in Chromium
-  environment.systemPackages = [
-    (pkgs.runCommand "mimeapps" { } ''
-      install -Dm644 ${config.environment.etc."xdg/mimeapps.list".source} $out/share/applications/mimeapps.list
-    '')
-  ];
 
-  # File manager + thumbnails, mounting, trash
+  # File manager + thumbnails, mounting, trash (yazi: packages.nix)
   programs.thunar = {
     enable = true;
     plugins = [ pkgs.thunar-archive-plugin ];

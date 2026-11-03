@@ -1,5 +1,5 @@
 # Noctalia and its greeter (latest releases) + Umbriel (git, no releases yet) built against the
-# system's nixpkgs, like ../swayfx. Versions are pinned in flake.lock; update with:
+# system's nixpkgs. Versions are pinned in flake.lock; update with:
 #   nix flake update --flake ~/.config/nixos/noctalia && rb
 # (bump the noctalia/greeter tags below for a new release)
 {
@@ -10,7 +10,7 @@
     # nixpkgs 26.05 has 1.3.1; syncing the look from Noctalia needs 1.5+
     greeter  = { url = "github:noctalia-dev/noctalia-greeter/v1.7.0";     flake = false; };
     # Umbriel needs wlroots >= 0.20.1, nixpkgs 26.05 has 0.20.0. Only Umbriel gets this one:
-    # an overlay of wlroots_0_20 would rebuild SwayFX too
+    # an overlay of wlroots_0_20 would rebuild everything else built on it
     wlroots  = { url = "gitlab:wlroots/wlroots/0.20.2?host=gitlab.freedesktop.org"; flake = false; };
   };
 

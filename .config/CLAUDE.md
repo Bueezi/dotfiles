@@ -1,12 +1,12 @@
 # Dotfiles
 
-My real config (not a template): a bare Git repo `~/.dotfiles` with `$HOME` as work tree. NixOS + an Umbriel/Noctalia desktop (SwayFX as fallback) on two machines, and a tablet with Termux + i3 that checks out part of it. This file is the map, the rules and the dead ends; how each part works is in that file's own header comments.
+My real config (not a template): a bare Git repo `~/.dotfiles` with `$HOME` as work tree. NixOS + an Umbriel/Noctalia desktop on two machines, and a tablet with Termux + i3 that checks out part of it. **The tablet is on hold** (not used for a while): leave its files (`.config/termux/`, `termux.sh`, `wm/i3`, `wm/common.conf`, the i3 halves of `wm/scripts`) as they are, don't develop them further. This file is the map, the rules and the dead ends; how each part works is in that file's own header comments.
 
 | | Desktop | Laptop | Tablet |
 |---|---|---|---|
 | Hardware | Ryzen 5 7500F, RX 9070 XT, `DP-2` 2560x1440@180 | Ryzen 7430U, `eDP-1` scale 1.35 | Honor MagicPad 4 (Snapdragon, Adreno) |
 | System | NixOS, `isLaptop = false` | NixOS, `isLaptop = true` | Android: Termux + Termux:X11, i3 (X11), `termux.sh` |
-| Scripts | no `/sys/class/power_supply/BAT0` | `BAT0` exists | `$TERMUX_VERSION` set; i3 = `$SWAYSOCK` unset |
+| Scripts | no `/sys/class/power_supply/BAT0` | `BAT0` exists | `$TERMUX_VERSION` set; i3 = `$UMBRIEL_SOCKET` unset |
 
 NixOS 26.05, channel-based (not a flake system). Per machine: `laptop.nix` / `desktop.nix` / `gaming.nix` in Nix (each one `lib.mkIf` on `isLaptop`), the `BAT0` test in scripts.
 
@@ -16,8 +16,8 @@ NixOS 26.05, channel-based (not a flake system). Per machine: `laptop.nix` / `de
 - **Nothing in the root of `~`.** New files go under `~/.config/`. Only exceptions, because programs look nowhere else: `~/.local/share/themes/` (GTK themes) and `~/.local/bin/` (my commands, like `cu`). (`~/.configuration.nix` is the old entry point the `/etc/nixos` stubs import: it stays.)
 - **No sudo here** (no-new-privileges). For `nixos-rebuild`, tell me to rebuild (power menu → *rebuild*).
 - **Check before handing over:**
-  - sway: `sway -C -c ~/.config/wm/sway`, then `swaymsg reload`.
-  - i3 (shared syntax): `i3 -C` misses bind commands, so test them in an Xvfb i3 with its own `ipc-socket`, after `unset I3SOCK SWAYSOCK` (sway exports I3SOCK: `i3-msg` would hit the real session). Fake `HOME`/`XDG_CONFIG_HOME` set *before* `dbus-run-session` (else the test bus's dconf-service writes the real dconf), stand-ins for notify-send, clean up by PID only (a `pkill -f clipstore` also kills the real `wl-paste --watch …/clipstore.sh`).
+  - Umbriel: `umbriel config validate` (it reloads on save, so a broken file hits the running session).
+  - i3 (tablet, on hold): `i3 -C` misses bind commands, so test them in an Xvfb i3 with its own `ipc-socket`. Fake `HOME`/`XDG_CONFIG_HOME` set *before* `dbus-run-session` (else the test bus's dconf-service writes the real dconf), stand-ins for notify-send, clean up by PID only.
   - Scripts: `sh -n` / `bash -n`.
   - NixOS: a throwaway config in a scratch dir (never `~`), for both `isLaptop` values, then `nix-instantiate '<nixpkgs/nixos>' -A system -I nixos-config=<file>`. Boot-level changes: `nix-build '<nixpkgs/nixos>' -A vm`.
     ```nix
@@ -25,8 +25,8 @@ NixOS 26.05, channel-based (not a flake system). Per machine: `laptop.nix` / `de
                fileSystems."/" = { device = "/dev/null"; fsType = "ext4"; }; }
     ```
     A pure reorganisation can be proven: the system `.drv` must stay the same (sort order-sensitive lists like `systemPackages` first, or compare them as sets).
-  - Looks: screenshot in a headless sway (`WLR_BACKENDS=headless`, own `dbus-run-session`, `GSETTINGS_BACKEND=keyfile`, own `XDG_CONFIG_HOME`).
-- **Style:** black and white everywhere I draw (bar, mako, OSD, fuzzel, prompt); only the distro logos in fastfetch/fetch keep their colours. Apps (GTK, Qt, LibreWolf) keep Adwaita's blue accent: a black accent was tried and disliked. Match the surrounding code and its short *why* comments; how something got this way belongs in git history, not in comments. Small changes, not many new files.
+  - Looks: `umbriel-nested` (Umbriel in a window, own D-Bus session).
+- **Style:** black and white everywhere I draw (prompt, terminal, the tablet's bar and menus; Noctalia themes itself from the wallpaper); only the distro logos in fastfetch/fetch keep their colours. Apps (GTK, Qt, LibreWolf) keep Adwaita's blue accent: a black accent was tried and disliked. Match the surrounding code and its short *why* comments; how something got this way belongs in git history, not in comments. Small changes, not many new files.
 - **Nerd Font glyphs** (private-use, e.g. U+E0B6, U+F0176) get dropped silently by some edit tools: check with a codepoint dump.
 
 ## Map
@@ -35,44 +35,40 @@ NixOS 26.05, channel-based (not a flake system). Per machine: `laptop.nix` / `de
 - `.configuration.nix`: the entry point, only a list of the parts below. Imported by the `/etc/nixos` stub `.config/scripts/configuration.nix` (sets `hostName`, `isLaptop`; on a fresh install it fetches the whole repo from GitHub).
 - `.config/nixos/`, one file per topic:
   - `base.nix`: boot, network, Tailscale, users, Nix, audio, power, nix-ld/AppImage/Flatpak.
-  - `noctalia.nix` + `noctalia/` (pinned flake): the desktop. Umbriel (compositor, git) + Noctalia (shell) + Noctalia Greeter (greetd; Umbriel default, Sway in its session list), all built against the system nixpkgs (Umbriel gets its own wlroots 0.20.2). Umbriel's config: `.config/umbriel/config.toml` (includes the packaged one, then only my changes; reloads on save, `umbriel config validate`). Noctalia does wallpaper, notifications, night light, idle/lock, clipboard, battery, polkit: none of the sway tools run there. Noctalia's config: `.config/noctalia/config.toml` (shared by both machines: no per-machine includes, a missing include is fatal); Settings/IPC write `~/.local/state/noctalia/settings.toml` (untracked, wins over it), so move changes worth keeping into config.toml. `umbriel-nested`: Umbriel in a window.
-  - `sway.nix`: the fallback session (SwayFX + its tools, portals, themes, default apps, fonts; greetd itself is enabled here).
+  - `noctalia.nix` + `noctalia/` (pinned flake): the desktop. Umbriel (compositor, git) + Noctalia (shell) + Noctalia Greeter (greetd), all built against the system nixpkgs (Umbriel gets its own wlroots 0.20.2). Umbriel's config: `.config/umbriel/config.toml` (includes the packaged one, then only my changes; reloads on save, `umbriel config validate`); its keybind helpers: `.config/umbriel/run.sh`. Noctalia does wallpaper, notifications, night light, idle/lock, clipboard, battery, brightness (ddcutil on the desktop), network/Bluetooth/audio panels, polkit. Noctalia's config: `.config/noctalia/config.toml` (shared by both machines: no per-machine includes, a missing include is fatal); Settings/IPC write `~/.local/state/noctalia/settings.toml` (untracked, wins over it), so move changes worth keeping into config.toml. `umbriel-nested`: Umbriel in a window.
+  - `session.nix`: what the desktop runs on: keyring, portals (GTK next to Umbriel's), themes, cursor (the greeter reads it from here), default apps, fonts, Thunar, the tools `wm/scripts` call.
   - `packages.nix`: apps and CLI tools. `dev.nix`: editors, language servers, containers, Android, Lean (elan), KU Leuven's LaTeX.
   - `laptop.nix`, `desktop.nix` (drives, RGB, monitor, GPU, LM Studio), `gaming.nix` (Steam, Protons, G920, Assetto Corsa links, `steam-rpc.py` for Discord).
-  - Self-contained extras: `librewolf.nix` (bakes in `.config/librewolf/prefs.js` + `policies.json`, the files the tablet links), `swayfx.nix` + `swayfx/` (SwayFX from git, pinned flake, swayfx#557 patch), `plymouth.nix` (boot splash), `hyprquickpaper.nix` (wallpaper picker + slideshow), `webapps.nix` + `webapps/` (YouTube Music as an Electron app, see `webapp.js`; ads blocked by its `block` list and `ytmusic/preload.js`; Discord presence: `ytmusic/discord.js`).
+  - Self-contained extras: `librewolf.nix` (bakes in `.config/librewolf/prefs.js` + `policies.json`, the files the tablet links), `plymouth.nix` (boot splash), `webapps.nix` + `webapps/` (YouTube Music as an Electron app, see `webapp.js`; ads blocked by its `block` list and `ytmusic/preload.js`; Discord presence: `ytmusic/discord.js`).
 - `.config/scripts/`: install scripts served by URL (`nix.b3n.me` → the NixOS stub; `termux.sh`; `arch.sh`/`void.sh` kept for future installs).
 - `.local/bin/rb`: rebuild (`nixos-rebuild switch`, `nvd diff`, VSCodium extensions, Lean's default toolchain, Flatpak apps in `.config/flatpak/apps`); `rb -u` upgrades. On the tablet it runs `termux.sh`. Power menu (PCs and tablet): *rebuild* = `cu` then `rb`, *update* = `cu` then `rb -u` and the rest; a failed `cu` doesn't stop them.
 
-**Window manager** (`.config/wm/`: sway on the PCs (fallback), i3 on the tablet)
-- `common.conf`: what sway and the tablet's i3 share; only syntax both accept (plain `bindsym`, `split h`, `60 px`).
-- `sway`: the sway-only rest (SwayFX, outputs, rules, keys, bar). `i3`: the tablet's (started with `-c` by `desktop`). `i3status-rs.toml`: both bars.
-- `scripts/`: each header says what it does; `$mod+/` lists all keys. Scripts bound in `common.conf` branch on `$SWAYSOCK` (foot/fuzzel/wl-copy/wtype vs alacritty/rofi/xclip/xdotool).
-- `.config/sway/config` is a link to `wm/sway`: keep it, the greeter's Sway entry runs plain `sway`. `.config/i3/config` is a leftover link: delete it once the tablet has restarted `desktop`.
+**Scripts and the tablet's WM** (`.config/wm/`)
+- `scripts/`: each header says what it does. Used under Umbriel: `power.sh`, `screenshot.sh` (ocr), `record.sh`, `idle.sh` (Noctalia's sleep), `darkmode.sh apply` (Noctalia's `theme_mode_changed` hook). The rest are the tablet's; some still have dead sway branches (`$SWAYSOCK`), left alone while the tablet is on hold.
+- `i3` + `common.conf` (once shared with sway) + `i3status-rs.toml`: the tablet's i3 (started with `-c` by `desktop`).
 
 **Tablet** (`.config/termux/`, `.config/scripts/termux.sh`)
 - `termux.sh`: setup and "rebuild" (`rb`, `rb -u`); its package lists are the source of truth like the Nix files. Install: `curl -L https://raw.githubusercontent.com/Bueezi/dotfiles/main/.config/scripts/termux.sh | bash`.
 - `bin/`: `desktop` (Termux:X11 + i3), `debian` (proot Debian: ddd, btop, Lean, Claude Code), launchers for the Electron apps (Vesktop, Claude Desktop, webapps), wrappers (`rofi`, `alacritty`, `xdg-open`, `lean`).
 - `claude-code` + `dns-relay` + `resolv.conf`: Claude Desktop's Code tab through the proot Debian, with Android's DNS.
-- X11 counterparts of the sway tools: alacritty (foot), dunst (mako), rofi (fuzzel), feh + `wm/scripts/wallpaper.sh` (HyprQuickPaper).
+- X11 tools: alacritty, dunst, rofi, feh + `wm/scripts/wallpaper.sh`.
 
 **Shared**
 - Shell: bash is the login shell and runs scripts; foot starts fish + starship. **Aliases only in `.bashrc`**: fish imports its `alias` lines. `.bash_profile` loads `.bashrc` on TTY/SSH logins.
-- `.local/bin/cu`: sync (dotfiles, then `~/Documents/sync`: a private repo with one commit only, wallpapers in `wp/active/`). `term`: foot or alacritty. `copy`: stdin/files into the clipboard.
+- `.local/bin/cu`: sync (dotfiles, then `~/Documents/sync`: a private repo with one commit only, wallpapers in `wp/active/`; both sides are compared with `refs/sync/base`, the last commit they agreed on). `term`: foot or alacritty. `copy`: stdin/files into the clipboard.
 - VSCodium (PCs) / Code - OSS (tablet): one `.config/VSCodium/User/settings.json`; extensions listed in `.config/VSCodium/extensions`, installed by `rb`/`termux.sh`. Lean is done there (Helix has no goal view); `ELAN_HOME=~/.local/share/elan` everywhere.
 - Git identity and GitHub login: `.config/git/config`.
-- Themes: dconf `color-scheme` is the truth, `darkmode.sh` toggles. GTK3 dark = `.local/share/themes/Mono-dark` (imports `../../adw-gtk3-dark`: on NixOS a link made at login, on the tablet downloaded; never tracked), GTK4 = `.config/gtk-4.0/gtk.css`, Qt = qt6ct palettes in `.config/qt6ct/colors/` (`qt6ct.conf` is written by `darkmode.sh`, untracked).
+- Themes: dconf `color-scheme` is the truth; Noctalia toggles it (Mod+Shift+T) and its `theme_mode_changed` hook runs `darkmode.sh apply` for the rest (GTK3 theme, icons, qt6ct, open foot windows); `darkmode.sh` toggles on the tablet. GTK3 dark = `.local/share/themes/Mono-dark` (imports `../../adw-gtk3-dark`: on NixOS a link made at login, on the tablet downloaded; never tracked), GTK4 = `.config/gtk-4.0/gtk.css`, Qt = qt6ct palettes in `.config/qt6ct/colors/` (`qt6ct.conf` is written by `darkmode.sh`, untracked).
 
 ## Gotchas (don't re-investigate)
 
 **PCs**
-- **Umbriel's cursor** must match dconf's (`sway.nix` `cursorTheme`/`cursorSize`, set in `[input.cursor]`): its default is 24 and apps then draw a different one. After a sway session, `SWAYSOCK` can linger in the systemd user environment, so under Umbriel scripts that branch on it think they're in sway. Umbriel/Noctalia are young: config keys can change on `nix flake update`. Umbriel suspends windows on hidden workspaces (no frame callbacks): gamescope then stalls the game (CS2 lost its game sounds in the background), fixed with a `background_render` rule.
-- **Don't add `output * bg`:** swaybg restarts on every reload and covers awww.
-- **No HDR in sway:** scenefx disables colour transforms (Umbriel has it). **swaybar has no dbusmenu** (Steam's tray menu can't work; Electron menus go through `tray-menu.sh`). **LibreWolf** quits with its last window.
-- `~/.local/bin` is in the sway session's PATH (`environment.localBinInPath`, from `/etc/profile`, which greetd sources): scripts call `rb`/`cu` by name.
+- **Umbriel's cursor** must match dconf's (`session.nix` `cursorTheme`/`cursorSize`, which writes Umbriel's `[input.cursor]` to `share/umbriel/cursor.toml`, an optional include): its default is 24 and apps then draw a different one. `umbriel windows --json`: `active` is the window with keyboard focus, `focused` only the one focused on its workspace. Apps can't focus themselves on Wayland (Electron's `win.focus()` does nothing): focus through `umbriel msg window-focus` (`run.sh`). Umbriel/Noctalia are young: config keys can change on `nix flake update`. Umbriel suspends windows on hidden workspaces (no frame callbacks): gamescope then stalls the game (CS2 lost its game sounds in the background), fixed with a `background_render` rule.
+- **LibreWolf** quits with its last window.
+- `~/.local/bin` is in the session's PATH (`environment.localBinInPath`, from `/etc/profile`, which greetd sources): scripts call `rb`/`cu` by name.
 - Tried and disliked: dimming unfocused windows, Qt's `gtk3` platform theme (old greys), foot `include=` of a state file (errors when missing), `GTK_THEME` (pins one theme), zathura (Evince everywhere).
-- `~/.config/xdg-desktop-portal-wlr/config` is ignored: the picker is set in Nix (`xdg.portal.wlr.settings`).
 - Tailscale needs `services.resolved`, or it takes over all DNS.
-- **rb speed:** whatever isn't on cache.nixos.org gets built on every nixpkgs update. Avoid overrides of big packages (`papirusGrey` links instead of rebuilding Papirus). Already avoided: Flatpak's `fonts.fontDir` (rebuilt Xwayland), fish's generated completions, the man page index, the NixOS manual. Outside fetches are pinned (rev + hash), except Claude Desktop's flake (latest on purpose). Still built locally: Umbriel/Noctalia/its greeter (and Umbriel's wlroots), SwayFX/scenefx, the TeX Live set, unfree repackaging (Steam, Claude, LM Studio).
+- **rb speed:** whatever isn't on cache.nixos.org gets built on every nixpkgs update. Avoid overrides of big packages (`papirusGrey` links instead of rebuilding Papirus). Already avoided: fish's generated completions, the man page index, the NixOS manual. Outside fetches are pinned (rev + hash), except Claude Desktop's flake (latest on purpose). Still built locally: Umbriel/Noctalia/its greeter (and Umbriel's wlroots), the TeX Live set, unfree repackaging (Steam, Claude, LM Studio).
 - YouTube Music keeps Electron's own user agent: Google then serves its embedded-browser sign-in (`WebLiteSignIn`); a Chrome one gets the full flow, which rejects Electron as "may not be secure".
 - Steam games run in a sandbox with a private `/tmp`: nothing outside can talk to a running Wine app.
 - Discord (Vesktop's arRPC) detects games by process name from Discord's list, which often has only the Windows `.exe`: native Linux games get it from `steam-rpc.py` (Steam's log + arRPC's IPC socket).

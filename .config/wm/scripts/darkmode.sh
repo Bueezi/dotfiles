@@ -1,17 +1,21 @@
 #!/bin/sh
-# Light/dark toggle ($mod+Shift+t). color-scheme reaches libadwaita, LibreWolf and Electron
-# through the portal; GTK3 switches between Mono-dark (~/.local/share/themes) and adw-gtk3, the Qt
-# palettes are in ~/.config/qt6ct/colors. Sway: running foot windows get a signal; new ones are
-# switched by fish (config.fish). i3 (X11, the tablet): GTK reads XSETTINGS there, not dconf, so
-# xsettingsd gets the theme names; alacritty reloads the colours file it imports by itself.
-# The bar, launcher, notifications and lock screen stay black.
+# Light/dark toggle (the tablet's $mod+Shift+t; the PCs: Noctalia's Mod+Shift+T, which sets only
+# color-scheme and runs `darkmode.sh apply` from its theme_mode_changed hook). color-scheme reaches
+# libadwaita, LibreWolf and Electron through the portal; GTK3 switches between Mono-dark
+# (~/.local/share/themes) and adw-gtk3, the Qt palettes are in ~/.config/qt6ct/colors. Wayland:
+# running foot windows get a signal; new ones are switched by fish (config.fish). i3 (X11, the
+# tablet): GTK reads XSETTINGS there, not dconf, so xsettingsd gets the theme names; alacritty
+# reloads the colours file it imports by itself. The tablet's bar, launcher, notifications and
+# lock screen stay black.
 # Usage: darkmode.sh          toggle
-#        darkmode.sh apply    only write qt6ct's file and the themes for the current mode
-#                             (sway runs this at login; dconf's color-scheme is the source of truth)
+#        darkmode.sh apply    only the themes, qt6ct's file and foot for the current mode
+#                             (i3 runs this at login; dconf's color-scheme is the source of truth)
 key=/org/gnome/desktop/interface
 
 current=dark
 [ "$(dconf read $key/color-scheme)" = "'prefer-light'" ] && current=light
+# Noctalia's hook says the new mode itself: its color-scheme write may not have landed yet
+[ -n "$NOCTALIA_THEME_MODE" ] && current=$NOCTALIA_THEME_MODE
 if [ "$1" = apply ]; then mode=$current
 elif [ $current = dark ]; then mode=light
 else mode=dark
@@ -39,7 +43,7 @@ dconf write $key/gtk-theme "'$theme'"
 dconf write $key/icon-theme "'$icons'"
 
 # i3: xsettingsd and alacritty's colours (both untracked, written here like qt6ct.conf)
-if [ -z "$SWAYSOCK" ]; then
+if [ -z "$SWAYSOCK$UMBRIEL_SOCKET" ]; then
     mkdir -p ~/.config/xsettingsd ~/.config/alacritty
     printf 'Net/ThemeName "%s"\nNet/IconThemeName "%s"\n' "$theme" "$icons" > ~/.config/xsettingsd/xsettingsd.conf
     # GTK's size: the tablet's DPI (set in `desktop`), in XSETTINGS' 1/1024 units, the way GNOME
@@ -59,9 +63,9 @@ if [ -z "$SWAYSOCK" ]; then
     printf '[colors.primary]\nbackground = "#%s"\nforeground = "#%s"\n' $bg $fg > ~/.config/alacritty/colors.toml.new
     mv ~/.config/alacritty/colors.toml.new ~/.config/alacritty/colors.toml
 fi
+[ -n "$SWAYSOCK$UMBRIEL_SOCKET" ] && pkill -$sig -x foot
 [ "$1" = apply ] && exit 0
 
 dconf write $key/color-scheme "'prefer-$mode'"
-[ -n "$SWAYSOCK" ] && pkill -$sig -x foot
 
 notify-send -t 1500 -a darkmode -i $icon "$mode mode"

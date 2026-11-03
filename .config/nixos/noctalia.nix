@@ -1,8 +1,8 @@
 # The PCs' desktop: Noctalia (shell) on Umbriel (its team's compositor), logged into through
-# Noctalia Greeter. Sway stays as a fallback: pick it in the greeter's session list. Umbriel's
-# config: ~/.config/umbriel/config.toml. `umbriel-nested` runs it in a window inside another
-# session (Mod is Alt there). Packages: ./noctalia/flake.nix.
-{ pkgs, ... }:
+# Noctalia Greeter. Umbriel's config: ~/.config/umbriel/config.toml. `umbriel-nested` runs it in a
+# window inside the running session (Mod is Alt there). Packages: ./noctalia/flake.nix. The rest of
+# the desktop (themes, portals, fonts, default apps): session.nix
+{ config, lib, pkgs, ... }:
 
 let
   flake = builtins.getFlake (toString ./noctalia);
@@ -31,19 +31,20 @@ in
     package = pkgs.noctalia-greeter;
     settings = {
       session.default = "umbriel";
-      cursor = { theme = "Bibata-Modern-Classic"; size = 20; path = pkgs.bibata-cursors; };   # as in sway.nix
+      cursor = with config.environment.sessionVariables; {   # session.nix's
+        theme = XCURSOR_THEME; size = lib.toInt XCURSOR_SIZE; path = pkgs.bibata-cursors;
+      };
       keyboard.layout = "us";
     };
     passwordless-sync-users = [ "ben" ];   # the appearance-only sync, without a root prompt
   };
 
   environment.systemPackages = [
-    # Umbriel in a window inside sway, on its own D-Bus session so Noctalia doesn't take
-    # notifications or the tray from mako/swaybar. No SWAYSOCK/I3SOCK: scripts started in it
-    # would drive the real sway. Bus config by path: dbus-run-session looks in /etc/dbus-1, which
-    # NixOS doesn't have
+    # Umbriel in a window, on its own D-Bus session so its Noctalia doesn't take notifications or
+    # the tray from the real one. No UMBRIEL_SOCKET: scripts started in it would drive the real
+    # Umbriel. Bus config by path: dbus-run-session looks in /etc/dbus-1, which NixOS doesn't have
     (pkgs.writeShellScriptBin "umbriel-nested" ''
-      unset SWAYSOCK I3SOCK DBUS_SESSION_BUS_ADDRESS
+      unset UMBRIEL_SOCKET DBUS_SESSION_BUS_ADDRESS
       exec ${pkgs.dbus}/bin/dbus-run-session --config-file=/run/current-system/sw/share/dbus-1/session.conf \
         -- ${pkgs.umbriel}/bin/umbriel "$@"
     '')

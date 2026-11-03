@@ -1,5 +1,5 @@
 # Black and white, built around ~:
-#   ╭─ ~/.config/sway   main ! 󰔛 2s
+#   ╭─ ~/.config/umbriel   main ! 󰔛 2s
 #   ╰─❯
 # The pill is `inverted` (terminal fg as background), so it's white in dark mode and black in
 # light mode; everything else is plain fg or grey.

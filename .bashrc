@@ -31,5 +31,5 @@ alias g="git"
 alias gc='gcc -std=c99 -Wall -Wextra -pedantic'
 
 alias hc='hx ~/.config/nixos'
-alias hs='hx ~/.config/wm/sway'
+alias hs='hx ~/.config/umbriel/config.toml'
 alias gitu='git commit -m "update" && git push'

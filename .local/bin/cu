@@ -20,26 +20,35 @@ dotfiles() {
 }
 
 documents() {
-    local d=~/Documents/sync mine='' theirs='' old
+    local d=~/Documents/sync mine='' theirs='' old base
     echo "==> ~/Documents/sync"
     # Not quiet: the first clone (the wallpapers) takes a while, git shows its progress
     [ -d "$d/.git" ] || git clone https://github.com/Bueezi/sync "$d" || return
     git -C "$d" fetch --progress origin || return
-    git -C "$d" add -A
-    git -C "$d" diff --cached --quiet HEAD || mine=1
     old=$(git -C "$d" rev-parse origin/main)
-    [ "$(git -C "$d" rev-parse HEAD)" = "$old" ] || theirs=1
+    # Both sides are compared with the last commit they agreed on (refs/sync/base), not HEAD: after a
+    # failed push HEAD is a commit GitHub never got, which looked like another machine's change, and
+    # the next sync reset this folder to GitHub's, deleting the files added here
+    git -C "$d" rev-parse -q --verify refs/sync/base >/dev/null || git -C "$d" update-ref refs/sync/base HEAD
+    base=$(git -C "$d" rev-parse refs/sync/base)
+    git -C "$d" add -A
+    git -C "$d" diff --cached --quiet "$base" || mine=1
+    [ "$base" = "$old" ] || theirs=1
     if [ -n "$mine" ] && [ -n "$theirs" ]; then
         echo "cu: ~/Documents/sync changed here and on another machine since the last sync; sort it out by hand" >&2
         return 1
     elif [ -n "$theirs" ]; then
-        git -C "$d" reset -q --hard origin/main && echo "cu: took the other machines' ~/Documents/sync"
+        git -C "$d" reset -q --hard origin/main && git -C "$d" update-ref refs/sync/base "$old" &&
+            echo "cu: took the other machines' ~/Documents/sync"
     elif [ -n "$mine" ]; then
         git -C "$d" reset -q --soft "$(git -C "$d" commit-tree "$(git -C "$d" write-tree)" -m sync)" &&
             # A bitmap index first: the new commit doesn't descend from the old one, and without it
             # git can't see the files GitHub already has, so it sent all of them (~100 MB) every time
             git -C "$d" repack -q -a -d --write-bitmap-index &&
-            git -C "$d" push -q --force-with-lease=main:"$old" origin HEAD:main && echo "cu: pushed ~/Documents/sync"
+            git -C "$d" push -q --force-with-lease=main:"$old" origin HEAD:main &&
+            git -C "$d" update-ref refs/sync/base HEAD && echo "cu: pushed ~/Documents/sync"
+    else
+        git -C "$d" update-ref refs/sync/base "$old"
     fi
 }
 

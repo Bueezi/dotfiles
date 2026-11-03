@@ -43,6 +43,8 @@
 
   # Git; identity, editor and GitHub login are in ~/.config/git/config (shared with the tablet)
   programs.git.enable = true;
+  # Helix for everything that opens $EDITOR (yazi, sudoedit, crontab), not NixOS's nano
+  environment.variables.EDITOR = "hx";
 
   # Shells: bash stays the login shell (and for scripts); foot starts fish (~/.config/fish)
   programs.fish.enable = true;
@@ -55,7 +57,7 @@
   documentation.man.cache.enable = false;
   documentation.nixos.enable = false;
   # ~/.local/bin (my commands: cu, term) in PATH for the whole session, not just shells: greetd
-  # sources /etc/profile, so sway and everything it starts (Thunar's terminal, power.sh) find them
+  # sources /etc/profile, so Umbriel and everything it starts (Thunar's terminal, power.sh) find them
   environment.localBinInPath = true;
   # NixOS has no /bin/bash, so scripts with `#!/bin/bash` fail; point it at the system bash
   systemd.tmpfiles.rules = [ "L+ /bin/bash - - - - ${pkgs.bashInteractive}/bin/bash" ];
@@ -67,11 +69,10 @@
     graphics = { enable = true; enable32Bit = true; };
     enableRedistributableFirmware = true;
     cpu.amd.updateMicrocode = true;
-    bluetooth.enable = true;
+    bluetooth.enable = true;   # panel and pairing agent: Noctalia's (no blueman)
   };
 
   services.fwupd.enable = true;
-  services.blueman.enable = true;
 
   # Gamakay NS68 (and its 2.4G dongle): its config tool is the web page gearhub.top, which
   # talks to the keyboard over WebHID (Chromium, not LibreWolf). hidraw is root-only, so this
@@ -93,7 +94,7 @@
   };
 
   # ── Power ───────────────────────────────────────────
-  # Idle is handled by swayidle in the sway config; the laptop's lid and hibernate in laptop.nix
+  # Idle is Noctalia's (~/.config/noctalia/config.toml); the laptop's lid and hibernate in laptop.nix
   services.upower.enable = true;
   services.power-profiles-daemon.enable = true;
 
@@ -124,9 +125,6 @@
     };
   };
   services.flatpak.enable = true;   # apps in ~/.config/flatpak/apps, installed by rb
-  # Flatpak turns on fonts.fontDir, which rebuilds Xwayland with that font path (minutes, on
-  # every update). The cached one: only old X11 core-font apps would miss those fonts
-  programs.xwayland.package = pkgs.xwayland;
 
   system.stateVersion = "26.05";
 }

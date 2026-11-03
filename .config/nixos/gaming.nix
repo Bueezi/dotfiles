@@ -24,8 +24,10 @@ let
       if ${pkgs.systemd}/bin/busctl --user status com.steampowered.App244210 >/dev/null 2>&1 &&
          "$client" --inside-app=244210 \
            -c 'cd "$STEAM_COMPAT_INSTALL_PATH" && exec wine AssettoCorsa.exe "$1"' acmanager "$1"; then
-        ${config.programs.sway.package}/bin/swaymsg -q \
-          '[class="(?i)^(steam_app_244210|assettocorsa\.exe)$" title="(?i)content manager"] focus'
+        id=$(${pkgs.umbriel}/bin/umbriel windows --json | ${pkgs.jq}/bin/jq -r 'map(select(
+          (.app_id | test("^(steam_app_244210|assettocorsa\\.exe)$"; "i")) and ((.title // "") | test("content manager"; "i"))))
+          | first | .id // empty')
+        [ -z "$id" ] || ${pkgs.umbriel}/bin/umbriel msg window-focus "$id" >/dev/null
         exit 0
       fi
       ${pkgs.libnotify}/bin/notify-send -a acmanager -i dialog-information-symbolic "Content Manager is open" \

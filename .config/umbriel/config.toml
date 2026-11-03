@@ -1,8 +1,7 @@
 # Umbriel (PCs): upstream's packaged config, plus only what's mine below. Included files are
 # applied first and this file last: tables merge by key, so the packaged keybinds and rules stay.
 # Reloads on save; check with `umbriel config validate`. Reference: https://docs.noctalia.dev/umbriel/
-# Noctalia does wallpaper, notifications, night light, idle/lock, clipboard, battery and polkit:
-# none of the sway tools are started here.
+# Noctalia does wallpaper, notifications, night light, idle/lock, clipboard, battery and polkit.
 
 [include]
 files = [
@@ -16,7 +15,11 @@ files = [
 ]
 
 [include.optional]
-files = ["~/.local/state/umbriel/hdr.toml"]   # DP-2's hdr, written by run.sh hdr (Mod+Shift+H)
+files = [
+  "~/.local/state/umbriel/hdr.toml",   # DP-2's hdr, written by run.sh hdr (Mod+Shift+H)
+  # The cursor, the same as GTK/dconf's (~/.config/nixos/session.nix: cursorTheme, cursorSize)
+  "/run/current-system/sw/share/umbriel/cursor.toml",
+]
 
 [general]
 autostart = [
@@ -40,11 +43,6 @@ bit_depth = 10
 [output.eDP-1]
 scale = 1.35
 bit_depth = 10
-
-# Same cursor as GTK/dconf (sway.nix: cursorTheme, cursorSize), else apps and desktop differ
-[input.cursor]
-theme = "Bibata-Modern-Classic"
-size = 20
 
 [input.touchpad]
 tap = true
@@ -103,9 +101,9 @@ physics = true
 match.app_id = "^scratch-power$"
 default_floating = true
 
-# Mod+Shift+Return's terminal: a half-width column beside the current window
+# Mod+Shift+Return's terminal and Mod+E's yazi: a half-width column beside the current window
 [[window_rule]]
-match.app_id = "^foot-side$"
+match.app_id = "^(foot|yazi)-side$"
 default_scrolling_extent = 0.5
 
 # Floating windows blur what's really behind them. The packaged rule blurs a cached copy of the
@@ -115,13 +113,13 @@ default_scrolling_extent = 0.5
 match.is_floating = true
 blur_optimized = false
 
-# Yazi: floating, like Thunar was in sway
+# Yazi (Mod+Shift+E): floating
 [[window_rule]]
 match.app_id = "^yazi$"
 default_floating = true
 default_floating_size_px = { width = 1400, height = 850 }
 
-# Terminals at 3/4 width (centred when alone)
+# Terminals at 9/10 width (centred when alone)
 [[window_rule]]
 match.app_id = "^foot$"
 default_scrolling_extent = 0.90
@@ -132,12 +130,12 @@ default_scrolling_extent = 0.90
 match.app_id = "gamescope"
 background_render = true
 
-# Half-width columns for the apps that floated in sway
+# Half-width columns for the chat, music and Steam windows
 [[window_rule]]
 match.app_id = ["^ytmusic$", "^vesktop$", "^steam$"]
 default_scrolling_extent = 0.5
 
-# Added to the packaged binds, mostly as in sway; menus are Noctalia's (no fuzzel here). Replaced
+# Added to the packaged binds; menus are Noctalia's. Replaced
 # packaged ones: Mod+Escape (quit, now Mod+Shift+M), Mod+Shift+R (width cycle back). Kept Umbriel's: Mod+T (float), Mod+P (pin),
 # Mod+M (maximize), Mod+O (overview)
 [keybinds]
@@ -150,9 +148,9 @@ default_scrolling_extent = 0.5
 "Mod+Shift+D" = { action = "spawn ~/.config/umbriel/run.sh focus vesktop vesktop", repeat = false }
 "Mod+I" = { action = "spawn ~/.config/umbriel/run.sh focus steam steam", repeat = false }
 "Mod+Shift+E" = { action = "spawn foot --app-id=yazi yazi", repeat = false }
-"Mod+E" = { action = "spawn thunar", repeat = false }   # the backup, for drag and drop
+"Mod+E" = { action = "spawn foot --app-id=yazi-side yazi", repeat = false }   # beside the current window
 "Mod+U" = { action = "spawn librewolf https://toledo.kuleuven.be/portal/", repeat = false }
-"Mod+Y" = { action = "spawn ytmusic", repeat = false }   # Mod+M is maximize here; ytmusic shows/hides itself
+"Mod+Y" = { action = "spawn ~/.config/umbriel/run.sh toggle ytmusic ytmusic", repeat = false }   # Mod+M is maximize here
 "Mod+Shift+S" = { action = "spawn noctalia msg screenshot-region", repeat = false }
 "Mod+Shift+X" = { action = "spawn ~/.config/wm/scripts/screenshot.sh ocr", repeat = false }
 "Mod+Shift+R" = { action = "spawn ~/.config/wm/scripts/record.sh", repeat = false }

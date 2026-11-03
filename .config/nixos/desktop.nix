@@ -47,7 +47,7 @@
       upscayl               # AI image upscaler
       openrgb               # RGB control GUI/CLI (rgb-off above uses its own store path)
       rocmPackages.rocm-smi # GPU monitoring
-      ddcutil               # monitor brightness over DDC/CI (osd.sh brightness)
+      ddcutil               # monitor brightness over DDC/CI (Noctalia's brightness)
       lmstudio              # local LLMs; data/models live on the nvme (see tmpfiles above)
     ];
     # Let OpenRGB reach the RGB devices without root

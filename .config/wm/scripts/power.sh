@@ -1,26 +1,22 @@
 #!/usr/bin/env bash
-# Power menu ($mod+Shift+p). NixOS: sleep, hibernate (laptop), reboot, power off, update, rebuild,
+# Power menu (Mod+Shift+P). NixOS: sleep, hibernate (laptop), reboot, power off, update, rebuild,
 # sync. The tablet (Termux, i3): hide, close desktop, exit Termux, update, rebuild, sync; Android does
 # the rest. Update and rebuild sync first (cu), so they build the newest config from all machines.
-# Update, rebuild and sync run in a scratchpad terminal (hide/show with $mod+minus) so you can see
-# output and type your sudo password. Once the password is in (sudo caches it), the terminal hides
-# itself and comes back only when it needs you: a failure, a firmware prompt, or the end of an update.
+# Update, rebuild and sync run in a scratchpad terminal (show/hide: Umbriel Mod+Space, i3 $mod+minus)
+# so you can see output and type your sudo password. Once the password is in (sudo caches it), the
+# terminal hides itself and comes back only when it needs you: a failure, a firmware prompt, or the
+# end of an update.
 
-# Sway: foot, fuzzel, swaymsg, the window found by app_id. i3: alacritty, rofi, i3-msg, by class.
-# Umbriel (first: a sway session can leave SWAYSOCK behind): Noctalia's picker, the window id from app_id
+# Umbriel: foot, Noctalia's picker, the window id from app_id. i3: alacritty, rofi, i3-msg, by class
 if [ -n "$UMBRIEL_SOCKET" ]; then
     term=(foot --app-id=scratch-power)
     win() { umbriel windows --json | jq -r 'map(select(.app_id == "scratch-power")) | first | .id // empty'; }
     hide() { umbriel msg window-focus "$(win)" && umbriel msg window-move-to-scratchpad; } >/dev/null
     show() { umbriel msg window-focus "$(win)" >/dev/null; }
 else
-    if [ -n "$SWAYSOCK" ]; then
-        msg=swaymsg crit='app_id="^scratch-power$"' term=(foot --app-id=scratch-power)
-    else
-        msg=i3-msg crit='class="^scratch-power$"' term=(alacritty --class scratch-power -e)
-    fi
-    hide() { $msg -q "[$crit] move scratchpad"; }
-    show() { $msg -q "[$crit] focus"; }
+    term=(alacritty --class scratch-power -e)
+    hide() { i3-msg -q '[class="^scratch-power$"] move scratchpad'; }
+    show() { i3-msg -q '[class="^scratch-power$"] focus'; }
 fi
 
 # Ask for the sudo password up front, then hide and say it started. $1 = name for the notification
@@ -75,8 +71,6 @@ update() {
     if [ "$(readlink /run/booted-system/kernel)" != "$(readlink /run/current-system/kernel)" ]; then
         echo "    New kernel installed, reboot to use it."
     fi
-    echo; echo "==> Nix profile"
-    nix profile upgrade --all --refresh || failed+=" Nix-profile"
     echo; echo "==> Flatpak"
     flatpak update -y || failed+=" Flatpak"
     echo; echo "==> Firmware"
@@ -119,23 +113,7 @@ sync() {
     fi
 }
 
-# Wallpaper slideshow on/off ($mod+Shift+o runs `power.sh slideshow`; timer from hyprquickpaper.nix).
-# The state is kept in ~/.config/slideshow, so sway starts it again at login.
-slideshow() {
-    if systemctl --user is-active -q wallpaper-slideshow.timer; then
-        systemctl --user stop wallpaper-slideshow.timer
-        rm -f ~/.config/slideshow
-        notify-send -a slideshow -i preferences-desktop-wallpaper-symbolic "Slideshow off"
-    else
-        systemctl --user start wallpaper-slideshow.timer
-        # New wallpaper right away (the timer counts its 5 minutes from this run)
-        systemctl --user start --no-block wallpaper-slideshow.service
-        touch ~/.config/slideshow
-        notify-send -a slideshow -i preferences-desktop-wallpaper-symbolic "Slideshow on" "New wallpaper every 5 minutes"
-    fi
-}
-
-case "$1" in slideshow|sync|update|rebuild) "$1"; exit ;; esac
+case "$1" in sync|update|rebuild) "$1"; exit ;; esac
 
 if [ -n "$TERMUX_VERSION" ]; then
     choice=$(printf "󰓎  hide desktop\n󰍃  close desktop\n󰐥  exit termux\n󰚰  update\n󱄅  rebuild\n󰓦  sync" |
@@ -144,7 +122,7 @@ else
     # Hibernate only on the laptop: the desktop has no swap partition to resume from (zram only)
     hibernate=; [ -d /sys/class/power_supply/BAT0 ] && hibernate="󰋊  hibernate\n"
     choice=$(printf "${hibernate}󰜉  reboot\n󰒲  sleep\n󰐥  power off\n󰚰  update\n󱄅  rebuild\n󰓦  sync" |
-      if [ -n "$UMBRIEL_SOCKET" ]; then noctalia dmenu -p power; else fuzzel --dmenu --width 20 --lines 7; fi)
+      noctalia dmenu -p power)
 fi
 
 [ "$choice" ] || exit 0
@@ -160,7 +138,7 @@ case "$choice" in
 esac
 
 case "$choice" in
-    *sleep)       systemctl suspend ;;
+    *sleep)       systemctl sleep ;;   # like the lid and idle: suspend-then-hibernate on the laptop
     *hibernate)   systemctl hibernate ;;
     *reboot)      systemctl reboot ;;
     *"power off") systemctl poweroff ;;

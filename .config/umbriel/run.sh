@@ -1,16 +1,24 @@
 #!/bin/sh
 # Helpers for Umbriel's keybinds (./config.toml).
 #   run.sh focus <app_id> <command...>  focus a window of <app_id> (from the scratchpad too), else run <command>
+#   run.sh toggle <app_id> <command...> for apps that show/hide themselves when run again (ytmusic): shown
+#                                       but not focused, focus it (the app can't take focus itself on
+#                                       Wayland); else run <command>, which shows or hides it
 #   run.sh game                         focus the running game: Steam's (steam_app_<id>), AC, gamescope (CS2),
 #                                       anything tagged a game
-#   run.sh hdr                        DP-2's HDR: "auto" (only for fullscreen HDR content) <-> "on"
+#   run.sh hdr                          DP-2's HDR: "auto" (only for fullscreen HDR content) <-> "on"
 #                                       (always). In a state file the config includes, so it stays as is
-#   run.sh slideshow                    Noctalia's wallpaper rotation on/off: a random one every 5 minutes,
-#                                       like sway's slideshow (folder and interval: ~/.config/noctalia/config.toml)
+#   run.sh slideshow                    Noctalia's wallpaper rotation on/off: a random one every 5 minutes
+#                                       (folder and interval: ~/.config/noctalia/config.toml)
 case "$1" in
 focus)
     app=$2; shift 2
     id=$(umbriel windows --json | jq -r --arg a "$app" 'map(select(.app_id == $a)) | first | .id // empty')
+    if [ -n "$id" ]; then exec umbriel msg window-focus "$id"; fi
+    exec "$@" ;;
+toggle)
+    app=$2; shift 2
+    id=$(umbriel windows --json | jq -r --arg a "$app" 'map(select(.app_id == $a and (.active | not))) | first | .id // empty')
     if [ -n "$id" ]; then exec umbriel msg window-focus "$id"; fi
     exec "$@" ;;
 game)

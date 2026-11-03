@@ -3,7 +3,7 @@
 # wins over this file: move a change worth keeping here, then drop it there. Reference:
 # https://docs.noctalia.dev/noctalia/configuration/
 
-# Like sway's swayidle (~/.config/wm/scripts/idle.sh): lock at 3 min (moving within the 5 s fade
+# Idle: lock at 3 min (moving within the 5 s fade
 # cancels it), screens off at 3m10s, or 2 min after a manual lock. Sleep at 15 min (desktop) / 5 min
 # (laptop), held off while audio plays: `idle.sh nap` waits for silence, and its PID file lets
 # activity cancel it. Before any sleep Noctalia locks (lock_before_suspend)
@@ -39,6 +39,11 @@ umbriel_audio_provider_enabled = true
 
 [theme]
 source = "wallpaper"
+
+# Light/dark (Mod+Shift+T) sets only dconf's color-scheme: darkmode.sh switches the rest (GTK3
+# theme, icons, qt6ct, open foot windows)
+[hooks]
+theme_mode_changed = "~/.config/wm/scripts/darkmode.sh apply"
 
 # The wallpaper folder. The slideshow (Umbriel's Mod+Shift+O, ~/.config/umbriel/run.sh)
 # turns automation on and off in settings.toml; the current wallpaper is there too
