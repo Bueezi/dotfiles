@@ -101,9 +101,20 @@ physics = true
 match.app_id = "^scratch-power$"
 default_floating = true
 
-# Mod+Shift+Return's terminal and Mod+E's yazi: a half-width column beside the current window
+# Mod+Shift+Return's terminal: floating
 [[window_rule]]
-match.app_id = "^(foot|yazi)-side$"
+match.app_id = "^foot-float$"
+default_floating = true
+
+# Terminals when floating (Mod+Shift+Return, the power menu's, Mod+T): a share of the screen, not
+# foot's own small size
+[[window_rule]]
+match.app_id = "^(foot|foot-float|scratch-power)$"
+default_floating_size = { width = 0.6, height = 0.7 }
+
+# Mod+E's yazi: a half-width column beside the current window
+[[window_rule]]
+match.app_id = "^yazi-side$"
 default_scrolling_extent = 0.5
 
 # Floating windows blur what's really behind them. The packaged rule blurs a cached copy of the
@@ -119,8 +130,12 @@ match.app_id = "^yazi$"
 default_floating = true
 default_floating_size_px = { width = 1400, height = 850 }
 
-# Terminals at 9/10 width, centred, only while alone on the workspace; beside other windows the
-# full width of [layout.scrolling] (Umbriel switches as windows come and go)
+# Terminals at half width beside other windows, 9/10 (centred) while alone on the workspace:
+# leaving alone goes back to the rule without is_alone
+[[window_rule]]
+match.app_id = "^foot$"
+default_scrolling_extent = 0.5
+
 [[window_rule]]
 match.app_id = "^foot$"
 match.is_alone = true
@@ -151,7 +166,7 @@ default_scrolling_extent = 0.90
 "Mod+M" = { action = "window-toggle-maximize", repeat = false }
 "Mod+Ctrl+F" = { action = "window-toggle-maximize-to-edges", repeat = false }
 "Mod+Return" = { action = "spawn foot", repeat = false }
-"Mod+Shift+Return" = { action = "spawn foot --app-id=foot-side", repeat = false }
+"Mod+Shift+Return" = { action = "spawn foot --app-id=foot-float", repeat = false }
 "Mod+D" = { action = "spawn noctalia msg panel-toggle launcher", repeat = false }
 "Mod+X" = { action = "spawn ~/.config/umbriel/run.sh focus librewolf librewolf", repeat = false }
 "Mod+C" = { action = "spawn ~/.config/umbriel/run.sh focus com.anthropic.Claude claude-desktop", repeat = false }

@@ -47,6 +47,9 @@
       upscayl               # AI image upscaler
       openrgb               # RGB control GUI/CLI (rgb-off above uses its own store path)
       rocmPackages.rocm-smi # GPU monitoring
+      # btop with the GPU (it loads rocm-smi's library, which plain btop can't find), over
+      # packages.nix's btop. Not cached: built on nixpkgs updates (~1 min)
+      (lib.hiPrio (btop.override { rocmSupport = true; }))
       ddcutil               # monitor brightness over DDC/CI (Noctalia's brightness)
       lmstudio              # local LLMs; data/models live on the nvme (see tmpfiles above)
     ];
