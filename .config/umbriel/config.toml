@@ -119,9 +119,11 @@ match.app_id = "^yazi$"
 default_floating = true
 default_floating_size_px = { width = 1400, height = 850 }
 
-# Terminals at 9/10 width (centred when alone)
+# Terminals at 9/10 width, centred, only while alone on the workspace; beside other windows the
+# full width of [layout.scrolling] (Umbriel switches as windows come and go)
 [[window_rule]]
 match.app_id = "^foot$"
+match.is_alone = true
 default_scrolling_extent = 0.90
 
 # Games in gamescope (CS2, 4:3 stretched) keep running on a hidden workspace: suspended, gamescope
@@ -130,15 +132,24 @@ default_scrolling_extent = 0.90
 match.app_id = "gamescope"
 background_render = true
 
-# Half-width columns for the chat, music and Steam windows
+# Half-width columns for the chat, music and Steam windows, 9/10 (centred) while alone on the
+# workspace: leaving alone goes back to the rule without is_alone
 [[window_rule]]
 match.app_id = ["^ytmusic$", "^vesktop$", "^steam$"]
 default_scrolling_extent = 0.5
 
+[[window_rule]]
+match.app_id = ["^ytmusic$", "^vesktop$", "^steam$"]
+match.is_alone = true
+default_scrolling_extent = 0.90
+
 # Added to the packaged binds; menus are Noctalia's. Replaced
-# packaged ones: Mod+Escape (quit, now Mod+Shift+M), Mod+Shift+R (width cycle back). Kept Umbriel's: Mod+T (float), Mod+P (pin),
-# Mod+M (maximize), Mod+O (overview)
+# packaged ones: Mod+Escape (quit, now Mod+Shift+M), Mod+Shift+R (width cycle back), Mod+M and
+# Mod+Ctrl+F (swapped, below). Kept Umbriel's: Mod+T (float), Mod+P (pin), Mod+O (overview)
 [keybinds]
+# Mod+M: the column at full width (gaps, border and bar stay); Mod+Ctrl+F: edge to edge, over the bar
+"Mod+M" = { action = "window-toggle-maximize", repeat = false }
+"Mod+Ctrl+F" = { action = "window-toggle-maximize-to-edges", repeat = false }
 "Mod+Return" = { action = "spawn foot", repeat = false }
 "Mod+Shift+Return" = { action = "spawn foot --app-id=foot-side", repeat = false }
 "Mod+D" = { action = "spawn noctalia msg panel-toggle launcher", repeat = false }
