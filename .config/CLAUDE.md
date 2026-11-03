@@ -44,7 +44,7 @@ NixOS 26.05, channel-based (not a flake system). Per machine: `laptop.nix` / `de
 - `.local/bin/rb`: rebuild (`nixos-rebuild switch`, `nvd diff`, VSCodium extensions, Lean's default toolchain, Flatpak apps in `.config/flatpak/apps`); `rb -u` upgrades. On the tablet it runs `termux.sh`. Power menu (PCs and tablet): *rebuild* = `cu` then `rb`, *update* = `cu` then `rb -u` and the rest; a failed `cu` doesn't stop them.
 
 **Scripts and the tablet's WM** (`.config/wm/`)
-- `scripts/`: each header says what it does. Used under Umbriel: `power.sh`, `screenshot.sh` (ocr), `record.sh`, `idle.sh` (Noctalia's sleep), `darkmode.sh apply` (Noctalia's `theme_mode_changed` hook). The rest are the tablet's; some still have dead sway branches (`$SWAYSOCK`), left alone while the tablet is on hold.
+- `scripts/`: each header says what it does. Used under Umbriel: `power.sh`, `screenshot.sh` (ocr), `record.sh`, `idle.sh` (Noctalia's sleep), `darkmode.sh apply` (Noctalia's `theme_mode_changed` hook), `evening.sh` (brightness down at sunset, up at sunrise; Noctalia has no night-light hook). The rest are the tablet's; some still have dead sway branches (`$SWAYSOCK`), left alone while the tablet is on hold.
 - `i3` + `common.conf` (once shared with sway) + `i3status-rs.toml`: the tablet's i3 (started with `-c` by `desktop`).
 
 **Tablet** (`.config/termux/`, `.config/scripts/termux.sh`)

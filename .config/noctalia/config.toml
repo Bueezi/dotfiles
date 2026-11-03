@@ -29,6 +29,24 @@ resume_command = "f=$XDG_RUNTIME_DIR/idle-nap.pid; test -f $f && kill $(cat $f);
 enabled = true
 timeout = 300
 
+# The desktop's monitor over DDC/CI (ddcutil, desktop.nix); the laptop's screen stays on its backlight
+[brightness]
+enable_ddcutil = true
+
+# Caffeine in the bar (its icon changes while on), before the control centre; the rest is the default
+[bar.main]
+end = ["media", "tray", "notifications", "clipboard", "network", "bluetooth", "volume", "brightness",
+       "battery", "caffeine", "control-center", "session"]
+
+# Night light from sunset to sunrise (Mod+N toggles). The location is Belgium's middle, not a
+# city: this repo is public, and the country is in base.nix's time zone anyway
+[nightlight]
+enabled = true
+
+[location]
+latitude = 50.64
+longitude = 4.67
+
 # The lock screen's fade (default much slower)
 [lockscreen]
 transition_duration = 400
