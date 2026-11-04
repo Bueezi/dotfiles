@@ -55,6 +55,11 @@ transition_duration = 400
 [shell]
 umbriel_audio_provider_enabled = true
 
+# Copy wallpaper, colours, font and monitor layout to the login screen whenever they change
+# (passwordless: noctalia.nix's passwordless-sync-users)
+[shell.greeter_sync]
+auto_sync = true
+
 [theme]
 source = "wallpaper"
 

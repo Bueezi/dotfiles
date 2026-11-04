@@ -28,6 +28,8 @@
     boot.blacklistedKernelModules = [ "spd5118" ];
     # /dev/i2c-* for the i2c group too: ddcutil sets the monitor's brightness over DDC/CI
     hardware.i2c.enable = true;
+    # The login screen takes the EDID-preferred mode, which on this monitor is 60 Hz
+    services.displayManager.noctalia-greeter.settings.output.refresh_rate = "DP-2:180";
     users.users.ben.extraGroups = [ "i2c" ];
 
     systemd.services.rgb-off = {

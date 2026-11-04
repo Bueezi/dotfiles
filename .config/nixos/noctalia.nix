@@ -31,10 +31,17 @@ in
     package = pkgs.noctalia-greeter;
     settings = {
       session.default = "umbriel";
+      user.default = "ben";   # straight to the password, no user picker
       cursor = with config.environment.sessionVariables; {   # session.nix's
         theme = XCURSOR_THEME; size = lib.toInt XCURSOR_SIZE; path = pkgs.bibata-cursors;
       };
       keyboard.layout = "us";
+      appearance = {
+        password_style = "random";
+        hide_logo = true;
+        scheme_selector_position = "hidden";   # always the synced wallpaper colours
+      };
+      clock = { time_format = "%H:%M:%S"; date_format = "%A %-d %B"; };
     };
     passwordless-sync-users = [ "ben" ];   # the appearance-only sync, without a root prompt
   };

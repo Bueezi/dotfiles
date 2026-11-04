@@ -10,8 +10,6 @@ files = [
   "/run/current-system/sw/share/umbriel/effects/animation/reveal/effect.toml",
   "/run/current-system/sw/share/umbriel/effects/animation/squash/effect.toml",
   "/run/current-system/sw/share/umbriel/effects/animation/workspace_wipe/effect.toml",
-  "/run/current-system/sw/share/umbriel/effects/border/pulse/effect.toml",
-  "/run/current-system/sw/share/umbriel/effects/border/audio/effect.toml",
 ]
 
 [include.optional]
@@ -60,16 +58,8 @@ sensitivity = 0.0
 [layout.scrolling]
 default_extent_fraction = 1.0
 
-# Eye candy on top of the default animations. Border: pulse, or audio (follows the music through
-# Noctalia's audio provider); Mod+Ctrl+E cycles them. No cursor effect: tried, disliked
-[effects.pool.borders]
-kind = "border"
-choose = ["pulse", "audio"]
-selection = "round_robin"
-
-[effects]
-border = "pulse"
-
+# Eye candy on top of the default animations. Plain solid borders: shader borders (pulse, audio)
+# kept the GPU busy at idle. No cursor effect: tried, disliked
 [animation.windows_in]
 effect = "reveal"
 duration_ms = 300
@@ -199,4 +189,3 @@ default_scrolling_extent = 0.90
 "Mod+Next" = { action = "spawn noctalia msg brightness-down", allow_when_locked = true }
 "Mod+Prior" = { action = "spawn noctalia msg brightness-up", allow_when_locked = true }
 "Mod+Slash" = { action = "cheatsheet-toggle", repeat = false }
-"Mod+Ctrl+E" = { action = "effect-border-cycle borders", repeat = false }
