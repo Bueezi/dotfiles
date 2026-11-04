@@ -33,3 +33,12 @@ alias gc='gcc -std=c99 -Wall -Wextra -pedantic'
 alias hc='hx ~/.config/nixos'
 alias hs='hx ~/.config/umbriel/config.toml'
 alias gitu='git commit -m "update" && git push'
+
+# f: yazi, then cd to where it was quit (a program can't change its shell's directory). Also in fish's config
+f() {
+    local tmp cwd
+    tmp="$(mktemp -t yazi-cwd.XXXXXX)"
+    yazi "$@" --cwd-file="$tmp"
+    cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ] && cd -- "$cwd"
+    rm -f -- "$tmp"
+}

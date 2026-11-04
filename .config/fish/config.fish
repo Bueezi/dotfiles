@@ -40,5 +40,16 @@ if status is-interactive
         eval $line
     end
 
+    # f: yazi, then cd to where it was quit (a program can't change its shell's directory).
+    # A function, so not one of ~/.bashrc's aliases: it has its own copy there
+    function f
+        set -l tmp (mktemp -t yazi-cwd.XXXXXX)
+        yazi $argv --cwd-file="$tmp"
+        if read -z cwd < $tmp; and test -n "$cwd"; and test "$cwd" != "$PWD"
+            cd -- $cwd
+        end
+        rm -f -- $tmp
+    end
+
     starship init fish | source
 end
