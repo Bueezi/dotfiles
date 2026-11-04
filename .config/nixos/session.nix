@@ -42,7 +42,6 @@ in
     # Mod+Shift+X (screenshot.sh ocr): wayfreeze stills the screen, slurp + grim grab, tesseract
     # reads it (only these languages, all of them is huge). Mod+Shift+R: wf-recorder (record.sh)
     grim slurp wayfreeze wf-recorder
-    heliocron   # sunrise/sunset for evening.sh (brightness with the night light)
     (tesseract.override { enableLanguages = [ "eng" "fra" "nld" ]; })
     # GUI utilities (nm-connection-editor: VPNs and what Noctalia's network panel doesn't show)
     pavucontrol networkmanagerapplet file-roller baobab eog evince adwaita-icon-theme

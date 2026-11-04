@@ -44,7 +44,7 @@ NixOS 26.05, channel-based (not a flake system). Per machine: `laptop.nix` / `de
 - `.local/bin/rb`: rebuild (`nixos-rebuild switch`, `nvd diff`, VSCodium extensions, Lean's default toolchain, Flatpak apps in `.config/flatpak/apps`); `rb -u` upgrades. On the tablet it runs `termux.sh`. Power menu (PCs and tablet): *rebuild* = `cu` then `rb`, *update* = `cu` then `rb -u` and the rest; a failed `cu` doesn't stop them.
 
 **Scripts and the tablet's WM** (`.config/wm/`)
-- `scripts/`: each header says what it does. Used under Umbriel: `power.sh`, `screenshot.sh` (ocr), `record.sh`, `idle.sh` (Noctalia's sleep), `darkmode.sh apply` (Noctalia's `theme_mode_changed` hook), `evening.sh` (brightness down at sunset, up at sunrise; Noctalia has no night-light hook). The rest are the tablet's; some still have dead sway branches (`$SWAYSOCK`), left alone while the tablet is on hold.
+- `scripts/`: each header says what it does. Used under Umbriel: `power.sh`, `screenshot.sh` (ocr), `record.sh`, `idle.sh` (Noctalia's sleep) and `darkmode.sh apply` (Noctalia's `theme_mode_changed` hook). The rest are the tablet's; some still have dead sway branches (`$SWAYSOCK`), left alone while the tablet is on hold.
 - `i3` + `common.conf` (once shared with sway) + `i3status-rs.toml`: the tablet's i3 (started with `-c` by `desktop`).
 
 **Tablet** (`.config/termux/`, `.config/scripts/termux.sh`)
@@ -63,8 +63,7 @@ NixOS 26.05, channel-based (not a flake system). Per machine: `laptop.nix` / `de
 ## Gotchas (don't re-investigate)
 
 **PCs**
-- **Umbriel's cursor** must match dconf's (`session.nix` `cursorTheme`/`cursorSize`, which writes Umbriel's `[input.cursor]` to `share/umbriel/cursor.toml`, an optional include): its default is 24 and apps then draw a different one. `umbriel windows --json`: `active` is the window with keyboard focus, `focused` only the one focused on its workspace. Apps can't focus themselves on Wayland (Electron's `win.focus()` does nothing): focus through `umbriel msg window-focus` (`run.sh`). Umbriel/Noctalia are young: config keys can change on `nix flake update`. Umbriel suspends windows on hidden workspaces (no frame callbacks): gamescope then stalls the game (CS2 lost its game sounds in the background), fixed with a `background_render` rule.
-- **LibreWolf** quits with its last window.
+- **Umbriel's cursor** must match dconf's (`session.nix` `cursorTheme`/`cursorSize`, which writes Umbriel's `[input.cursor]` to `share/umbriel/cursor.toml`, an optional include): its default is 24 and apps then draw a different one. `umbriel windows --json`: `active` is the window with keyboard focus, `focused` only the one focused on its workspace. Apps can't focus themselves on Wayland (Electron's `win.focus()` does nothing): focus through `umbriel msg window-focus` (`run.sh`). Umbriel/Noctalia are young: config keys can change on `nix flake update`. Umbriel suspends windows on hidden workspaces (no frame callbacks): gamescope then stalls the game (CS2 lost its game sounds in the background), fixed with a `background_render` rule.- **LibreWolf** quits with its last window.
 - `~/.local/bin` is in the session's PATH (`environment.localBinInPath`, from `/etc/profile`, which greetd sources): scripts call `rb`/`cu` by name.
 - Tried and disliked: dimming unfocused windows, Qt's `gtk3` platform theme (old greys), foot `include=` of a state file (errors when missing), `GTK_THEME` (pins one theme), zathura (Evince everywhere).
 - Tailscale needs `services.resolved`, or it takes over all DNS.

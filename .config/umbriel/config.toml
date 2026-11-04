@@ -22,7 +22,6 @@ files = [
 [general]
 autostart = [
   "noctalia",
-  "~/.config/wm/scripts/evening.sh",   # brightness down at sunset, up at sunrise
   "librewolf",
   # Desktop only: Vesktop and Steam in the tray. Laptop only: start muted
   "sh -c 'test -d /sys/class/power_supply/BAT0 || exec vesktop --start-minimized'",
