@@ -1,8 +1,8 @@
 // Discord Rich Presence ("Listening to <song>": artist, album, cover, progress) over the IPC socket
-// Vesktop's arRPC serves, like ../../steam-rpc.py. preload.js sends what's playing; a pause or an ad
-// clears it. A client id is required (the cover goes through its assets): the one made for
-// th-ch/youtube-music; `name` overrides its name, Vesktop keeps it. Vesktop not running: tried
-// again at the next change.
+// Concord serves (Vesktop's arRPC too), like ../../steam-rpc.py. preload.js sends what's playing; a
+// pause or an ad clears it. A client id is required (the cover goes through its assets): the one made
+// for th-ch/youtube-music; `name` overrides its name, both keep it. Concord not running: tried again
+// at the next change.
 const { ipcMain } = require("electron");
 const net = require("net");
 const path = require("path");

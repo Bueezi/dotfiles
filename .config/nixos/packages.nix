@@ -13,8 +13,23 @@
     man-pages man-pages-posix # man
     nvd   # rb: what each rebuild changed
     # Apps
-    librewolf ungoogled-chromium mpv vesktop qbittorrent
+    librewolf ungoogled-chromium mpv qbittorrent
+    vesktop   # backup for Concord; gaming.nix also takes Discord's game list from it
     libreoffice bazaar gearlever
+    # Concord: Discord in the terminal (Umbriel: Mod+Shift+D). Not in 26.05 yet; the release's binary,
+    # so rb has nothing to compile. Newer = the version + its asset's hash
+    (stdenv.mkDerivation rec {
+      pname = "concord-tui";
+      version = "2.7.0";
+      src = fetchurl {
+        url = "https://github.com/chojs23/concord/releases/download/v${version}/concord-x86_64-unknown-linux-gnu.tar.xz";
+        hash = "sha256-PrQTkXhIY/E5zSj14bzdBGXTsgGgUjPmYAreSlyBxKc=";
+      };
+      nativeBuildInputs = [ autoPatchelfHook ];
+      buildInputs = [ alsa-lib libva pipewire stdenv.cc.cc.lib ];
+      runtimeDependencies = [ libGL ];   # libEGL, opened at run time
+      installPhase = "install -Dm755 concord $out/bin/concord";
+    })
     yazi   # terminal file manager, with its preview tools (Umbriel: Mod+E, Mod+Shift+E); Thunar in session.nix
     # Claude Desktop (community build; updates to the latest version on rebuild)
     (builtins.getFlake "github:aaddrick/claude-desktop-debian").packages.${stdenv.hostPlatform.system}.default

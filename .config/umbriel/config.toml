@@ -23,8 +23,8 @@ files = [
 autostart = [
   "noctalia",
   "librewolf",
-  # Desktop only: Vesktop and Steam in the tray. Laptop only: start muted
-  "sh -c 'test -d /sys/class/power_supply/BAT0 || exec vesktop --start-minimized'",
+  # Desktop only: Concord in a window (it has no tray), Steam in the tray. Laptop only: start muted
+  "sh -c 'test -d /sys/class/power_supply/BAT0 || exec foot --app-id=concord concord'",
   "sh -c 'test -d /sys/class/power_supply/BAT0 || exec steam -silent'",
   "sh -c 'test -d /sys/class/power_supply/BAT0 && sleep 2 && wpctl set-volume @DEFAULT_AUDIO_SINK@ 0'",
 ]
@@ -140,11 +140,11 @@ background_render = true
 # Half-width columns for the chat, music and Steam windows, 9/10 (centred) while alone on the
 # workspace: leaving alone goes back to the rule without is_alone
 [[window_rule]]
-match.app_id = ["^ytmusic$", "^vesktop$", "^steam$"]
+match.app_id = ["^ytmusic$", "^vesktop$", "^concord$", "^steam$"]
 default_scrolling_extent = 0.5
 
 [[window_rule]]
-match.app_id = ["^ytmusic$", "^vesktop$", "^steam$"]
+match.app_id = ["^ytmusic$", "^vesktop$", "^concord$", "^steam$"]
 match.is_alone = true
 default_scrolling_extent = 0.90
 
@@ -161,7 +161,7 @@ default_scrolling_extent = 0.90
 "Mod+X" = { action = "spawn ~/.config/umbriel/run.sh focus librewolf librewolf", repeat = false }
 "Mod+C" = { action = "spawn ~/.config/umbriel/run.sh focus com.anthropic.Claude claude-desktop", repeat = false }
 "Mod+Z" = { action = "spawn ~/.config/umbriel/run.sh game", repeat = false }
-"Mod+Shift+D" = { action = "spawn ~/.config/umbriel/run.sh focus vesktop vesktop", repeat = false }
+"Mod+Shift+D" = { action = "spawn ~/.config/umbriel/run.sh focus concord foot --app-id=concord concord", repeat = false }
 "Mod+I" = { action = "spawn ~/.config/umbriel/run.sh focus steam steam", repeat = false }
 "Mod+Shift+E" = { action = "spawn foot --app-id=yazi yazi", repeat = false }
 "Mod+E" = { action = "spawn foot --app-id=yazi-side yazi", repeat = false }   # beside the current window
