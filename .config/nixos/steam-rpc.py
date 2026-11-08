@@ -1,5 +1,6 @@
-# Discord Rich Presence for Steam games, through the IPC socket Concord serves (Vesktop's arRPC too).
-# Concord only relays what apps send it, it doesn't look for games.
+# Discord Rich Presence for native Linux Steam games, through the IPC socket Yapfast serves (Vesktop's
+# arRPC too). arRPC finds games by process name, and Discord's list mostly has only Windows .exe names,
+# so native games (CS2, Factorio...) go unseen; both find Proton ones themselves.
 # Steam logs "Game process added : AppID N" / "Game process removed: AppID N" in console_log.txt:
 # `tail -F` waits on inotify (no polling); on a start the game's name (its appmanifest) is looked
 # up in Discord's list and its activity is set over the IPC socket, kept open while it runs.
@@ -9,7 +10,8 @@
 import json, os, re, socket, struct, subprocess, sys, time, unicodedata
 
 STEAM = os.path.expanduser("~/.local/share/Steam")
-LINE = re.compile(r'Game process (added|removed) ?: AppID (\d+) ".*?", ProcID (\d+)')
+LINE = re.compile(r'Game process (added|removed) ?: AppID (\d+) "(.*?)", ProcID (\d+)')
+PROTON = re.compile(r"/proton['\"]?\s+(waitforexitandrun|run)\b")
 
 
 def norm(name):
@@ -62,7 +64,7 @@ def set_activity(client_id, name, pid):
             return s
         except OSError:
             s.close()
-    print("no Discord IPC socket (Concord not running?)", flush=True)
+    print("no Discord IPC socket (Yapfast not running?)", flush=True)
 
 
 def already_running():
@@ -74,14 +76,14 @@ def already_running():
             continue
         if argv[0].endswith("/reaper") and "SteamLaunch" in argv:
             if m := re.search(r"\bAppId=(\d+)", " ".join(argv)):
-                yield m.group(1), pid
+                yield m.group(1), " ".join(argv), pid
 
 
 def main(games_file):
     running = {}  # appid -> open IPC socket (closing it clears the activity)
 
-    def start(appid, pid):
-        if appid in running:
+    def start(appid, command, pid):
+        if appid in running or PROTON.search(command):
             return
         name = steam_name(appid)
         game = name and lookup(games_file, name)
@@ -100,12 +102,12 @@ def main(games_file):
         m = LINE.search(line)
         if not m:
             continue
-        event, appid, pid = m.groups()
+        event, appid, command, pid = m.groups()
         if event == "removed":
             if s := running.pop(appid, None):
                 s.close()
         else:
-            start(appid, pid)
+            start(appid, command, pid)
     sys.exit("tail exited")
 
 

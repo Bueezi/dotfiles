@@ -14,22 +14,11 @@
     nvd   # rb: what each rebuild changed
     # Apps
     librewolf ungoogled-chromium mpv qbittorrent
-    vesktop   # backup for Concord; gaming.nix also takes Discord's game list from it
+    vesktop   # backup for Yapfast; gaming.nix also takes Discord's game list from it
     libreoffice bazaar gearlever
-    # Concord: Discord in the terminal (Umbriel: Mod+Shift+D). Not in 26.05 yet; the release's binary,
-    # so rb has nothing to compile. Newer = the version + its asset's hash
-    (stdenv.mkDerivation rec {
-      pname = "concord-tui";
-      version = "2.7.0";
-      src = fetchurl {
-        url = "https://github.com/chojs23/concord/releases/download/v${version}/concord-x86_64-unknown-linux-gnu.tar.xz";
-        hash = "sha256-PrQTkXhIY/E5zSj14bzdBGXTsgGgUjPmYAreSlyBxKc=";
-      };
-      nativeBuildInputs = [ autoPatchelfHook ];
-      buildInputs = [ alsa-lib libva pipewire stdenv.cc.cc.lib ];
-      runtimeDependencies = [ libGL ];   # libEGL, opened at run time
-      installPhase = "install -Dm755 concord $out/bin/concord";
-    })
+    # Yapfast: native Discord client (Umbriel: Mod+Shift+D). Pinned to v0.3.0's commit; its flake has
+    # its own lock, so it's compiled once per pin, not on every nixpkgs update
+    (builtins.getFlake "github:yapfast/yapfast/03862f6394fad09b541d731181b819a3c9713d3f").packages.${stdenv.hostPlatform.system}.yapfast
     yazi   # terminal file manager, with its preview tools (Umbriel: Mod+E, Mod+Shift+E); Thunar in session.nix
     # Claude Desktop (community build; updates to the latest version on rebuild)
     (builtins.getFlake "github:aaddrick/claude-desktop-debian").packages.${stdenv.hostPlatform.system}.default
