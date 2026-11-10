@@ -12,6 +12,13 @@ language-servers = ["vscode-html-language-server", "tailwindcss-ls"]
 name = "css"
 language-servers = ["vscode-css-language-server", "tailwindcss-ls"]
 
+# JS: on save only add missing semicolons (ESLint `semi` rule), no other formatting.
+# (eslint from dev.nix)
+[[language]]
+name = "javascript"
+auto-format = true
+formatter = { command = "node", args = ["/home/ben/.config/helix/semi.mjs"] }
+
 [[language]]
 name = "jsx"
 language-servers = ["typescript-language-server", "tailwindcss-ls"]

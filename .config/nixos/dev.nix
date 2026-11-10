@@ -26,6 +26,8 @@
     basedpyright clang-tools vscode-langservers-extracted typescript-language-server typescript
     tailwindcss-language-server rust-analyzer bash-language-server shellcheck intelephense sqls nil
     texlab taplo yaml-language-server marksman
+    # JS formatter: only adds semicolons (~/.config/helix/semi.mjs)
+    eslint
   ];
 
   environment.sessionVariables = {
