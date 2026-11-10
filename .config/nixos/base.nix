@@ -107,6 +107,9 @@
       options = "--delete-older-than 5d";
     };
     optimise.automatic = true;
+    # GitHub token for fetches (getFlake github:..., else 60 API calls/hour): a mode-600 file outside
+    # the repo, written from `gh auth token`; skipped when missing. rb evaluates as root, which can read it
+    extraOptions = "!include /home/ben/.config/nix/github-token.conf";
   };
   nixpkgs.config.allowUnfree = true;
 
