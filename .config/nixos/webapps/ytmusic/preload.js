@@ -36,6 +36,16 @@ require("electron").contextBridge.executeInMainWorld({
       if (video && Number.isFinite(video.duration)) video.currentTime = video.duration;
       player.querySelector(".ytp-ad-skip-button, .ytp-ad-skip-button-modern, .ytp-skip-ad-button")?.click();
     }, 500);
+
+    // "Video paused. Continue watching?": the page pauses when its last-activity time (_lact) is old
+    // (no clicks or keys for a while). Keep it fresh; if the dialog shows anyway, answer it and play on.
+    setInterval(() => {
+      window._lact = Date.now();
+      const dialog = document.querySelector("ytmusic-you-there-renderer");
+      if (!dialog || !dialog.offsetParent) return;
+      dialog.querySelector("button, yt-button-renderer, tp-yt-paper-button")?.click();
+      document.querySelector("video")?.play();
+    }, 5000);
   },
 });
 
