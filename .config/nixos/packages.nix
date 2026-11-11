@@ -7,6 +7,8 @@
     # CLI
     git gh gcc python3 less htop btop powertop fastfetch cowsay
     wl-clipboard zip unzip p7zip ffmpeg jq wl-mirror
+    imagemagick  # magick: convert/resize images
+    hyprpicker   # colour picker: click a pixel, hex to stdout (-a: also to the clipboard)
     starship  # prompt, ~/.config/starship.toml
     cava cmatrix pipes  # music visualiser (~/.config/cava/config), eye candy
     freerdp   # RDP into Windows: sdl-freerdp /v:<ip> /u:<user> /dynamic-resolution
