@@ -149,7 +149,7 @@ match.is_alone = true
 default_scrolling_extent = 0.90
 
 # Added to the packaged binds; menus are Noctalia's. Replaced
-# packaged ones: Mod+Escape (quit, now Mod+Shift+M), Mod+Shift+R (width cycle back), Mod+M and
+# packaged ones: Mod alone (launcher, now only Mod+D), Mod+Escape (quit, now Mod+Shift+M), Mod+Shift+R (width cycle back), Mod+M and
 # Mod+Ctrl+F (swapped, below). Kept Umbriel's: Mod+T (float), Mod+P (pin), Mod+O (overview)
 [keybinds]
 # Mod+M: the column at full width (gaps, border and bar stay); Mod+Ctrl+F: edge to edge, over the bar
@@ -158,6 +158,7 @@ default_scrolling_extent = 0.90
 "Mod+Return" = { action = "spawn foot", repeat = false }
 "Mod+Shift+Return" = { action = "spawn foot --app-id=foot-float", repeat = false }
 "Mod+D" = { action = "spawn noctalia msg panel-toggle launcher", repeat = false }
+"Mod" = "spawn true"   # the packaged bind opens the launcher on Mod alone; Umbriel has no unbind
 "Mod+X" = { action = "spawn ~/.config/umbriel/run.sh focus librewolf librewolf", repeat = false }
 "Mod+C" = { action = "spawn ~/.config/umbriel/run.sh focus com.anthropic.Claude claude-desktop", repeat = false }
 "Mod+Z" = { action = "spawn ~/.config/umbriel/run.sh game", repeat = false }
