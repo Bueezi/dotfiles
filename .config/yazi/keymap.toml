@@ -1,0 +1,10 @@
+# Yazi keys. Only what differs from its defaults.
+# Ctrl+Y: yank the selection (or hovered file) and put it in the system clipboard as file URIs,
+# so it pastes as files in Thunar, LibreWolf uploads, Discord etc.
+[[mgr.prepend_keymap]]
+on = "<C-y>"
+run = [
+	'shell -- for path in %s; do echo "file://$path"; done | wl-copy -t text/uri-list',
+	"yank",
+]
+desc = "Yank files to the system clipboard"
