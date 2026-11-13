@@ -72,6 +72,9 @@ in
     XCURSOR_THEME = cursorTheme;
     XCURSOR_SIZE = toString cursorSize;
     NIXOS_OZONE_WL = "1";    # Electron/Chromium on Wayland
+    # Java AWT (Nuvio) on Xwayland: Umbriel's X WM ("wlroots wm") is unknown to AWT, which then assumes
+    # frame insets (5/25 px) and draws its content short, leaving a white edge right and bottom
+    _JAVA_AWT_WM_NONREPARENTING = "1";
   };
 
   # Keyring unlocked at login via PAM (greetd: Noctalia Greeter, noctalia.nix)
