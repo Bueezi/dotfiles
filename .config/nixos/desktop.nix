@@ -18,8 +18,15 @@
         "x-gvfs-show" "x-gvfs-name=hdd"
       ];
     };
-    # LM Studio keeps its models etc. in ~/.lmstudio: point that at the nvme
-    systemd.tmpfiles.rules = [ "L /home/ben/.lmstudio - - - - /mnt/nvme/Documents/lm-studio" ];
+    # Unsloth Studio keeps its runtime (venv, PyTorch, llama.cpp) in ~/.unsloth and models in the
+    # Hugging Face cache: both on the nvme. ~/.lmstudio stays so Studio finds LM Studio's old GGUFs
+    systemd.tmpfiles.rules = [
+      "d /mnt/nvme/Documents/unsloth 0755 ben users -"
+      "d /mnt/nvme/Documents/huggingface 0755 ben users -"
+      "L /home/ben/.unsloth - - - - /mnt/nvme/Documents/unsloth"
+      "L /home/ben/.cache/huggingface - - - - /mnt/nvme/Documents/huggingface"
+      "L /home/ben/.lmstudio - - - - /mnt/nvme/Documents/lm-studio"
+    ];
 
     # RAM RGB: OpenRGB reaches the DIMMs over SMBus through /dev/i2c-* (i2c-dev).
     # spd5118 (DDR5 SPD/temperature driver) claims the sticks' SPD addresses, which makes
@@ -53,7 +60,14 @@
       # packages.nix's btop. On cache.nixos.org, so nothing to build
       (lib.hiPrio (btop.override { rocmSupport = true; }))
       ddcutil               # monitor brightness over DDC/CI (Noctalia's brightness)
-      lmstudio              # local LLMs; data/models live on the nvme (see tmpfiles above)
+      # Unsloth Studio (local LLMs: chat + fine-tuning; ROCm on the 9070 XT), not in 26.05 yet:
+      # nixpkgs-unstable's package file, built with the system nixpkgs. Newer = a newer rev + its
+      # hash (nix-prefetch-url <url>, then nix hash convert --hash-algo sha256 <it>).
+      # Data/models live on the nvme (see tmpfiles above)
+      (callPackage (builtins.fetchurl {
+        url = "https://raw.githubusercontent.com/NixOS/nixpkgs/d4f25a3e562008648d45bcf2d70bcc7422cad84e/pkgs/by-name/un/unsloth-desktop/package.nix";
+        sha256 = "sha256-VfdGdkOiZmEARRpYyLinXqM2Wnxy3oqh0IJbq5GWgL4=";
+      }) { })
     ];
     # Let OpenRGB reach the RGB devices without root
     services.udev.packages = [ pkgs.openrgb ];
