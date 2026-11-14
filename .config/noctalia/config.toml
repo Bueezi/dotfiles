@@ -75,3 +75,7 @@ directory = "/home/ben/Documents/sync/wp/active/wallpapers_upscaled"
 
 [wallpaper.automation]
 interval_seconds = 300
+
+# Umbriel always keeps one empty workspace after the last used one: don't show its pill
+[widget.workspaces]
+hide_when_empty = true
