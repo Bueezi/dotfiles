@@ -5,7 +5,7 @@
 {
   environment.systemPackages = with pkgs; [
     # CLI
-    git gh gcc python3 less htop btop powertop fastfetch cowsay
+    bc git gh gcc python3 less htop btop powertop fastfetch cowsay
     wl-clipboard zip unzip p7zip ffmpeg jq wl-mirror
     imagemagick  # magick: convert/resize images
     hyprpicker   # colour picker: click a pixel, hex to stdout (-a: also to the clipboard)
