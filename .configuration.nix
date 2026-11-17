@@ -8,7 +8,7 @@
     ./.config/nixos/base.nix      # boot, network, users, Nix, audio, power
     ./.config/nixos/session.nix   # login keyring, portals, themes, default apps, fonts, file manager
     ./.config/nixos/packages.nix  # apps and command-line tools
-    ./.config/nixos/dev.nix       # editors, language servers, containers, Android, Lean, LaTeX
+    ./.config/nixos/dev.nix       # editors, language servers, containers, Android, LaTeX
     ./.config/nixos/laptop.nix
     ./.config/nixos/desktop.nix
     ./.config/nixos/gaming.nix

@@ -44,8 +44,14 @@ in
     grim slurp wayfreeze wf-recorder
     (tesseract.override { enableLanguages = [ "eng" "fra" "nld" ]; })
     # GUI utilities (nm-connection-editor: VPNs and what Noctalia's network panel doesn't show)
-    pavucontrol networkmanagerapplet file-roller baobab eog evince adwaita-icon-theme
+    networkmanagerapplet eog evince adwaita-icon-theme
     bibata-cursors papirusGrey
+    # Folders opened from other apps: yazi in foot, floating like Mod+Shift+E (yazi's own entry is
+    # Terminal=true, and GLib doesn't know foot)
+    (makeDesktopItem {
+      name = "yazi-foot"; desktopName = "Yazi"; exec = "foot --app-id=yazi yazi %f"; noDisplay = true;
+      mimeTypes = [ "inode/directory" ];
+    })
     # Umbriel's cursor, included by ~/.config/umbriel/config.toml: its default (24) differs from
     # what apps draw
     (writeTextDir "share/umbriel/cursor.toml" ''
@@ -124,7 +130,7 @@ in
   # ~/.config/mimeapps.list, which apps write to, still wins
   xdg.mime.defaultApplications =
     let each = app: types: lib.genAttrs types (_: app);
-    in each "thunar.desktop" [ "inode/directory" ]
+    in each "yazi-foot.desktop" [ "inode/directory" ]
       // each "librewolf.desktop" [ "x-scheme-handler/http" "x-scheme-handler/https" "text/html" "application/xhtml+xml" ]
       // each "org.gnome.Evince.desktop" [ "application/pdf" ]
       // each "org.gnome.eog.desktop" (map (t: "image/${t}") [ "jpeg" "jpg" "png" "gif" "bmp" "webp" "tiff" ])
@@ -132,11 +138,6 @@ in
                              "audio/mpeg" "audio/x-wav" "audio/flac" "audio/ogg" ]
       // each "helix.desktop" [ "text/plain" "text/x-c" "text/x-c++" "text/x-java" "text/x-python" "application/x-shellscript" ];
 
-  # File manager + thumbnails, mounting, trash (yazi: packages.nix)
-  programs.thunar = {
-    enable = true;
-    plugins = [ pkgs.thunar-archive-plugin ];
-  };
+  # Mounting and trash for GTK apps (file manager: yazi, packages.nix)
   services.gvfs.enable = true;
-  services.tumbler.enable = true;
 }

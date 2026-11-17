@@ -35,7 +35,8 @@ let
     ''} %u";
   };
 
-  # Discord's game list, name -> application id, for steam-rpc.py (taken from Vesktop's arRPC)
+  # Discord's game list, name -> application id, for steam-rpc.py (taken from Vesktop's arRPC: only
+  # read while building, Vesktop itself isn't installed)
   steamRpcGames = pkgs.runCommand "steam-rpc-games.tsv" { nativeBuildInputs = [ pkgs.asar ]; } ''
     asar extract-file ${pkgs.vesktop}/opt/Vesktop/resources/app.asar dist/js/arRpcWorker.js.map
     ${pkgs.python3}/bin/python3 -I ${./steam-rpc.py} --build arRpcWorker.js.map > $out

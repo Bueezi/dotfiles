@@ -24,6 +24,17 @@ name = "javascript"
 auto-format = true
 formatter = { command = "node", args = ["/home/ben/.config/helix/semi.mjs"] }
 
+# C/C++: the same, with clang's fix-its (semi-c.py; clang-check from dev.nix)
+[[language]]
+name = "c"
+auto-format = true
+formatter = { command = "python3", args = ["-I", "/home/ben/.config/helix/semi-c.py", "c"] }
+
+[[language]]
+name = "cpp"
+auto-format = true
+formatter = { command = "python3", args = ["-I", "/home/ben/.config/helix/semi-c.py", "c++"] }
+
 [[language]]
 name = "jsx"
 language-servers = ["typescript-language-server", "tailwindcss-ls"]

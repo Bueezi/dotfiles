@@ -1,4 +1,4 @@
-# Development: editors, compilers, language servers, containers, Android, Lean, KU Leuven's LaTeX.
+# Development: editors, compilers, language servers, containers, adb, KU Leuven's LaTeX.
 # Editors' own settings: ~/.config/helix, ~/.config/VSCodium (its extensions installed by rb)
 { pkgs, ... }:
 
@@ -12,15 +12,21 @@
     # Zed (`zeditor`), FHS variant: the language servers and extensions it downloads are generic
     # Linux binaries that need a normal /usr/lib
     zed-editor.fhs vscodium
-    helix nodejs rustc cargo podman-compose sqlite-interactive dbeaver-bin
+    helix nodejs rustc cargo podman-compose sqlite-interactive
     distrobox distroshelf
-    android-studio android-tools   # Gradle's downloaded aapt2 runs through nix-ld (base.nix)
-    gemini-cli-bin
-    # Lean 4 (VSCodium's leanprover.lean4): elan's lean/lake, toolchains in ELAN_HOME (below), the
-    # default one installed by rb. nixpkgs' elan patches the glibc toolchains it downloads for NixOS
-    elan
+    android-tools
+    # Android Studio comes from tolly's flake (~/Documents/tolly), pinned there so rebuilds don't fetch
+    # it. --profile keeps it from the daily garbage collection
+    (makeDesktopItem {
+      name = "android-studio"; desktopName = "Android Studio"; icon = "android-studio";
+      categories = [ "Development" "IDE" ];
+      exec = "${writeShellScript "android-studio-tolly" ''
+        cd ~/Documents/tolly && exec nix develop --profile ~/.cache/nix/tolly-dev -c android-studio "$@"
+      ''}";
+    })
     # KUL
     (texliveBasic.withPackages (ps: with ps; [ collection-latex collection-latexrecommended collection-fontsrecommended collection-fontsextra collection-latexextra collection-langeuropean latexmk ])) ddd gdb openssl
+    lldb   # lldb-dap: Helix's debugger for C/C++/Rust (Space+G)
     # LSP (Helix, ~/.config/helix/languages.toml): Python, C/C++, HTML/CSS/JSON (+ Emmet), JS/TS, Tailwind,
     # Rust, shell (+ shellcheck), PHP, SQL, Nix, LaTeX, TOML, YAML, Markdown
     basedpyright clang-tools vscode-langservers-extracted typescript-language-server typescript
@@ -32,10 +38,8 @@
 
   environment.sessionVariables = {
     RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";   # std sources for rust-analyzer
-    ELAN_HOME = "$HOME/.local/share/elan";   # Lean toolchains, not ~/.elan (same path as the tablet)
   };
 
-  nixpkgs.config.android_sdk.accept_license = true;   # Android Studio's SDK
 
   virtualisation = {
     containers.enable = true;

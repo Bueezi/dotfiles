@@ -140,11 +140,11 @@ background_render = true
 # Half-width columns for the chat, music and Steam windows, 9/10 (centred) while alone on the
 # workspace: leaving alone goes back to the rule without is_alone
 [[window_rule]]
-match.app_id = ["^ytmusic$", "^vesktop$", "^io.github.yapfast.Yapfast$", "^steam$"]
+match.app_id = ["^ytmusic$", "^io.github.yapfast.Yapfast$", "^steam$"]
 default_scrolling_extent = 0.5
 
 [[window_rule]]
-match.app_id = ["^ytmusic$", "^vesktop$", "^io.github.yapfast.Yapfast$", "^steam$"]
+match.app_id = ["^ytmusic$", "^io.github.yapfast.Yapfast$", "^steam$"]
 match.is_alone = true
 default_scrolling_extent = 0.90
 
