@@ -94,8 +94,7 @@ in
     noto-fonts
     noto-fonts-color-emoji
     nerd-fonts.jetbrains-mono
-    iosevka-bin
-    nerd-fonts.symbols-only   # icons for fonts without them (foot's Iosevka)
+    nerd-fonts.iosevka
   ];
 
   xdg.mime.defaultApplications =
