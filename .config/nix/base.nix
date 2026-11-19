@@ -92,7 +92,7 @@
       extraPkgs = pkgs: [ pkgs.mpv-unwrapped pkgs.webkitgtk_4_1 ];   # Nuvio
     };
   };
-  services.flatpak.enable = true;   # apps in ~/.config/flatpak/apps, installed by rb
+  services.flatpak.enable = true;
 
   system.stateVersion = "26.05";
 }

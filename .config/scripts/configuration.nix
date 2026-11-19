@@ -2,7 +2,7 @@
 { ... }:
 
 let
-  hostName = "nixos"; # e.g. "laptop" / "desktop"
+  hostName = "nixos";
   isLaptop = true;    # true = 7430U laptop, false = 7500F + RX 9070 XT desktop
 
   # Fresh install: the repo from GitHub

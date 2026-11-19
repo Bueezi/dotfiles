@@ -46,6 +46,9 @@ umbriel_audio_provider_enabled = true
 [shell.greeter_sync]
 auto_sync = true
 
+[shell.screenshot]
+directory = "/home/ben/Downloads"
+
 [theme]
 source = "wallpaper"
 

@@ -41,7 +41,7 @@ NixOS 26.05, channel-based (not a flake system). Per machine: `laptop.nix` / `de
   - `laptop.nix`, `desktop.nix` (drives, RGB, monitor, GPU), `gaming.nix` (Steam, Protons, G920, Assetto Corsa links, `steam-rpc.py` for Discord), `optional.nix` (Unsloth Studio, Upscayl: each switched on by its own `true`).
   - Self-contained extras: `librewolf.nix` (bakes in `.config/librewolf/prefs.js` + `policies.json`), `plymouth.nix` (boot splash), `webapps.nix` + `webapps/` (YouTube Music as an Electron app, see `webapp.js`; ads blocked by its `block` list and `ytmusic/preload.js`; Discord presence: `ytmusic/discord.js`).
 - `.config/scripts/`: install scripts served by URL (`nix.b3n.me` → the NixOS stub; `arch.sh`/`void.sh` kept for future installs).
-- `.local/bin/rb`: rebuild (`nixos-rebuild switch`, `nvd diff`, VSCodium extensions, Flatpak apps in `.config/flatpak/apps`); `rb -u` upgrades. Power menu: *rebuild* = `cu` then `rb`, *update* = `cu` then `rb -u` and the rest; a failed `cu` doesn't stop them.
+- `.local/bin/rb`: rebuild (`nixos-rebuild switch`, `nvd diff`, VSCodium extensions); `rb -u` upgrades. Power menu: *rebuild* = `cu` then `rb`, *update* = `cu` then `rb -u` and the rest; a failed `cu` doesn't stop them.
 
 **Scripts** (`.config/wm/scripts/`): `power.sh`, `screenshot.sh` (ocr), `record.sh`, `idle.sh` (Noctalia's sleep) and `darkmode.sh apply` (Noctalia's `theme_mode_changed` hook).
 
@@ -79,4 +79,4 @@ alias config='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
 config config --local status.showUntrackedFiles no
 config checkout   # if files already exist: move them aside first
 ```
-Then copy `.config/scripts/configuration.nix` to `/etc/nixos/`, set `hostName` / `isLaptop`, rebuild, and run `cu` once (clones `~/Documents/sync`).
+Then copy `.config/scripts/configuration.nix` to `/etc/nixos/`, set `hostName` / `isLaptop`, rebuild, and run `cu` once (clones `~/Documents/sync`). Flatpaks by hand: `flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo`, then `flatpak install --user flathub org.vinegarhq.Sober` (Roblox).

@@ -1,5 +1,3 @@
-fish_add_path -g ~/.cargo/bin ~/.local/bin
-fish_add_path -ga ~/.lmstudio/bin
 set -gx MAKEFLAGS -j(nproc)
 
 if status is-interactive
@@ -11,9 +9,12 @@ if status is-interactive
 
     function fish_greeting
         echo -n ''
-        set_color --reverse --bold; echo -n ' welcome ~ '
-        set_color normal; echo -n ''
-        set_color 555; echo '  '(date '+%a %d/%m  %H:%M')
+        set_color --reverse --bold
+        echo -n ' welcome ~ '
+        set_color normal
+        echo -n ''
+        set_color 555
+        echo '  '(date '+%a %d/%m  %H:%M')
         set_color normal
     end
 
@@ -22,7 +23,8 @@ if status is-interactive
     set -g fish_cursor_insert line
     set -g fish_cursor_replace_one underscore
     set -g fish_cursor_visual block
-    function fish_mode_prompt; end   # starship shows the mode
+    function fish_mode_prompt
+    end # starship shows the mode
 
     # Aliases live in ~/.bashrc only
     for line in (string match -r '^alias \S+=.*' < ~/.bashrc)
@@ -32,7 +34,7 @@ if status is-interactive
     function f
         set -l tmp (mktemp -t yazi-cwd.XXXXXX)
         yazi $argv --cwd-file="$tmp"
-        if read -z cwd < $tmp; and test -n "$cwd"; and test "$cwd" != "$PWD"
+        if read -z cwd <$tmp; and test -n "$cwd"; and test "$cwd" != "$PWD"
             cd -- $cwd
         end
         rm -f -- $tmp

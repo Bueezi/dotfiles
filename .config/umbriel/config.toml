@@ -75,11 +75,7 @@ enabled = true
 physics = true
 
 [[window_rule]]
-match.app_id = "^scratch-power$"
-default_floating = true
-
-[[window_rule]]
-match.app_id = "^foot-float$"
+match.app_id = "^(foot-float|scratch-power)$"
 default_floating = true
 
 [[window_rule]]
@@ -100,26 +96,17 @@ match.app_id = "^yazi$"
 default_floating = true
 default_floating_size_px = { width = 1400, height = 850 }
 
-[[window_rule]]
-match.app_id = "^foot$"
-default_scrolling_extent = 0.5
-
-[[window_rule]]
-match.app_id = "^foot$"
-match.is_alone = true
-default_scrolling_extent = 0.90
-
 # Else gamescope stalls on a hidden workspace
 [[window_rule]]
 match.app_id = "gamescope"
 background_render = true
 
 [[window_rule]]
-match.app_id = ["^ytmusic$", "^io.github.yapfast.Yapfast$", "^steam$"]
+match.app_id = ["^foot$", "^ytmusic$", "^io.github.yapfast.Yapfast$", "^steam$"]
 default_scrolling_extent = 0.5
 
 [[window_rule]]
-match.app_id = ["^ytmusic$", "^io.github.yapfast.Yapfast$", "^steam$"]
+match.app_id = ["^foot$", "^ytmusic$", "^io.github.yapfast.Yapfast$", "^steam$"]
 match.is_alone = true
 default_scrolling_extent = 0.90
 

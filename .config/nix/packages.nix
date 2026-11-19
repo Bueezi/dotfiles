@@ -18,7 +18,7 @@
     exfatprogs
     librewolf mpv qbittorrent
     (ungoogled-chromium.override { commandLineArgs = "--password-store=gnome-libsecret"; })
-    libreoffice bazaar gearlever
+    libreoffice gearlever
     (builtins.getFlake "github:yapfast/yapfast/03862f6394fad09b541d731181b819a3c9713d3f").packages.${stdenv.hostPlatform.system}.yapfast
     yazi
     (builtins.getFlake "github:aaddrick/claude-desktop-debian").packages.${stdenv.hostPlatform.system}.default

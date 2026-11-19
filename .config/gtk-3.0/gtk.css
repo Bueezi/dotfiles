@@ -1,6 +1,0 @@
-/* Evince's selection and search hits: grey, not blue */
-evview.find-results:selected,
-evview.find-results:active {
-  background-color: #505050;
-  color: #ffffff;
-}
