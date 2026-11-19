@@ -12,7 +12,6 @@
     kernelPackages = pkgs.linuxPackages_latest; # RDNA4 needs a recent kernel
   };
 
-  networking.networkmanager.enable = true;
   # Once per machine: `sudo tailscale up --accept-routes`
   services.tailscale = { enable = true; useRoutingFeatures = "client"; openFirewall = true; };
   services.resolved.enable = true;   # else Tailscale takes over all DNS
@@ -47,7 +46,6 @@
     graphics = { enable = true; enable32Bit = true; };
     enableRedistributableFirmware = true;
     cpu.amd.updateMicrocode = true;
-    bluetooth.enable = true;
   };
 
   services.fwupd.enable = true;
@@ -66,9 +64,6 @@
     alsa = { enable = true; support32Bit = true; };
     pulse.enable = true;
   };
-
-  services.upower.enable = true;
-  services.power-profiles-daemon.enable = true;
 
   nix = {
     settings.experimental-features = [ "nix-command" "flakes" ];

@@ -13,7 +13,7 @@
     ./optional.nix
     ./librewolf.nix
     ./plymouth.nix
-    ./webapps.nix
+    ./limusic.nix
     ./noctalia.nix
   ];
 }

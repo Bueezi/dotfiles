@@ -2,7 +2,7 @@
 
 {
   environment.systemPackages = with pkgs; [
-    bc git gh gcc python3 less htop btop powertop fastfetch cowsay
+    bc gh gcc python3 htop btop powertop fastfetch cowsay
     wl-clipboard zip unzip p7zip ffmpeg jq wl-mirror
     imagemagick
     hyprpicker

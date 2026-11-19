@@ -15,6 +15,7 @@ in
   programs.noctalia = {
     enable = true;
     package = pkgs.noctalia;
+    recommendedServices.enable = true;   # NetworkManager, Bluetooth, UPower, power-profiles-daemon
   };
 
   # For ~/.config/umbriel/config.toml's include of the packaged config

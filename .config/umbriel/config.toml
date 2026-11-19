@@ -102,11 +102,11 @@ match.app_id = "gamescope"
 background_render = true
 
 [[window_rule]]
-match.app_id = ["^foot$", "^ytmusic$", "^io.github.yapfast.Yapfast$", "^steam$"]
+match.app_id = ["^foot$", "^limusic-app$", "^io.github.yapfast.Yapfast$", "^steam$"]
 default_scrolling_extent = 0.5
 
 [[window_rule]]
-match.app_id = ["^foot$", "^ytmusic$", "^io.github.yapfast.Yapfast$", "^steam$"]
+match.app_id = ["^foot$", "^limusic-app$", "^io.github.yapfast.Yapfast$", "^steam$"]
 match.is_alone = true
 default_scrolling_extent = 0.90
 
@@ -125,7 +125,7 @@ default_scrolling_extent = 0.90
 "Mod+Shift+E" = { action = "spawn foot --app-id=yazi yazi", repeat = false }
 "Mod+E" = { action = "spawn foot --app-id=yazi-side yazi", repeat = false }
 "Mod+U" = { action = "spawn librewolf https://toledo.kuleuven.be/portal/", repeat = false }
-"Mod+Y" = { action = "spawn ~/.config/umbriel/run.sh toggle ytmusic ytmusic", repeat = false }
+"Mod+Y" = { action = "spawn ~/.config/umbriel/run.sh toggle limusic-app limusic-app", repeat = false }
 "Mod+Shift+S" = { action = "spawn noctalia msg screenshot-region", repeat = false }
 "Mod+Shift+X" = { action = "spawn ~/.config/wm/scripts/screenshot.sh ocr", repeat = false }
 "Mod+Shift+R" = { action = "spawn ~/.config/wm/scripts/record.sh", repeat = false }

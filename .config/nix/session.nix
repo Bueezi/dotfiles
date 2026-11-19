@@ -68,13 +68,8 @@ in
   services.gnome.gnome-keyring.enable = true;
   security.pam.services.greetd.enableGnomeKeyring = true;
   security.pam.services.passwd.enableGnomeKeyring = true;   # keeps the keyring's password in sync
-  security.polkit.enable = true;
 
-  xdg.portal = {
-    enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
-    config.common.default = [ "gtk" ];
-  };
+  xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
 
   qt = {
     enable = true;
