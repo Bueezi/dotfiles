@@ -15,8 +15,17 @@
     man-pages man-pages-posix # man
     nvd   # rb: what each rebuild changed
     gdu   # disk usage, in the terminal: gdu <dir>
+    # Basics a minimal NixOS leaves out: what a file is, folders as a tree, downloads, searching
+    file tree wget ripgrep fd xxd gnumake
+    # What's using it: open files/ports (lsof), killall/pstree/fuser (psmisc), DNS (dig, nslookup)
+    lsof psmisc dnsutils
+    # Hardware: lspci, lsusb, temperatures (sensors), drive health (smartctl, nvme smart-log)
+    pciutils usbutils lm_sensors smartmontools nvme-cli
+    exfatprogs   # mkfs.exfat: USB sticks and SD cards that Windows/macOS/phones read
     # Apps
-    librewolf ungoogled-chromium mpv qbittorrent
+    librewolf mpv qbittorrent
+    # Its cookie key in the keyring, as for Claude below (only the launcher is rebuilt, not Chromium)
+    (ungoogled-chromium.override { commandLineArgs = "--password-store=gnome-libsecret"; })
     libreoffice bazaar gearlever
     # Yapfast: native Discord client (Umbriel: Mod+Shift+D). Pinned to v0.3.0's commit; its flake has
     # its own lock, so it's compiled once per pin, not on every nixpkgs update
@@ -35,4 +44,9 @@
       postPatch = (old.postPatch or "") + ''sed -i -E '/(pct|capacity) >=/ s/"(31|32|93)"/"38;5;248"/g' fetch.c'';
     }))
   ];
+
+  # Claude Desktop's sign-in in the keyring: Electron picks its secret store from XDG_CURRENT_DESKTOP,
+  # doesn't know "umbriel" and falls back to basic_text, where Claude won't keep its tokens (signed out
+  # at every start). Its launcher passes this on as --password-store
+  environment.sessionVariables.CLAUDE_PASSWORD_STORE = "gnome-libsecret";
 }

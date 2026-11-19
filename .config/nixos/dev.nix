@@ -11,7 +11,9 @@
     })
     # Zed (`zeditor`), FHS variant: the language servers and extensions it downloads are generic
     # Linux binaries that need a normal /usr/lib
-    zed-editor.fhs vscodium
+    zed-editor.fhs
+    # GitHub sign-in in the keyring: Electron doesn't know "umbriel" (see Claude in packages.nix)
+    (vscodium.override { commandLineArgs = "--password-store=gnome-libsecret"; })
     helix nodejs rustc cargo podman-compose sqlite-interactive
     distrobox distroshelf
     android-tools
