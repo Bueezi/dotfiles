@@ -1,8 +1,17 @@
 { config, lib, pkgs, ... }:
 
 let
-  # Umbriel + portal have no releases: their flake follows main, locked until `rb -u`
-  flake = builtins.getFlake (toString ./noctalia);
+  # Umbriel + portal have no releases: main, locked in noctalia/flake.lock until `rb -u`.
+  # Not getFlake: a local flake fails under nixos-install (its --store /mnt).
+  locked = name: with (lib.importJSON ./noctalia/flake.lock).nodes.${name}.locked; {
+    src = builtins.fetchTarball {
+      url = "https://github.com/${owner}/${repo}/archive/${rev}.tar.gz";
+      sha256 = narHash;
+    };
+    shortRev = builtins.substring 0 7 rev;
+  };
+  umbriel = locked "umbriel";
+  portal = locked "portal";
 
   # Noctalia + greeter: their newest release tag, looked up at each rebuild
   release = repo: rec {
@@ -17,13 +26,14 @@ let
 in
 {
   imports = [
-    flake.nixosModules.umbriel
+    (import "${umbriel.src}/nix/nixos-module.nix" { xdg-desktop-portal-umbriel = null; })
     "${noctalia.src}/nix/nixos-module.nix"
     "${greeter.src}/nix/nixos-module.nix"
   ];
   nixpkgs.overlays = [
-    flake.overlays.default
     (final: prev: {
+      umbriel = final.callPackage "${umbriel.src}/nix/package.nix" { rev = umbriel.shortRev; };
+      xdg-desktop-portal-umbriel = final.callPackage "${portal.src}/nix/package.nix" { };
       noctalia = final.callPackage "${noctalia.src}/nix/package.nix" { rev = noctalia.tag; };
       noctalia-greeter = final.callPackage "${greeter.src}/nix/package.nix" { };
     })
