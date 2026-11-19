@@ -15,7 +15,7 @@
 #   nixos-generate-config --root /mnt
 #   curl -L nix.b3n.me -o configuration.nix
 #   cp configuration.nix /mnt/etc/nixos/                    # the stub (nix.b3n.me); set hostName, isLaptop
-#   nixos-install
+#   nixos-install --option extra-experimental-features 'nix-command flakes'   # the ISO's Nix has flakes off; the config uses getFlake
 #   nixos-enter --root /mnt -c 'passwd ben'
 #   reboot
 #
