@@ -12,8 +12,7 @@
     ./gaming.nix
     ./optional.nix
     ./librewolf.nix
-    ./plymouth.nix
-    ./limusic.nix
+    ./webapps.nix
     ./noctalia.nix
   ];
 }

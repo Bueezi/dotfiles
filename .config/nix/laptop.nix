@@ -14,10 +14,10 @@
       options rtw89_pci disable_aspm_l1=y disable_aspm_l1ss=y disable_clkreq=y
     '';
 
-    hardware.bluetooth.powerOnBoot = false;
+    hardware.bluetooth.powerOnBoot = true;
 
     services.logind.settings.Login.HandleLidSwitch = "suspend-then-hibernate";
     systemd.sleep.settings.Sleep.HibernateDelaySec = "30min";
-    boot.resumeDevice = "/dev/disk/by-uuid/8ac0d876-3d7b-485a-8948-4ccd737b8d5f";
+    # No boot.resumeDevice: systemd saves where it hibernated in an EFI variable and resumes from there
   };
 }

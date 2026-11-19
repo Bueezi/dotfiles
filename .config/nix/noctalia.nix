@@ -1,11 +1,33 @@
 { config, lib, pkgs, ... }:
 
 let
+  # Umbriel + portal have no releases: their flake follows main, locked until `rb -u`
   flake = builtins.getFlake (toString ./noctalia);
+
+  # Noctalia + greeter: their newest release tag, looked up at each rebuild
+  release = repo: rec {
+    tag = lib.last (lib.sort (a: b: builtins.compareVersions a b < 0)
+      (lib.filter (t: builtins.match "v[0-9.]+" t != null)
+        (map (t: t.name) (builtins.fromJSON (builtins.readFile
+          (builtins.fetchurl "https://api.github.com/repos/${repo}/tags"))))));
+    src = builtins.fetchTarball "https://github.com/${repo}/archive/refs/tags/${tag}.tar.gz";
+  };
+  noctalia = release "noctalia-dev/noctalia";
+  greeter = release "noctalia-dev/noctalia-greeter";
 in
 {
-  imports = with flake.nixosModules; [ umbriel noctalia greeter ];
-  nixpkgs.overlays = [ flake.overlays.default ];
+  imports = [
+    flake.nixosModules.umbriel
+    "${noctalia.src}/nix/nixos-module.nix"
+    "${greeter.src}/nix/nixos-module.nix"
+  ];
+  nixpkgs.overlays = [
+    flake.overlays.default
+    (final: prev: {
+      noctalia = final.callPackage "${noctalia.src}/nix/package.nix" { rev = noctalia.tag; };
+      noctalia-greeter = final.callPackage "${greeter.src}/nix/package.nix" { };
+    })
+  ];
 
   programs.umbriel = {
     enable = true;

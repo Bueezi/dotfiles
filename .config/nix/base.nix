@@ -10,6 +10,13 @@
       efi.canTouchEfiVariables = true;
     };
     kernelPackages = pkgs.linuxPackages_latest; # RDNA4 needs a recent kernel
+
+    plymouth.enable = true;
+    initrd.systemd.enable = true;
+    initrd.kernelModules = [ "amdgpu" ];   # splash at native resolution
+    initrd.verbose = false;
+    consoleLogLevel = 3;
+    kernelParams = [ "quiet" "udev.log_level=3" "systemd.show_status=auto" ];
   };
 
   # Once per machine: `sudo tailscale up --accept-routes`

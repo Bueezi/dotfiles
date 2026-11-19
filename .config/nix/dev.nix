@@ -11,14 +11,6 @@
     helix nodejs rustc cargo podman-compose sqlite-interactive
     distrobox distroshelf
     android-tools
-    # Pinned in ~/Documents/tolly's flake; --profile keeps it from garbage collection
-    (makeDesktopItem {
-      name = "android-studio"; desktopName = "Android Studio"; icon = "android-studio";
-      categories = [ "Development" "IDE" ];
-      exec = "${writeShellScript "android-studio-tolly" ''
-        cd ~/Documents/tolly && exec nix develop --profile ~/.cache/nix/tolly-dev -c android-studio "$@"
-      ''}";
-    })
     (texliveBasic.withPackages (ps: with ps; [ collection-latex collection-latexrecommended collection-fontsrecommended collection-fontsextra collection-latexextra collection-langeuropean latexmk ])) ddd gdb openssl
     lldb
     basedpyright clang-tools vscode-langservers-extracted typescript-language-server typescript

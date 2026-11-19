@@ -27,15 +27,18 @@ timeout = 300
 enable_ddcutil = true
 
 [bar.main]
-end = ["media", "tray", "notifications", "clipboard", "network", "bluetooth", "volume", "brightness",
-       "battery", "caffeine", "control-center", "session"]
+start = ["workspaces"]
+end = ["media", "gap",
+       "tray", "gap",
+       "sysmon", "network", "bluetooth", "volume", "brightness", "battery", "gap",
+       "caffeine", "notifications", "gap",
+       "session"]
 
 [nightlight]
 enabled = true
 
-[location]   # Belgium's middle, not a city: this repo is public
-latitude = 50.64
-longitude = 4.67
+[location]   # the country, not a city: this repo is public
+address = "Belgium"
 
 [lockscreen]
 transition_duration = 400
@@ -60,6 +63,17 @@ directory = "/home/ben/Documents/sync/wp/active/wallpapers_upscaled"
 
 [wallpaper.automation]
 interval_seconds = 300
+
+[widget.gap]
+type = "spacer"
+length = 16
+
+[widget.network]
+show_label = false
+
+[widget.sysmon]   # icon only: hover for the stats, click for the system panel
+visualization = "none"
+show_value = false
 
 [widget.workspaces]
 hide_when_empty = true

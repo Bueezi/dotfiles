@@ -19,13 +19,12 @@
     librewolf mpv qbittorrent
     (ungoogled-chromium.override { commandLineArgs = "--password-store=gnome-libsecret"; })
     libreoffice gearlever
-    (builtins.getFlake "github:yapfast/yapfast/03862f6394fad09b541d731181b819a3c9713d3f").packages.${stdenv.hostPlatform.system}.yapfast
+    # Latest release, not main: built from source, so every commit would be a long rebuild
+    (builtins.getFlake "github:yapfast/yapfast/${(builtins.fromJSON (builtins.readFile
+      (builtins.fetchurl "https://api.github.com/repos/yapfast/yapfast/releases/latest"))).tag_name}").packages.${stdenv.hostPlatform.system}.yapfast
     yazi
     (builtins.getFlake "github:aaddrick/claude-desktop-debian").packages.${stdenv.hostPlatform.system}.default
-    ((callPackage "${builtins.fetchTarball {
-      url = "https://github.com/areofyl/fetch/archive/e3087810e2a131ed4093440e783ac96a101ad806.tar.gz";
-      sha256 = "sha256-hgoTIBD2pvZDJxefMz+g8ALs4lqsMHOPHH4wwiomsaA=";
-    }}/nix/package.nix" { }).overrideAttrs (old: {
+    ((callPackage "${builtins.fetchTarball "https://github.com/areofyl/fetch/archive/main.tar.gz"}/nix/package.nix" { }).overrideAttrs (old: {
       postPatch = (old.postPatch or "") + ''sed -i -E '/(pct|capacity) >=/ s/"(31|32|93)"/"38;5;248"/g' fetch.c'';
     }))
   ];

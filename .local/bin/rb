@@ -1,6 +1,9 @@
 #!/bin/sh
 # rb [-u]: rebuild (and upgrade)
-[ "$1" = -u ] && { shift; set -- --upgrade "$@"; }
+if [ "$1" = -u ]; then
+    shift; set -- --upgrade "$@"
+    nix flake update --flake ~/.config/nix/noctalia || echo "rb: Umbriel/Noctalia not updated"
+fi
 old=$(readlink /run/current-system)
 sudo nixos-rebuild switch --no-reexec "$@" || exit
 if [ "$old" != "$(readlink /run/current-system)" ] && command -v nvd >/dev/null; then
