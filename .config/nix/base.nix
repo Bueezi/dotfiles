@@ -44,6 +44,7 @@
   programs.fish.generateCompletions = false;
   documentation.man.cache.enable = false;
   documentation.nixos.enable = false;
+  documentation.doc.enable = false;   # share/doc only (Rust's HTML docs: ~600 MiB); man pages stay
   environment.localBinInPath = true;
   systemd.tmpfiles.rules = [ "L+ /bin/bash - - - - ${pkgs.bashInteractive}/bin/bash" ];
 

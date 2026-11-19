@@ -19,5 +19,6 @@
     services.logind.settings.Login.HandleLidSwitch = "suspend-then-hibernate";
     systemd.sleep.settings.Sleep.HibernateDelaySec = "30min";
     # No boot.resumeDevice: systemd saves where it hibernated in an EFI variable and resumes from there
+    swapDevices = [ { device = "/var/lib/swapfile"; size = 16 * 1024; } ];   # MiB, >= RAM; inside LUKS
   };
 }

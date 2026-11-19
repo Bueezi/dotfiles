@@ -18,7 +18,7 @@
     exfatprogs
     librewolf mpv qbittorrent
     (ungoogled-chromium.override { commandLineArgs = "--password-store=gnome-libsecret"; })
-    libreoffice gearlever
+    libreoffice
     # Latest release, not main: built from source, so every commit would be a long rebuild
     (builtins.getFlake "github:yapfast/yapfast/${(builtins.fromJSON (builtins.readFile
       (builtins.fetchurl "https://api.github.com/repos/yapfast/yapfast/releases/latest"))).tag_name}").packages.${stdenv.hostPlatform.system}.yapfast

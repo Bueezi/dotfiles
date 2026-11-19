@@ -7,7 +7,11 @@
       mimeTypes = [ "text/plain" ]; categories = [ "Development" "TextEditor" ];
     })
     zed-editor.fhs
-    (vscodium.override { commandLineArgs = "--password-store=gnome-libsecret"; })
+    # A wrapper, not .override: that rebuilt all of VSCodium on every update
+    (symlinkJoin {
+      name = "vscodium"; paths = [ vscodium ]; nativeBuildInputs = [ makeWrapper ];
+      postBuild = "wrapProgram $out/bin/codium --add-flags --password-store=gnome-libsecret";
+    })
     helix nodejs rustc cargo podman-compose sqlite-interactive
     distrobox distroshelf
     android-tools
