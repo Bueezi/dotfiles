@@ -1,6 +1,5 @@
 #!/usr/bin/env node
-// Helix formatter for JS: stdin -> stdout with missing semicolons added (ESLint's `semi` rule), nothing
-// else changes. Code that doesn't parse is echoed back untouched. eslint comes from dev.nix: found via PATH.
+// Helix formatter for JS: stdin -> stdout with only missing semicolons added
 import { execFileSync } from "node:child_process";
 import { realpathSync } from "node:fs";
 import { dirname, join } from "node:path";

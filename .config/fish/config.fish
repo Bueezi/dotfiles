@@ -1,24 +1,14 @@
-# Interactive shell. foot starts fish; bash stays the login shell and runs scripts.
-
-# fish_add_path skips entries already there (fish started from fish would add them again)
 fish_add_path -g ~/.cargo/bin ~/.local/bin
 fish_add_path -ga ~/.lmstudio/bin
-# The tablet (Termux): its launchers (desktop, debian)
-set -q TERMUX_VERSION; and fish_add_path -g ~/.config/termux/bin
-# Its Android SDK (termux.sh) for Gradle. Also in ~/.bashrc
-set -q TERMUX_VERSION; and set -gx ANDROID_HOME $PREFIX/opt/android-sdk
-# make: all cores (its default is one job). Also in ~/.bashrc
 set -gx MAKEFLAGS -j(nproc)
 
 if status is-interactive
-    # Light mode (darkmode.sh): switch this foot window to its [colors-light] before the first
-    # prompt. foot is fish's parent (foot.ini execs fish); darkmode.sh signals windows already open
+    # Light mode: switch this foot window to its light colours
     if test "$(dconf read /org/gnome/desktop/interface/color-scheme 2>/dev/null)" = "'prefer-light'"
         set -l term (ps -o ppid= -p $fish_pid | string trim)
         test "$(ps -o comm= -p $term)" = foot; and kill -USR2 $term
     end
 
-    # "welcome ~" in the same pill as the prompt's directory, instead of "Welcome to fish"
     function fish_greeting
         echo -n ''
         set_color --reverse --bold; echo -n ' welcome ~ '
@@ -27,21 +17,18 @@ if status is-interactive
         set_color normal
     end
 
-    # Vim keys: Esc for normal mode. Cursor: block in normal, bar in insert
     fish_vi_key_bindings
     set -g fish_cursor_default block
     set -g fish_cursor_insert line
     set -g fish_cursor_replace_one underscore
     set -g fish_cursor_visual block
-    function fish_mode_prompt; end   # starship's ❯/❮ shows the mode instead of [I]/[N]
+    function fish_mode_prompt; end   # starship shows the mode
 
-    # Aliases live in ~/.bashrc only (add/edit them there): fish runs its `alias name='...'` lines
+    # Aliases live in ~/.bashrc only
     for line in (string match -r '^alias \S+=.*' < ~/.bashrc)
         eval $line
     end
 
-    # f: yazi, then cd to where it was quit (a program can't change its shell's directory).
-    # A function, so not one of ~/.bashrc's aliases: it has its own copy there
     function f
         set -l tmp (mktemp -t yazi-cwd.XXXXXX)
         yazi $argv --cwd-file="$tmp"

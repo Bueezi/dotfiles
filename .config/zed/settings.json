@@ -1,4 +1,3 @@
-// Zed (`zeditor`, dev.nix). Only what differs from its defaults: `zed: open default settings`
 {
   "disable_ai": true,
   "agent_servers": {

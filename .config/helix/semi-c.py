@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
-# Helix formatter for C/C++ (argument: c or c++): stdin -> stdout with missing semicolons added, nothing
-# else changes. Like semi.mjs, but C without its ';' doesn't parse, so clang (clang-check, from dev.nix's
-# clang-tools: found via PATH) says where one is expected and only those fix-its are applied; its other
-# fix-its (typo corrections etc.) are left alone. Clang stops after a few, hence the rounds.
-# Helix doesn't pass the file's path: it parses a temp copy, with -I. (Helix's cwd: the project) and
-# headers it can't find blanked out (same line numbers), so a missing one doesn't stop it
+# Helix formatter for C/C++ (c or c++): stdin -> stdout with only clang's "expected ';'" fix-its applied.
+# Clang stops after a few errors, hence the rounds
 import os, re, subprocess, sys, tempfile
 
 lang = sys.argv[1] if len(sys.argv) > 1 else "c"
@@ -31,8 +27,6 @@ try:
             if m and int(m.group(1)) not in blanked:
                 blanked.add(int(m.group(1)))
                 continue
-            # Insertions of ';' that belong to an "expected ';'" error (the last diagnostic above them;
-            # the code snippet in between can't be turned off: the fix-it lines go with it)
             at, err = set(), b""
             for l in diag:
                 if re.search(rb": (error|warning|note): ", l):

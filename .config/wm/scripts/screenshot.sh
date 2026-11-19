@@ -1,31 +1,22 @@
 #!/bin/sh
-# Region screenshot to the clipboard (the tablet's $mod+Shift+s), or with `ocr` the text in it (Mod+Shift+X;
-# tesseract: English, French, Dutch). Esc while selecting cancels.
-# Umbriel: wayfreeze covers the screen with a still image first, so video/animations stand still
-# while you select (slurp), then grim. i3 (X11, the tablet): scrot --select, frozen the same way.
-
-# $1 = the screenshot, $2 = ocr for its text instead of the picture
+# Region screenshot to the clipboard; `ocr`: the text in it
 finish() {
     if [ "$2" = ocr ]; then
         text=$(tesseract "$1" - -l eng+fra+nld 2>/dev/null | tr -d '\f')
         if [ -n "$text" ]; then
-            if [ -n "$UMBRIEL_SOCKET" ]; then printf '%s' "$text" | wl-copy
-            else printf '%s' "$text" | xclip -selection clipboard; fi
+            printf '%s' "$text" | wl-copy
             notify-send "Text in clipboard" "$(printf '%s' "$text" | head -3 | cut -c1-80)"
         else
             notify-send "No text found"
         fi
-    elif [ -n "$UMBRIEL_SOCKET" ]; then
-        wl-copy < "$1" && notify-send "Screenshot in clipboard"
     else
-        xclip -selection clipboard -t image/png -i "$1" && notify-send "Screenshot in clipboard"
+        wl-copy < "$1" && notify-send "Screenshot in clipboard"
     fi
     rm -f "$1"
 }
 
-if [ "$1" = grab ]; then   # Umbriel: runs under wayfreeze; $2 = ocr for text
-    # OCR: grab at 2x, tesseract reads small screen text much better that way. Otherwise grim's
-    # default (the highest output scale), so the laptop's 1.35 stays sharp
+if [ "$1" = grab ]; then   # under wayfreeze
+    # 2x: tesseract reads small text much better
     scale=; [ "$2" = ocr ] && scale="-s 2"
     img=$(mktemp --suffix=.png)
     g=$(slurp) && grim $scale -g "$g" "$img"; ok=$?
@@ -35,11 +26,4 @@ if [ "$1" = grab ]; then   # Umbriel: runs under wayfreeze; $2 = ocr for text
     exit 0
 fi
 
-if [ -n "$UMBRIEL_SOCKET" ]; then
-    exec wayfreeze --hide-cursor --after-freeze-cmd "$0 grab $1"
-fi
-
-# i3: no 2x for OCR, the tablet's screen is dense enough. --overwrite: mktemp already made the file
-img=$(mktemp --suffix=.png)
-if ! scrot --select --freeze --overwrite "$img"; then rm -f "$img"; exit 0; fi
-finish "$img" "$1"
+exec wayfreeze --hide-cursor --after-freeze-cmd "$0 grab $1"

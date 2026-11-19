@@ -1,3 +1,2 @@
-# Flatpak apps (PCs), from Flathub, per user: rb installs the missing ones, the power menu's
-# update keeps them updated. Others installed by hand stay
-org.vinegarhq.Sober   # Roblox (Android client), only shipped as a Flatpak
+# Flathub app IDs, installed by rb
+org.vinegarhq.Sober   # Roblox

@@ -1,11 +1,9 @@
-# Git for all machines
 [user]
 	name = Bueezi
 	email = mail@b3n.me
 [core]
 	editor = hx
-# GitHub login through gh (`gh auth login` once per machine). Plain `gh` from PATH, not the Nix store
-# path `gh auth setup-git` writes: that one broke when gh was updated and the old path was GC'd
+# Plain `gh`: the store path `gh auth setup-git` writes breaks after garbage collection
 [credential "https://github.com"]
 	helper =
 	helper = !gh auth git-credential

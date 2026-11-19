@@ -1,11 +1,5 @@
 #!/usr/bin/env bash
-# cu ["message"]: sync this machine with the others.
-# 1. Dotfiles (bare repo ~/.dotfiles, work tree ~): commit tracked changes, pull --rebase, push. New
-#    files still need an explicit `config add <file>` first. Without a message, the commit lists the
-#    changed files' names.
-# 2. ~/Documents/sync (wallpapers in wp/): its own private repo, github.com/Bueezi/sync, that only
-#    ever has one commit, so a file deleted here is gone from GitHub too. Takes the other machines'
-#    state, or replaces the commit with this folder and force-pushes; stops if both sides changed.
+# cu ["message"]: sync dotfiles, then ~/Documents/sync (one-commit repo, force-pushed)
 
 config() { git --git-dir="$HOME/.dotfiles" --work-tree="$HOME" "$@"; }
 
@@ -15,20 +9,16 @@ dotfiles() {
     if ! config diff --cached --quiet; then
         config commit -q -m "${1:-update: $(config diff --cached --name-only | sed 's|.*/||' | sort -u | head -6 | paste -sd ' ' -)}" || return
     fi
-    # origin main spelled out: a fresh clone (the tablet's) has no upstream branch set
     config pull --rebase origin main && config push origin main
 }
 
 documents() {
     local d=~/Documents/sync mine='' theirs='' old base
     echo "==> ~/Documents/sync"
-    # Not quiet: the first clone (the wallpapers) takes a while, git shows its progress
     [ -d "$d/.git" ] || git clone https://github.com/Bueezi/sync "$d" || return
     git -C "$d" fetch --progress origin || return
     old=$(git -C "$d" rev-parse origin/main)
-    # Both sides are compared with the last commit they agreed on (refs/sync/base), not HEAD: after a
-    # failed push HEAD is a commit GitHub never got, which looked like another machine's change, and
-    # the next sync reset this folder to GitHub's, deleting the files added here
+    # Not HEAD: after a failed push it looked like another machine's change and wiped local files
     git -C "$d" rev-parse -q --verify refs/sync/base >/dev/null || git -C "$d" update-ref refs/sync/base HEAD
     base=$(git -C "$d" rev-parse refs/sync/base)
     git -C "$d" add -A
@@ -42,8 +32,7 @@ documents() {
             echo "cu: took the other machines' ~/Documents/sync"
     elif [ -n "$mine" ]; then
         git -C "$d" reset -q --soft "$(git -C "$d" commit-tree "$(git -C "$d" write-tree)" -m sync)" &&
-            # A bitmap index first: the new commit doesn't descend from the old one, and without it
-            # git can't see the files GitHub already has, so it sent all of them (~100 MB) every time
+            # Else every push resends all files (~100 MB)
             git -C "$d" repack -q -a -d --write-bitmap-index &&
             git -C "$d" push -q --force-with-lease=main:"$old" origin HEAD:main &&
             git -C "$d" update-ref refs/sync/base HEAD && echo "cu: pushed ~/Documents/sync"

@@ -1,6 +1,4 @@
-/* GTK4/libadwaita, like the Mono-dark GTK3 theme (~/.local/share/themes/Mono-dark): pure black backgrounds
-   in dark mode instead of Adwaita's grey (the blue accent stays). color-scheme (Noctalia's
-   Mod+Shift+T, the tablet's darkmode.sh) picks the block below. */
+/* Like Mono-dark: black instead of Adwaita's grey in dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
     --window-bg-color: #000000;

@@ -3,13 +3,13 @@
 theme = "base16_transparent"
 
 [editor]
-completion-trigger-len = 1   # default is 2
-idle-timeout = 50            # ms before the popup appears, default 250
+completion-trigger-len = 1
+idle-timeout = 50
 soft-wrap.enable = true
-bufferline = "multiple"      # open files as tabs, once there's more than one
+bufferline = "multiple"
 end-of-line-diagnostics = "hint"
-inline-diagnostics.cursor-line = "hint"   # the cursor line's errors written out under it
-lsp.display-inlay-hints = true            # types and parameter names from the language servers
+inline-diagnostics.cursor-line = "hint"
+lsp.display-inlay-hints = true
 indent-guides.render = true
 cursor-shape.insert = "bar"
 
