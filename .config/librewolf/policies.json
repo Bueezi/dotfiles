@@ -1,11 +1,5 @@
 {
   "policies": {
-    "ExtensionSettings": {
-      "{22b0eca1-8c02-4c0d-a5d7-6604ddd9836e}": {
-        "installation_mode": "normal_installed",
-        "install_url": "https://addons.mozilla.org/firefox/downloads/latest/nicothin-space/latest.xpi"
-      }
-    },
     "SearchEngines": {
       "Add": [
         {
@@ -17,7 +11,9 @@
         }
       ],
       "Default": "DuckDuckGo",
-      "Remove": ["DuckDuckGo No-AI"]
+      "Remove": [
+        "DuckDuckGo No-AI"
+      ]
     }
   }
 }

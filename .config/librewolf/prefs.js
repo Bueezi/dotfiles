@@ -23,3 +23,25 @@ lockPref("browser.newtabpage.activity-stream.showSearch", false);
 pref("services.sync.prefs.sync.browser.newtabpage.activity-stream.showSearch", false);
 defaultPref("browser.tabs.closeWindowWithLastTab", false);
 defaultPref("browser.download.useDownloadDir", true);   // LibreWolf asks every time
+
+defaultPref("browser.tabs.inTitlebar", 0);   // no close button
+// Toolbar (Customize → Restore Defaults comes back here). "seen": else uBlock/SponsorBlock pin themselves
+defaultPref("browser.uiCustomization.state", JSON.stringify({
+  placements: {
+    "nav-bar": ["back-button", "forward-button", "customizableui-special-spring1", "vertical-spacer",
+      "stop-reload-button", "urlbar-container", "logins-button", "customizableui-special-spring2",
+      "downloads-button", "reset-pbm-toolbar-button", "unified-extensions-button",
+      "addon_darkreader_org-browser-action", "_d7742d87-e61d-4b78-b8a1-b469842139fa_-browser-action"],
+    "unified-extensions-area": ["ublock0_raymondhill_net-browser-action", "sponsorblocker_ajay_app-browser-action"],
+    "widget-overflow-fixed-list": [],
+    "toolbar-menubar": ["menubar-items"],
+    "TabsToolbar": [],
+    "vertical-tabs": ["tabbrowser-tabs"],
+    "PersonalToolbar": ["personal-bookmarks"],
+  },
+  seen: ["ublock0_raymondhill_net-browser-action", "sponsorblocker_ajay_app-browser-action",
+    "addon_darkreader_org-browser-action", "_d7742d87-e61d-4b78-b8a1-b469842139fa_-browser-action"],
+  dirtyAreaCache: ["nav-bar", "TabsToolbar", "vertical-tabs", "toolbar-menubar", "PersonalToolbar", "unified-extensions-area"],
+  currentVersion: 28,
+  newElementCount: 2,
+}));

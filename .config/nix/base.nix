@@ -98,7 +98,7 @@
   # AppImages that update themselves: drop them in ~/.local/share/appimages, the menu follows
   systemd.user.services.appimage-menu = {
     wantedBy = [ "default.target" ];
-    unitConfig.StartLimitIntervalSec = 0;
+    unitConfig = { StartLimitIntervalSec = 0; ConditionUser = "!@system"; };   # not the greeter
     serviceConfig = {
       Type = "oneshot";
       ExecStart = "${pkgs.writeShellApplication {
@@ -110,6 +110,7 @@
   };
   systemd.user.paths.appimage-menu = {
     wantedBy = [ "default.target" ];
+    unitConfig.ConditionUser = "!@system";
     pathConfig = { PathChanged = "%h/.local/share/appimages"; MakeDirectory = true; };
   };
   services.flatpak.enable = true;

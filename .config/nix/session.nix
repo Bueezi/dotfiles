@@ -88,7 +88,7 @@ in
     }];
   };
   # Mono-dark imports ../../adw-gtk3-dark
-  systemd.user.tmpfiles.rules = [ "L+ %h/.local/share/themes/adw-gtk3-dark - - - - /run/current-system/sw/share/themes/adw-gtk3-dark" ];
+  systemd.user.tmpfiles.users.ben.rules = [ "L+ %h/.local/share/themes/adw-gtk3-dark - - - - /run/current-system/sw/share/themes/adw-gtk3-dark" ];
 
   fonts.packages = with pkgs; [
     noto-fonts
