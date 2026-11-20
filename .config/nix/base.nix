@@ -95,6 +95,23 @@
       extraPkgs = pkgs: [ pkgs.mpv-unwrapped pkgs.webkitgtk_4_1 ];   # Nuvio
     };
   };
+  # AppImages that update themselves: drop them in ~/.local/share/appimages, the menu follows
+  systemd.user.services.appimage-menu = {
+    wantedBy = [ "default.target" ];
+    unitConfig.StartLimitIntervalSec = 0;
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.writeShellApplication {
+        name = "appimage-menu";
+        runtimeInputs = with pkgs; [ coreutils gnused findutils squashfsTools ];
+        text = builtins.readFile ./appimage-menu.sh;
+      }}/bin/appimage-menu";
+    };
+  };
+  systemd.user.paths.appimage-menu = {
+    wantedBy = [ "default.target" ];
+    pathConfig = { PathChanged = "%h/.local/share/appimages"; MakeDirectory = true; };
+  };
   services.flatpak.enable = true;
 
   system.stateVersion = "26.05";
