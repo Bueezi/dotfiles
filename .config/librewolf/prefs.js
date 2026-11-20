@@ -50,7 +50,8 @@ Components.classes["@mozilla.org/observer-service;1"].getService(Components.inte
   } }, "final-ui-startup");
 
 defaultPref("browser.tabs.inTitlebar", 0);   // no close button
-// Toolbar (Customize → Restore Defaults comes back here). "seen": else uBlock/SponsorBlock pin themselves
+defaultPref("browser.fireButton.enabled", false);   // flame "Forget" button, on in LibreWolf 160
+// Toolbar (Customize → Restore Defaults, then restart: until then it shows Firefox's own). "seen": else uBlock/SponsorBlock pin themselves
 defaultPref("browser.uiCustomization.state", JSON.stringify({
   placements: {
     "nav-bar": ["back-button", "forward-button", "customizableui-special-spring1", "vertical-spacer",
