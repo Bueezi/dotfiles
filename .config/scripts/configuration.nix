@@ -19,6 +19,15 @@
 #   nixos-enter --root /mnt -c 'passwd ben'
 #   reboot
 #
+#   Then as ben (a TTY: the desktop has no config yet), the dotfiles into ~:
+#   git clone --bare https://github.com/Bueezi/dotfiles.git ~/.dotfiles
+#   git --git-dir=$HOME/.dotfiles --work-tree=$HOME config --local status.showUntrackedFiles no
+#   git --git-dir=$HOME/.dotfiles --work-tree=$HOME checkout
+#   rb              # now from ~/.config/nix, not the GitHub copy
+#   gh auth login   # for cu (pushes, private ~/Documents/sync)
+#   cu
+#   log in to the desktop again (quit Umbriel: Mod+Shift+M)
+#
 #   After: cryptsetup luksHeaderBackup DISKp2 --header-backup-file luks-header.img  (keep it off this disk)
 #
 #   No typing at boot (TPM2, optional; weak without Secure Boot, passphrase stays as fallback):
