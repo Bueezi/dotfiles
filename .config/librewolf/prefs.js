@@ -1,4 +1,5 @@
 // defaultPref(): Settings can still change it; pref(): forced
+// No backticks or dollar signs: the Nix wrapper runs this file through the shell
 
 // Fingerprinting protection off (fixes wrong timezone, light theme, captchas...)
 defaultPref("privacy.resistFingerprinting", false);
@@ -23,6 +24,30 @@ lockPref("browser.newtabpage.activity-stream.showSearch", false);
 pref("services.sync.prefs.sync.browser.newtabpage.activity-stream.showSearch", false);
 defaultPref("browser.tabs.closeWindowWithLastTab", false);
 defaultPref("browser.download.useDownloadDir", true);   // LibreWolf asks every time
+
+// New tab background, from ~/Documents/sync (there after the first cu). A data: URL: the new tab
+// page's sandbox can't read ~. Settings' own custom wallpaper still draws over it.
+Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService)
+  .addObserver({ observe() {
+    try {
+      const Cc = Components.classes, Ci = Components.interfaces;
+      Components.utils.importGlobalProperties(["btoa"]);
+      const f = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties).get("Home", Ci.nsIFile);
+      for (const p of ["Documents", "sync", "wp", "active", "wallpapers_upscaled", "b-297.jpg"]) f.append(p);
+      if (!f.exists()) return;
+      const fs = Cc["@mozilla.org/network/file-input-stream;1"].createInstance(Ci.nsIFileInputStream);
+      fs.init(f, -1, 0, 0);
+      const bs = Cc["@mozilla.org/binaryinputstream;1"].createInstance(Ci.nsIBinaryInputStream);
+      bs.setInputStream(fs);
+      const img = btoa(bs.readBytes(bs.available()));
+      fs.close();
+      const css = '@-moz-document url("about:newtab"), url("about:home") { body { background: ' +
+        'url("data:image/jpeg;base64,' + img + '") center / cover fixed !important; } }';
+      const sss = Cc["@mozilla.org/content/style-sheet-service;1"].getService(Ci.nsIStyleSheetService);
+      sss.loadAndRegisterSheet(Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService)
+        .newURI("data:text/css," + encodeURIComponent(css)), sss.USER_SHEET);
+    } catch (e) { Components.utils.reportError(e); }
+  } }, "final-ui-startup");
 
 defaultPref("browser.tabs.inTitlebar", 0);   // no close button
 // Toolbar (Customize → Restore Defaults comes back here). "seen": else uBlock/SponsorBlock pin themselves
