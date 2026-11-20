@@ -21,9 +21,16 @@ curl -L nix.b3n.me -o configuration.nix
 cp configuration.nix /mnt/etc/nixos/
 
 # In /mnt/etc/nixos/configuration.nix (the stub): set hostName and isLaptop.
+# The ISO has no swap and lives in RAM: without one, nixos-install runs out of memory.
+fallocate -l 16G /mnt/swapfile
+chmod 600 /mnt/swapfile
+mkswap /mnt/swapfile
+swapon /mnt/swapfile
 # The ISO's Nix has flakes off and the config uses getFlake, hence the option.
 nixos-install --option extra-experimental-features 'nix-command flakes'
 nixos-enter --root /mnt -c 'passwd ben'
+swapoff /mnt/swapfile
+rm /mnt/swapfile
 reboot
 
 
