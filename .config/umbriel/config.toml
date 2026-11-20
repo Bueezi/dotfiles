@@ -15,6 +15,7 @@ files = [
 ]
 
 [general]
+show_cheatsheet = false   # at login; Mod+/ still opens it
 autostart = [
   "noctalia",
   "librewolf",

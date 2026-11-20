@@ -70,6 +70,7 @@
   };
 
   services.fwupd.enable = true;
+  systemd.services.fwupd-efi.after = [ "generate-sb-keys.service" ];   # signs with Lanzaboote's keys
 
   # Gamakay NS68 keyboard config over WebHID (gearhub.top). 70-: uaccess must come before 73-seat-late
   services.udev.packages = [
