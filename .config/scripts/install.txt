@@ -1,0 +1,66 @@
+NixOS install (LUKS)
+
+
+Partition, encrypt, mount
+
+As root (sudo -i). With gdisk DISK: p1 EFI system (ef00), p2 Linux (8300) for the rest. No swap partition.
+
+mkfs.fat -F32 -n boot DISKp1
+cryptsetup luksFormat DISKp2
+cryptsetup open --allow-discards --persistent DISKp2 cryptroot
+mkfs.ext4 -L nixos /dev/mapper/cryptroot
+
+mount /dev/mapper/cryptroot /mnt
+mount --mkdir -o umask=077 DISKp1 /mnt/boot
+
+--allow-discards --persistent: TRIM through LUKS, saved in its header.
+
+
+Install
+
+nixos-generate-config --root /mnt
+curl -L nix.b3n.me -o configuration.nix
+cp configuration.nix /mnt/etc/nixos/
+
+In /mnt/etc/nixos/configuration.nix (the stub), set hostName and isLaptop. The ISO's Nix has flakes off and the config uses getFlake, hence the option:
+
+nixos-install --option extra-experimental-features 'nix-command flakes'
+nixos-enter --root /mnt -c 'passwd ben'
+reboot
+
+
+Dotfiles
+
+As ben, on a TTY (the desktop has no config yet):
+
+git clone --bare https://github.com/Bueezi/dotfiles.git ~/.dotfiles
+git --git-dir=$HOME/.dotfiles --work-tree=$HOME config --local status.showUntrackedFiles no
+git --git-dir=$HOME/.dotfiles --work-tree=$HOME checkout
+rb
+gh auth login
+cu
+
+rb now builds from ~/.config/nix, not the GitHub copy. gh auth login is for cu (pushes, the private ~/Documents/sync). Then log in to the desktop again (quit Umbriel: Mod+Shift+M).
+
+
+Secure Boot (Lanzaboote)
+
+The config makes the keys at the first boot. systemd-boot enrolls them (Microsoft's too: the GPU's option ROM is signed by them) at a boot with the firmware in Setup Mode. To get to the firmware:
+
+systemctl reboot --firmware-setup
+
+In its Secure Boot settings: "Reset to Setup Mode", or delete only the Platform Key (PK). Not "clear all keys": that also drops the dbx (the revoked bootloaders). Save and boot NixOS: systemd-boot enrolls the keys. Back in the firmware, enable Secure Boot (ASUS: OS Type "Windows UEFI mode"). Then in NixOS, "Secure Boot: enabled (user)" and nothing unsigned:
+
+bootctl status
+sudo sbctl verify
+
+Ventoy then needs its key enrolled (MOK), or Secure Boot off, to boot.
+
+
+TPM unlock
+
+After Secure Boot, since it binds to PCR 7 (the Secure Boot state and keys). Asks the LUKS passphrase once:
+
+sudo systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7 $(lsblk -sno PATH,TYPE /dev/mapper/cryptroot | awk '$2=="part"{print $1}')
+
+The passphrase comes back when PCR 7 changes (Secure Boot off, new keys, a firmware or dbx update): type it, then run the same command with --wipe-slot=tpm2 added. Undo: only --wipe-slot=tpm2 and the partition.

@@ -1,14 +1,27 @@
 { pkgs, ... }:
 
 {
+  # Latest release: its tool is built locally
+  imports = [ (builtins.getFlake "github:nix-community/lanzaboote/${(builtins.fromJSON (builtins.readFile
+    (builtins.fetchurl "https://api.github.com/repos/nix-community/lanzaboote/releases/latest"))).tag_name}").nixosModules.lanzaboote ];
+
   boot = {
     loader = {
       timeout = 0;
-      systemd-boot.enable = true;
+      systemd-boot.enable = false;   # Lanzaboote instead, which reads the two below
       systemd-boot.configurationLimit = 3;
       systemd-boot.editor = false;   # else anyone at the keyboard can boot init=/bin/sh
       efi.canTouchEfiVariables = true;
     };
+    # Keys made at first boot, enrolled by systemd-boot at a boot in Setup Mode
+    # (with Microsoft's: the GPU's option ROM is signed by them)
+    lanzaboote = {
+      enable = true;
+      pkiBundle = "/var/lib/sbctl";
+      autoGenerateKeys.enable = true;
+      autoEnrollKeys.enable = true;
+    };
+    initrd.luks.devices.cryptroot.crypttabExtraOpts = [ "tpm2-device=auto" ];
     kernelPackages = pkgs.linuxPackages_latest; # RDNA4 needs a recent kernel
 
     plymouth.enable = true;
@@ -114,6 +127,7 @@
     pathConfig = { PathChanged = "%h/.local/share/appimages"; MakeDirectory = true; };
   };
   services.flatpak.enable = true;
+  environment.systemPackages = [ pkgs.sbctl ];
 
   system.stateVersion = "26.05";
 }
