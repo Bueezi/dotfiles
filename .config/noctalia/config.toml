@@ -49,8 +49,11 @@ umbriel_audio_provider_enabled = true
 [shell.greeter_sync]
 auto_sync = true
 
-[shell.screenshot]
+[shell.screenshot]   # no file: screenshot.sh's Save button writes it
 directory = "/home/ben/Downloads"
+save_to_file = false
+pipe_to_command = true
+pipe_command = "~/.config/wm/scripts/screenshot.sh notify"
 
 [theme]
 source = "wallpaper"

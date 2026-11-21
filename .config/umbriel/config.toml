@@ -78,10 +78,6 @@ default_floating = true
 match.app_id = "^(foot|foot-float|scratch-power)$"
 default_floating_size = { width = 0.6, height = 0.7 }
 
-[[window_rule]]
-match.app_id = "^yazi-side$"
-default_scrolling_extent = 0.5
-
 # The packaged blur shows only the wallpaper behind floating windows
 [[window_rule]]
 match.is_floating = true
@@ -98,11 +94,11 @@ match.app_id = "gamescope"
 background_render = true
 
 [[window_rule]]
-match.app_id = ["^foot$", "^ytmusic$", "^io.github.yapfast.Yapfast$", "^steam$"]
+match.app_id = ["^foot$", "^yazi-side$", "^ytmusic$", "^io.github.yapfast.Yapfast$", "^steam$"]
 default_scrolling_extent = 0.5
 
 [[window_rule]]
-match.app_id = ["^foot$", "^ytmusic$", "^io.github.yapfast.Yapfast$", "^steam$"]
+match.app_id = ["^foot$", "^yazi-side$", "^ytmusic$", "^io.github.yapfast.Yapfast$", "^steam$"]
 match.is_alone = true
 default_scrolling_extent = 0.90
 
