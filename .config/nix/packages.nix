@@ -22,7 +22,7 @@
     # Latest release, not main: built from source, so every commit would be a long rebuild
     (builtins.getFlake "github:yapfast/yapfast/${(builtins.fromJSON (builtins.readFile
       (builtins.fetchurl "https://api.github.com/repos/yapfast/yapfast/releases/latest"))).tag_name}").packages.${stdenv.hostPlatform.system}.yapfast
-    yazi zellij
+    yazi tmux
     (builtins.getFlake "github:aaddrick/claude-desktop-debian").packages.${stdenv.hostPlatform.system}.default
     ((callPackage "${builtins.fetchTarball "https://github.com/areofyl/fetch/archive/main.tar.gz"}/nix/package.nix" { }).overrideAttrs (old: {
       postPatch = (old.postPatch or "") + ''sed -i -E '/(pct|capacity) >=/ s/"(31|32|93)"/"38;5;248"/g' fetch.c'';
