@@ -70,9 +70,6 @@ curve = "easeout"
 [animation.layers]
 enabled = true
 
-[animation.windows_drag]
-physics = true
-
 [[window_rule]]
 match.app_id = "^(foot-float|scratch-power)$"
 default_floating = true

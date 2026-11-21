@@ -29,8 +29,14 @@ defaultPref("browser.download.useDownloadDir", true);   // LibreWolf asks every 
 // page's sandbox can't read ~. Settings' own custom wallpaper still draws over it.
 Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService)
   .addObserver({ observe() {
+    const Cc = Components.classes, Ci = Components.interfaces;
+    const sss = Cc["@mozilla.org/content/style-sheet-service;1"].getService(Ci.nsIStyleSheetService);
+    const addCss = css => sss.loadAndRegisterSheet(Cc["@mozilla.org/network/io-service;1"]
+      .getService(Ci.nsIIOService).newURI("data:text/css," + encodeURIComponent(css)), sss.USER_SHEET);
+    // No buttons under the vertical tabs. Not sidebar.main.tools = "": an empty list is refilled at startup
+    addCss('@-moz-document url("chrome://browser/content/browser.xhtml") { ' +
+      '#sidebar-tools-and-extensions-splitter, .buttons-wrapper { display: none !important; } }');
     try {
-      const Cc = Components.classes, Ci = Components.interfaces;
       Components.utils.importGlobalProperties(["btoa"]);
       const f = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties).get("Home", Ci.nsIFile);
       for (const p of ["Documents", "sync", "wp", "active", "wallpapers_upscaled", "b-297.jpg"]) f.append(p);
@@ -43,9 +49,7 @@ Components.classes["@mozilla.org/observer-service;1"].getService(Components.inte
       fs.close();
       const css = '@-moz-document url("about:newtab"), url("about:home") { body { background: ' +
         'url("data:image/jpeg;base64,' + img + '") center / cover fixed !important; } }';
-      const sss = Cc["@mozilla.org/content/style-sheet-service;1"].getService(Ci.nsIStyleSheetService);
-      sss.loadAndRegisterSheet(Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService)
-        .newURI("data:text/css," + encodeURIComponent(css)), sss.USER_SHEET);
+      addCss(css);
     } catch (e) { Components.utils.reportError(e); }
   } }, "final-ui-startup");
 
