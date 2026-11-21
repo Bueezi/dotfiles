@@ -61,9 +61,6 @@ style = "zoom"
 duration_ms = 250
 curve = "easeout"
 
-[animation.windows_move]
-effect = "squash"
-
 # [animation.workspaces]
 # style = "reveal"
 # effect = "workspace_wipe"
