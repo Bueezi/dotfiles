@@ -52,23 +52,23 @@ default_extent_fraction = 1.0
 
 # No shader borders: they kept the GPU busy at idle
 [animation.windows_in]
-effect = "reveal"
+style = "zoom"
 duration_ms = 300
 curve = "easeout"
 
 [animation.windows_out]
-effect = "reveal"
+style = "zoom"
 duration_ms = 250
 curve = "easeout"
 
 [animation.windows_move]
 effect = "squash"
 
-[animation.workspaces]
-style = "reveal"
-effect = "workspace_wipe"
-duration_ms = 300
-curve = "easeout"
+# [animation.workspaces]
+# style = "reveal"
+# effect = "workspace_wipe"
+# duration_ms = 300
+# curve = "easeout"
 
 [animation.layers]
 enabled = true
