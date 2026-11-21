@@ -33,9 +33,11 @@ Components.classes["@mozilla.org/observer-service;1"].getService(Components.inte
     const sss = Cc["@mozilla.org/content/style-sheet-service;1"].getService(Ci.nsIStyleSheetService);
     const addCss = css => sss.loadAndRegisterSheet(Cc["@mozilla.org/network/io-service;1"]
       .getService(Ci.nsIIOService).newURI("data:text/css," + encodeURIComponent(css)), sss.USER_SHEET);
-    // No buttons under the vertical tabs. Not sidebar.main.tools = "": an empty list is refilled at startup
+    // No buttons under the vertical tabs (not sidebar.main.tools = "": refilled at startup), and the
+    // collapsed sidebar takes its width from them. No close button: inTitlebar 0 would turn the toolbar grey
     addCss('@-moz-document url("chrome://browser/content/browser.xhtml") { ' +
-      '#sidebar-tools-and-extensions-splitter, .buttons-wrapper { display: none !important; } }');
+      'sidebar-main:not([expanded]) { min-width: var(--tab-collapsed-width) !important; } ' +
+      '#sidebar-tools-and-extensions-splitter, .buttons-wrapper, .titlebar-buttonbox-container { display: none !important; } }');
     try {
       Components.utils.importGlobalProperties(["btoa"]);
       const f = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties).get("Home", Ci.nsIFile);
@@ -53,7 +55,6 @@ Components.classes["@mozilla.org/observer-service;1"].getService(Components.inte
     } catch (e) { Components.utils.reportError(e); }
   } }, "final-ui-startup");
 
-defaultPref("browser.tabs.inTitlebar", 0);   // no close button
 defaultPref("browser.fireButton.enabled", false);   // flame "Forget" button, on in LibreWolf 160
 // Toolbar (Customize → Restore Defaults, then restart: until then it shows Firefox's own). "seen": else uBlock/SponsorBlock pin themselves
 defaultPref("browser.uiCustomization.state", JSON.stringify({
