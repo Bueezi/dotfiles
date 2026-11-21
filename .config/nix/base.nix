@@ -106,7 +106,14 @@
     enable = true;
     binfmt = true;
     package = pkgs.appimage-run.override {
-      extraPkgs = pkgs: [ pkgs.mpv-unwrapped pkgs.webkitgtk_4_1 pkgs.bubblewrap ];   # Nuvio; Beanstalk's sandbox
+      extraPkgs = pkgs: [
+        pkgs.mpv-unwrapped pkgs.webkitgtk_4_1   # Nuvio
+        # Beanstalk's sandbox binds only /usr, whose files here are links into the store
+        (pkgs.writeShellScriptBin "bwrap" ''
+          case "$1" in --version|--help) ;; *) set -- --ro-bind /nix/store /nix/store "$@" ;; esac
+          exec ${pkgs.bubblewrap}/bin/bwrap "$@"
+        '')
+      ];
     };
   };
   # AppImages that update themselves: drop them in ~/.local/share/appimages, the menu follows
