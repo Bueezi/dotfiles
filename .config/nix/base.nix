@@ -113,6 +113,7 @@
           case "$1" in --version|--help) ;; *) set -- --ro-bind /nix/store /nix/store "$@" ;; esac
           exec ${pkgs.bubblewrap}/bin/bwrap "$@"
         '')
+        pkgs.python3
       ];
     };
   };
