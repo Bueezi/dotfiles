@@ -22,11 +22,13 @@ formatter = { command = "node", args = ["/home/ben/.config/helix/semi.mjs"] }
 
 [[language]]
 name = "c"
+indent = { tab-width = 4, unit = "    " }
 auto-format = true
 formatter = { command = "python3", args = ["-I", "/home/ben/.config/helix/semi-c.py", "c"] }
 
 [[language]]
 name = "cpp"
+indent = { tab-width = 4, unit = "    " }
 auto-format = true
 formatter = { command = "python3", args = ["-I", "/home/ben/.config/helix/semi-c.py", "c++"] }
 

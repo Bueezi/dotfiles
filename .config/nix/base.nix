@@ -106,7 +106,7 @@
     enable = true;
     binfmt = true;
     package = pkgs.appimage-run.override {
-      extraPkgs = pkgs: [ pkgs.mpv-unwrapped pkgs.webkitgtk_4_1 ];   # Nuvio
+      extraPkgs = pkgs: [ pkgs.mpv-unwrapped pkgs.webkitgtk_4_1 pkgs.bubblewrap ];   # Nuvio; Beanstalk's sandbox
     };
   };
   # AppImages that update themselves: drop them in ~/.local/share/appimages, the menu follows
