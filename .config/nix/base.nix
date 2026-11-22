@@ -108,12 +108,6 @@
     package = pkgs.appimage-run.override {
       extraPkgs = pkgs: [
         pkgs.mpv-unwrapped pkgs.webkitgtk_4_1   # Nuvio
-        # Beanstalk's sandbox binds only /usr, whose files here are links into the store
-        (pkgs.writeShellScriptBin "bwrap" ''
-          case "$1" in --version|--help) ;; *) set -- --ro-bind /nix/store /nix/store "$@" ;; esac
-          exec ${pkgs.bubblewrap}/bin/bwrap "$@"
-        '')
-        pkgs.python3
       ];
     };
   };

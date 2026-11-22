@@ -6,3 +6,19 @@ run = [
 	"yank",
 ]
 desc = "Yank files to the system clipboard"
+
+# gvfs.yazi: phones (MTP) and other gvfs mounts
+[[mgr.prepend_keymap]]
+on = ["M", "m"]
+run = "plugin gvfs -- select-then-mount --jump"
+desc = "Mount a device and go to it"
+
+[[mgr.prepend_keymap]]
+on = ["M", "u"]
+run = "plugin gvfs -- select-then-unmount"
+desc = "Unmount a device"
+
+[[mgr.prepend_keymap]]
+on = ["g", "m"]
+run = "plugin gvfs -- jump-to-device"
+desc = "Go to a mounted device"
