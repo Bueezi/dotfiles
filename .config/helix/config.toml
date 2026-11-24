@@ -5,15 +5,18 @@ theme = "base16_transparent"
 [editor]
 completion-trigger-len = 1
 idle-timeout = 50
+completion-timeout = 5
 soft-wrap.enable = true
 bufferline = "multiple"
-end-of-line-diagnostics = "hint"
+end-of-line-diagnostics = "disable" #"hint"
 inline-diagnostics.cursor-line = "disable"
 lsp.display-inlay-hints = true
 indent-guides.render = true
 # cursor-shape.insert = "bar"
 line-number = "relative"
 
+[editor.auto-save]
+focus-lost = true
+
 [keys.normal.space]
-L = ''':sh sh -c 'if pdflatex -interaction=nonstopmode -halt-on-error -file-line-error -output-directory="$(dirname "$1")" "$1" >/dev/null; then setsid -f xdg-open "${1%%.tex}.pdf" >/dev/null 2>&1; else grep -A3 -E "^(!|.+:[0-9]+:)" "${1%%.tex}.log" || tail -20 "${1%%.tex}.log"; fi' _ %{buffer_name}'''
 x = ":toggle end-of-line-diagnostics hint disable"

@@ -1,6 +1,6 @@
 [[language]]
 name = "python"
-language-servers = ["basedpyright"]
+language-servers = ["basedpyright", "ruff"]
 
 [language-server.emmet]
 command = "emmet-language-server"
@@ -51,3 +51,10 @@ language-servers = ["sqls"]
 [[language]]
 name = "latex"
 soft-wrap.enable = true
+
+[language-server.nixd.config.nixd.options.nixos]
+expr = "(import <nixpkgs/nixos> { configuration = { imports = [ /home/ben/.config/nix/header.nix ]; _module.args.isLaptop = false; }; }).options"
+
+[[language]]
+name = "nix"
+language-servers = ["nixd"]
