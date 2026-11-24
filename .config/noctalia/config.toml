@@ -62,10 +62,11 @@ source = "wallpaper"
 theme_mode_changed = "~/.config/wm/scripts/darkmode.sh apply"
 
 [wallpaper]
-directory = "/home/ben/Documents/sync/wp/active/wallpapers_upscaled"
+directory = "/home/ben/Documents/sync/wp/active"
 
 [wallpaper.automation]
 interval_seconds = 300
+recursive = true
 
 [widget.gap]
 type = "spacer"

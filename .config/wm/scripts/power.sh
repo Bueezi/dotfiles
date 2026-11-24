@@ -47,13 +47,24 @@ update() {
     echo; echo "==> Firmware"
     fwupdmgr refresh >/dev/null 2>&1
     if fwupdmgr get-updates >/dev/null 2>&1; then
-        show   # fwupdmgr asks before flashing
-        fwupdmgr update
+        if [ "$1" = off ]; then
+            echo "Firmware updates available: skipped (fwupdmgr asks before flashing)."
+        else
+            show
+            fwupdmgr update
+        fi
     else
         echo "No firmware updates."
     fi
     report Update Finished
-    [ -n "$failed" ] || { echo; read -rp "Done. Press Enter to close."; }
+    [ -n "$failed" ] && return
+    if [ "$1" = off ]; then
+        notify-send -a update -i system-shutdown-symbolic "Update" "Powering off in 60 s: close the window to cancel"
+        echo; echo "Powering off in 60 s. Close this window to cancel."
+        sleep 60 && systemctl poweroff
+    else
+        echo; read -rp "Done. Press Enter to close."
+    fi
 }
 
 rebuild() {
@@ -81,15 +92,19 @@ sync() {
     fi
 }
 
-case "$1" in sync|update|rebuild) "$1"; exit ;; esac
+case "$1" in
+    sync|update|rebuild) "$1"; exit ;;
+    update-off) update off; exit ;;
+esac
 
 # Only the laptop has a swap partition to resume from
 hibernate=; [ -d /sys/class/power_supply/BAT0 ] && hibernate="󰋊  hibernate\n"
-choice=$(printf "${hibernate}󰜉  reboot\n󰒲  sleep\n󰐥  power off\n󰚰  update\n󱄅  rebuild\n󰓦  sync" |
+choice=$(printf "${hibernate}󰜉  reboot\n󰒲  sleep\n󰐥  power off\n󰚰  update\n󰖔  update & power off\n󱄅  rebuild\n󰓦  sync" |
   noctalia dmenu -p power)
 
 [ "$choice" ] || exit 0
 case "$choice" in
+    *"update & power off") exec "${term[@]}" "$0" update-off ;;
     *update)  exec "${term[@]}" "$0" update ;;
     *rebuild) exec "${term[@]}" "$0" rebuild ;;
     *sync)    exec "${term[@]}" "$0" sync ;;
