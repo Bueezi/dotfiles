@@ -4,6 +4,7 @@ export MAKEFLAGS="-j$(nproc)"
 [[ $- != *i* ]] && return
 
 alias ls='ls --color=auto'
+alias l='ls -lh --color=auto'
 alias grep='grep --color=auto'
 
 PS1='[\u@\h \W]\$ '
