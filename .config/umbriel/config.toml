@@ -100,7 +100,7 @@ default_scrolling_extent = 0.5
 [[window_rule]]
 match.app_id = ["^foot$", "^yazi-side$", "^ytmusic$", "^io.github.yapfast.Yapfast$", "^steam$"]
 match.is_alone = true
-default_scrolling_extent = 0.90
+default_scrolling_extent = 1.0
 
 [keybinds]
 "Mod+M" = { action = "window-toggle-maximize", repeat = false }

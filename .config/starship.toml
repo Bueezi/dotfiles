@@ -1,21 +1,18 @@
-# Black and white; the pill is `inverted`, so it follows light/dark
-add_newline = true
-format = """
-[╭─](#555555)$hostname$directory$git_branch$git_status$nix_shell$jobs$cmd_duration
-[╰─](#555555)$character"""
+add_newline = false
+format = "$hostname$directory$git_branch$git_status$nix_shell$jobs$cmd_duration$character"
 right_format = "$status$time"
 
 [hostname]
 format = "[$hostname](#a8a8a8) "
 
 [directory]
-format = "[](bold)[ $path$read_only ]($style)[](bold) "
-style = "bold inverted"
+format = "[$path$read_only]($style) "
+style = "bold"
 home_symbol = "~"
 truncation_length = 4
 truncation_symbol = "…/"
 read_only = " 󰌾"
-read_only_style = "bold inverted"
+read_only_style = "bold"
 
 [git_branch]
 format = "[$symbol$branch]($style) "

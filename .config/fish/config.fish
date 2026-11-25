@@ -16,6 +16,7 @@ if status is-interactive
         set_color 555
         echo '  '(date '+%a %d/%m  %H:%M')
         set_color normal
+        echo
     end
 
     fish_vi_key_bindings
