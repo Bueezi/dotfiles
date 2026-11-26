@@ -16,7 +16,8 @@ documents() {
     local d=~/Documents/sync mine='' theirs='' old base
     echo "==> ~/Documents/sync"
     [ -d "$d/.git" ] || git clone https://github.com/Bueezi/sync "$d" || return
-    git -C "$d" fetch --progress origin || return
+    # --depth=1: else the server resends every file, as each sync is a new root commit
+    git -C "$d" fetch --progress --depth=1 origin || return
     old=$(git -C "$d" rev-parse origin/main)
     # Not HEAD: after a failed push it looked like another machine's change and wiped local files
     git -C "$d" rev-parse -q --verify refs/sync/base >/dev/null || git -C "$d" update-ref refs/sync/base HEAD
