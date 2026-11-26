@@ -13,6 +13,15 @@
             defaultPref("media.av1.enabled", false);
           '';
         extraPolicies = (builtins.fromJSON (builtins.readFile ../librewolf/policies.json)).policies;
+        # Noctalia's Pywalfox host themes it from the wallpaper. LibreWolf has nixpkgs' MOZ_SYSTEM_DIR
+        # patch (the wrapper only assumes it for "firefox*"); without it the host lands in ~/.mozilla
+        hasMozSystemDirPatch = true;
+        nativeMessagingHosts = [
+          (final.writeTextDir "lib/mozilla/native-messaging-hosts/pywalfox.json" (builtins.toJSON {
+            name = "pywalfox"; type = "stdio"; description = "Noctalia Firefox theme host";
+            path = "/run/current-system/sw/bin/noctalia"; allowed_extensions = [ "pywalfox@frewacom.org" ];
+          }))
+        ];
       };
     })
   ];

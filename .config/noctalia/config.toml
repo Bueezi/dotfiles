@@ -212,8 +212,15 @@ community_ids = ["yazi", "tmux"]
 input_path = "templates/starship.toml"
 output_path = "$XDG_CACHE_HOME/noctalia/starship.toml"
 
+# LibreWolf, through Pywalfox (librewolf.nix). Not the community template: its post_action writes ~/.mozilla
+[theme.templates.user.pywalfox]
+input_path = "templates/pywalfox.json"
+output_path = "$XDG_CACHE_HOME/wal/colors.json"
+post_hook = "noctalia firefox-theme update"
+
 [hooks]
 theme_mode_changed = "~/.config/wm/scripts/darkmode.sh apply"
+wallpaper_changed = "ln -sfn \"$NOCTALIA_WALLPAPER_PATH\" ~/.cache/noctalia/wallpaper"   # LibreWolf's new tab (prefs.js)
 
 [wallpaper]
 directory = "/home/ben/Documents/sync/wp/active"
