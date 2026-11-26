@@ -1,5 +1,5 @@
 add_newline = false
-format = "$hostname$directory$git_branch$git_status$nix_shell$jobs$cmd_duration$character"
+format = "$hostname$directory$git_branch${custom.main}$git_status$nix_shell$jobs$character"
 right_format = "$status$time"
 
 [hostname]
@@ -18,6 +18,13 @@ read_only_style = "bold"
 format = "[$symbol$branch]($style) "
 symbol = " "
 style = "#a8a8a8"
+ignore_branches = ["main", "master"]
+
+[custom.main]
+when = "git symbolic-ref -q --short HEAD | grep -qx -e main -e master"
+shell = ["sh"]
+require_repo = true
+format = "[](#a8a8a8) "
 
 [git_status]
 format = "([$all_status$ahead_behind]($style) )"
@@ -30,10 +37,6 @@ style = "#a8a8a8"
 [jobs]
 format = "[$symbol$number]($style) "
 symbol = "󰜎 "
-style = "#777777"
-
-[cmd_duration]
-format = "[󰔛 $duration]($style) "
 style = "#777777"
 
 [status]

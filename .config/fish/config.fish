@@ -42,5 +42,23 @@ if status is-interactive
         rm -f -- $tmp
     end
 
+    function cc # same as in ~/.bashrc
+        set -l src
+        for a in $argv
+            switch $a
+                case -o '-o*' -c -S -E
+                    set src
+                    break
+                case '*.c'
+                    test -z "$src"; and set src $a
+            end
+        end
+        if test -n "$src"
+            command cc -Wall -Wextra $argv -o (string replace -r '\.c$' '' -- $src)
+        else
+            command cc -Wall -Wextra $argv
+        end
+    end
+
     starship init fish | source
 end

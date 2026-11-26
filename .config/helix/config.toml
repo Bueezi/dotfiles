@@ -20,8 +20,8 @@ focus-lost = true
 
 [keys.normal.space]
 x = ":toggle end-of-line-diagnostics hint disable"
-# tmux pane below, in the file's folder
-t = ':sh tmux split-window -v -l 15 -c "$(dirname "$(realpath "%{buffer_name}")")"'
-# Save, compile and run in a tmux pop-up (helix/run.sh); M asks for arguments
-m = [":w", ':sh tmux display-popup -E -w 90%% -h 90%% sh ~/.config/helix/run.sh "$(realpath "%{buffer_name}")"']
-M = [":w", ':sh tmux display-popup -E -w 90%% -h 90%% sh ~/.config/helix/run.sh "$(realpath "%{buffer_name}")" ask']
+# Shell pane below, in the file's folder; hides and comes back as it was (helix/term.sh)
+t = ':sh sh ~/.config/helix/term.sh "$(dirname "$(realpath "%{buffer_name}")")"'
+# Save, compile and run in a pane below, reused on rerun (helix/run.sh); M asks for arguments
+m = [":w", ':sh sh ~/.config/helix/term.sh run "$(realpath "%{buffer_name}")"']
+M = [":w", ':sh sh ~/.config/helix/term.sh run "$(realpath "%{buffer_name}")" ask']

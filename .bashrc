@@ -23,3 +23,15 @@ f() {
     cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ] && cd -- "$cwd"
     rm -f -- "$tmp"
 }
+
+# output named after the first .c file, unless -o/-c/-S/-E is given
+cc() {
+    local a src=
+    for a; do
+        case $a in
+            -o|-o*|-c|-S|-E) src=; break ;;
+            *.c) [ -z "$src" ] && src=$a ;;
+        esac
+    done
+    command cc -Wall -Wextra "$@" ${src:+-o "${src%.c}"}
+}
