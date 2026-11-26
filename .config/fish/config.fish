@@ -60,5 +60,6 @@ if status is-interactive
         end
     end
 
+    test -f ~/.cache/noctalia/starship.toml; and set -gx STARSHIP_CONFIG ~/.cache/noctalia/starship.toml   # rendered by Noctalia from noctalia/templates/starship.toml
     starship init fish | source
 end

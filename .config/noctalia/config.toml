@@ -30,7 +30,7 @@ enable_ddcutil = true
 margin_ends = 0
 radius_top_left = 0
 radius_top_right = 0
-start = ["media"]
+start = ["media", "audio-vis"]
 center = ["workspaces"]
 end = ["privacy", "tray", "caffeine", "notifications", "network", "bluetooth", "volume", "brightness", "nightlight", "battery", "clock", "control-center"]
 
@@ -203,8 +203,14 @@ pipe_command = "~/.config/wm/scripts/screenshot.sh notify"
 source = "wallpaper"
 
 [theme.templates]
+enable_builtin_templates = true
+builtin_ids = ["btop", "cava", "umbriel"]
 enable_community_templates = true
-community_ids = ["yazi"]
+community_ids = ["yazi", "tmux"]
+
+[theme.templates.user.starship]   # STARSHIP_CONFIG in fish points at the output
+input_path = "templates/starship.toml"
+output_path = "$XDG_CACHE_HOME/noctalia/starship.toml"
 
 [hooks]
 theme_mode_changed = "~/.config/wm/scripts/darkmode.sh apply"
@@ -217,6 +223,7 @@ interval_seconds = 300
 recursive = true
 
 [widget.privacy]   # mic, camera, PipeWire screen capture (not wf-recorder)
+active_color = "#E5484D"
 hide_inactive = true
 
 [widget.network]
@@ -227,6 +234,13 @@ hide_artist = true
 hide_album_art = true
 hide_when_no_media = true
 max_length = 180
+
+[widget.audio-vis]
+type = "audio_visualizer"
+width = 120
+bands = 24
+mirrored = false
+centered = false
 
 [widget.volume]
 show_label = false

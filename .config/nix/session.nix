@@ -95,7 +95,14 @@ in
     noto-fonts-color-emoji
     nerd-fonts.jetbrains-mono
     nerd-fonts.iosevka
+    inter
   ];
+  fonts.fontconfig.defaultFonts = {
+    sansSerif = [ "Inter" "Noto Sans" ];
+    serif = [ "Noto Serif" ];
+    monospace = [ "Iosevka Nerd Font" ];
+    emoji = [ "Noto Color Emoji" ];
+  };
 
   xdg.mime.defaultApplications =
     let each = app: types: lib.genAttrs types (_: app);

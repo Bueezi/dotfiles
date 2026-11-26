@@ -19,5 +19,5 @@
     "extensions.autoCheckUpdates": true,
     "extensions.autoUpdate": "on",
     "chat.disableAIFeatures": true,
-    "workbench.colorTheme": "Gruvbox Light Soft"
+    "workbench.colorTheme": "Tsoding Gruber Darker"
 }

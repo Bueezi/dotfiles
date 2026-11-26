@@ -12,6 +12,7 @@ files = [
 files = [
   "~/.local/state/umbriel/hdr.toml",   # run.sh hdr
   "/run/current-system/sw/share/umbriel/cursor.toml",
+  "noctalia.toml",
 ]
 
 [general]
@@ -71,6 +72,12 @@ enabled = true
 
 [overview]
 workspace_wallpaper = false
+
+[hot_corners.top_left]
+delay_ms = 150
+
+[colors.overview]   # Noctalia's template makes previews opaque
+workspace_background = "#00000044"
 
 [appearance]
 corner_radius = 0
@@ -149,3 +156,5 @@ default_scrolling_extent = 1.0
 "Mod+Next" = { action = "spawn noctalia msg brightness-down", allow_when_locked = true }
 "Mod+Prior" = { action = "spawn noctalia msg brightness-up", allow_when_locked = true }
 "Mod+Slash" = { action = "cheatsheet-toggle", repeat = false }
+"Mod+J" = "window-focus-or-workspace-down"   # also steps through workspaces in the overview
+"Mod+K" = "window-focus-or-workspace-up"

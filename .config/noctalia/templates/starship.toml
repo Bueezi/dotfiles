@@ -3,11 +3,11 @@ format = "$hostname$directory$git_branch${custom.main}$git_status$nix_shell$jobs
 right_format = "$status$time"
 
 [hostname]
-format = "[$hostname](#a8a8a8) "
+format = "[$hostname]({{colors.on_surface_variant.default.hex}}) "
 
 [directory]
 format = "[$path$read_only]($style) "
-style = "bold"
+style = "bold {{colors.primary.default.hex}}"
 home_symbol = "~"
 truncation_length = 4
 truncation_symbol = "…/"
@@ -17,43 +17,43 @@ read_only_style = "bold"
 [git_branch]
 format = "[$symbol$branch]($style) "
 symbol = " "
-style = "#a8a8a8"
+style = "{{colors.secondary.default.hex}}"
 ignore_branches = ["main", "master"]
 
 [custom.main]
 when = "git symbolic-ref -q --short HEAD | grep -qx -e main -e master"
 shell = ["sh"]
 require_repo = true
-format = "[](#a8a8a8) "
+format = "[]({{colors.secondary.default.hex}}) "
 
 [git_status]
 format = "([$all_status$ahead_behind]($style) )"
-style = "#a8a8a8"
+style = "{{colors.tertiary.default.hex}}"
 
 [nix_shell]
 format = "[ $name]($style) "
-style = "#a8a8a8"
+style = "{{colors.tertiary.default.hex}}"
 
 [jobs]
 format = "[$symbol$number]($style) "
 symbol = "󰜎 "
-style = "#777777"
+style = "{{colors.outline.default.hex}}"
 
 [status]
 disabled = false
 format = "[✕ $status]($style) "
-style = "#777777"
+style = "{{colors.error.default.hex}}"
 
 [time]
 disabled = false
 format = "[$time]($style)"
 time_format = "%H:%M"
-style = "#555555"
+style = "{{colors.outline.default.hex}}"
 
 [character]
-success_symbol = "[❯](bold)"
-error_symbol = "[❯](#777777)"
-vimcmd_symbol = "[❮](bold)"
-vimcmd_replace_one_symbol = "[❮](#a8a8a8)"
-vimcmd_replace_symbol = "[❮](#a8a8a8)"
-vimcmd_visual_symbol = "[❮](#a8a8a8)"
+success_symbol = "[❯](bold {{colors.primary.default.hex}})"
+error_symbol = "[❯](bold {{colors.error.default.hex}})"
+vimcmd_symbol = "[❮](bold {{colors.secondary.default.hex}})"
+vimcmd_replace_one_symbol = "[❮]({{colors.tertiary.default.hex}})"
+vimcmd_replace_symbol = "[❮]({{colors.tertiary.default.hex}})"
+vimcmd_visual_symbol = "[❮]({{colors.tertiary.default.hex}})"
