@@ -20,8 +20,6 @@ focus-lost = true
 
 [keys.normal.space]
 x = ":toggle end-of-line-diagnostics hint disable"
-# Shell pane below, in the file's folder; hides and comes back as it was (helix/term.sh)
-t = ':sh sh ~/.config/helix/term.sh "$(dirname "$(realpath "%{buffer_name}")")"'
-# Save, compile and run in a pane below, reused on rerun (helix/run.sh); M asks for arguments
-m = [":w", ':sh sh ~/.config/helix/term.sh run "$(realpath "%{buffer_name}")"']
-M = [":w", ':sh sh ~/.config/helix/term.sh run "$(realpath "%{buffer_name}")" ask']
+# Save, compile and run in the Alt+t shell pane (tmux/term.sh); M asks for arguments
+m = [":w", ':sh sh ~/.config/tmux/term.sh run "$TMUX_PANE" "$(realpath "%{buffer_name}")"']
+M = [":w", ':sh sh ~/.config/tmux/term.sh run "$TMUX_PANE" "$(realpath "%{buffer_name}")" ask']

@@ -11,5 +11,4 @@ case $1 in
     *.py)       python3 "$1" $args ;;
     *)          echo "No run command for $1"; false ;;
 esac
-printf '\n[exit %s] Press Enter to close.' "$?"
-read -r _
+printf '\n[exit %s]\n' "$?"
