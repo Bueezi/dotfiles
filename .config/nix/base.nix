@@ -120,7 +120,7 @@
       Type = "oneshot";
       ExecStart = "${pkgs.writeShellApplication {
         name = "appimage-menu";
-        runtimeInputs = with pkgs; [ coreutils gnused findutils squashfsTools ];
+        runtimeInputs = with pkgs; [ coreutils gnused gnugrep findutils squashfsTools ];
         text = builtins.readFile ./appimage-menu.sh;
       }}/bin/appimage-menu";
     };

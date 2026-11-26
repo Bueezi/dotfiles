@@ -21,7 +21,6 @@ autostart = [
   "noctalia",
   "librewolf",
   "sh -c 'test -d /sys/class/power_supply/BAT0 || exec yapfast --background'",
-  "sh -c 'test -d /sys/class/power_supply/BAT0 || exec steam -silent'",
   "sh -c 'test -d /sys/class/power_supply/BAT0 && sleep 2 && wpctl set-volume @DEFAULT_AUDIO_SINK@ 0'",
 ]
 
@@ -69,6 +68,12 @@ curve = "easeout"
 
 [animation.layers]
 enabled = true
+
+[overview]
+workspace_wallpaper = false
+
+[appearance]
+corner_radius = 0
 
 [[window_rule]]
 match.app_id = "^(foot-float|scratch-power)$"
@@ -119,7 +124,7 @@ default_scrolling_extent = 1.0
 "Mod+Shift+D" = { action = "spawn ~/.config/umbriel/run.sh focus io.github.yapfast.Yapfast yapfast", repeat = false }
 "Mod+I" = { action = "spawn ~/.config/umbriel/run.sh focus steam steam", repeat = false }
 "Mod+Shift+E" = { action = "spawn foot --app-id=yazi yazi", repeat = false }
-"Mod+E" = { action = "spawn foot --app-id=yazi-side yazi", repeat = false }
+"Mod+E" = { action = "spawn foot --app-id=yazi-side fish -C f", repeat = false }
 "Mod+U" = { action = "spawn librewolf https://toledo.kuleuven.be/portal/", repeat = false }
 "Mod+Y" = { action = "spawn ~/.config/umbriel/run.sh toggle ytmusic ytmusic", repeat = false }
 "Mod+Shift+S" = { action = "spawn noctalia msg screenshot-region", repeat = false }

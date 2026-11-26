@@ -27,7 +27,7 @@ NixOS 26.05, channel-based (not a flake system). Per machine: `laptop.nix` / `de
     ```
     A pure reorganisation can be proven: the system `.drv` must stay the same (sort order-sensitive lists like `systemPackages` first, or compare them as sets).
   - Looks: `umbriel-nested` (Umbriel in a window, own D-Bus session).
-- **Style:** black and white everywhere I draw (prompt, terminal; Noctalia themes itself from the wallpaper); only the distro logos in fastfetch/fetch keep their colours. Apps (GTK, Qt, LibreWolf) keep Adwaita's blue accent: a black accent was tried and disliked. Small changes, not many new files.
+- **Style:** Noctalia themes itself from the wallpaper. Apps (GTK, Qt, LibreWolf) keep Adwaita's blue accent: a black accent was tried and disliked. Small changes, not many new files.
 - **Comments: few and short.** Only where the code would otherwise get "fixed" back into a known bug, or a command/path you'd need (a one-liner, not a paragraph). No file headers restating what the file is, no narrating what a line does, no history (that's git). Longer explanations go in this file's Gotchas.
 - **Nerd Font glyphs** (private-use, e.g. U+E0B6, U+F0176) get dropped silently by some edit tools: check with a codepoint dump.
 

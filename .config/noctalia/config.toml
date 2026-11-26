@@ -27,12 +27,12 @@ timeout = 300
 enable_ddcutil = true
 
 [bar.main]
-start = ["workspaces"]
-end = ["media", "gap",
-       "tray", "gap",
-       "sysmon", "network", "bluetooth", "volume", "brightness", "battery", "gap",
-       "caffeine", "notifications", "gap",
-       "session"]
+margin_ends = 0
+radius_top_left = 0
+radius_top_right = 0
+start = ["media"]
+center = ["workspaces"]
+end = ["privacy", "tray", "caffeine", "notifications", "network", "bluetooth", "volume", "brightness", "nightlight", "battery", "clock", "control-center"]
 
 [nightlight]
 enabled = true
@@ -43,8 +43,152 @@ address = "Belgium"
 [lockscreen]
 transition_duration = 400
 
+# Layout for DP-2 (2560x1440); on the laptop Noctalia rescales the positions, not the sizes
+[lockscreen_widgets]
+enabled = true
+schema_version = 2
+widget_order = ["lockscreen-widget-card-back", "lockscreen-widget-card", "lockscreen-widget-title", "lockscreen-widget-time", "lockscreen-widget-date", "lockscreen-widget-volume", "lockscreen-widget-sysmon", "lockscreen-widget-visualizer", "lockscreen-login-box@DP-2"]
+
+[lockscreen_widgets.widget.lockscreen-widget-card-back]
+type = "label"
+cx = 1295.0
+cy = 793.0
+box_width = 480.0
+box_height = 370.0
+rotation = -0.12
+placement_width = 2560.0
+placement_height = 1440.0
+
+[lockscreen_widgets.widget.lockscreen-widget-card-back.settings]
+title = ""
+background_color = "surface_container"
+background_opacity = 0.6
+shadow = false
+
+[lockscreen_widgets.widget.lockscreen-widget-card]
+type = "label"
+cx = 1280.0
+cy = 778.0
+box_width = 480.0
+box_height = 370.0
+rotation = 0.0
+placement_width = 2560.0
+placement_height = 1440.0
+
+[lockscreen_widgets.widget.lockscreen-widget-card.settings]
+title = ""
+background_opacity = 0.9
+shadow = false
+
+[lockscreen_widgets.widget.lockscreen-widget-title]
+type = "label"
+cx = 1280.0
+cy = 550.0
+box_width = 320.0
+box_height = 50.0
+rotation = 0.0
+placement_width = 2560.0
+placement_height = 1440.0
+
+[lockscreen_widgets.widget.lockscreen-widget-title.settings]
+title = "L O C K E D"
+font_family = "Iosevka Nerd Font Mono"
+background = false
+
+[lockscreen_widgets.widget.lockscreen-widget-time]
+type = "clock"
+cx = 1280.0
+cy = 700.0
+box_width = 420.0
+box_height = 150.0
+rotation = 0.0
+placement_width = 2560.0
+placement_height = 1440.0
+
+[lockscreen_widgets.widget.lockscreen-widget-time.settings]
+format = "{:%H:%M}"
+center_text = true
+background = false
+
+[lockscreen_widgets.widget.lockscreen-widget-date]
+type = "clock"
+cx = 1280.0
+cy = 774.0
+box_width = 240.0
+box_height = 34.0
+rotation = 0.0
+placement_width = 2560.0
+placement_height = 1440.0
+
+[lockscreen_widgets.widget.lockscreen-widget-date.settings]
+format = "{:%a, %b %d}"
+center_text = true
+font_family = "Iosevka Nerd Font Mono"
+background = false
+
+[lockscreen_widgets.widget.lockscreen-widget-volume]
+type = "volume"
+cx = 1157.0
+cy = 882.0
+box_width = 205.0
+box_height = 110.0
+rotation = 0.0
+placement_width = 2560.0
+placement_height = 1440.0
+
+[lockscreen_widgets.widget.lockscreen-widget-volume.settings]
+background_color = "surface_container"
+
+[lockscreen_widgets.widget.lockscreen-widget-sysmon]
+type = "sysmon"
+cx = 1403.0
+cy = 882.0
+box_width = 205.0
+box_height = 110.0
+rotation = 0.0
+placement_width = 2560.0
+placement_height = 1440.0
+
+[lockscreen_widgets.widget.lockscreen-widget-sysmon.settings]
+stat = "cpu_usage"
+stat2 = "cpu_temp"
+background_color = "surface_container"
+
+[lockscreen_widgets.widget.lockscreen-widget-visualizer]
+type = "audio_visualizer"
+cx = 1280.0
+cy = 1105.0
+box_width = 760.0
+box_height = 110.0
+rotation = 0.0
+placement_width = 2560.0
+placement_height = 1440.0
+
+[lockscreen_widgets.widget.lockscreen-widget-visualizer.settings]
+bands = 48
+mirrored = true
+centered = false
+background = false
+
+[lockscreen_widgets.widget."lockscreen-login-box@DP-2"]
+type = "login_box"
+output = "DP-2"
+cx = 1280.0
+cy = 1258.0
+box_width = 810.0
+box_height = 196.0
+placement_width = 2560.0
+placement_height = 1440.0
+
 [shell]
 umbriel_audio_provider_enabled = true
+
+[shell.panel]   # menus from bar icons open under the icon
+open_near_click_control_center = true
+open_near_click_launcher = true
+open_near_click_clipboard = true
+open_near_click_wallpaper = true
+open_near_click_session = true
 
 [shell.greeter_sync]
 auto_sync = true
@@ -58,6 +202,10 @@ pipe_command = "~/.config/wm/scripts/screenshot.sh notify"
 [theme]
 source = "wallpaper"
 
+[theme.templates]
+enable_community_templates = true
+community_ids = ["yazi"]
+
 [hooks]
 theme_mode_changed = "~/.config/wm/scripts/darkmode.sh apply"
 
@@ -68,16 +216,28 @@ directory = "/home/ben/Documents/sync/wp/active"
 interval_seconds = 300
 recursive = true
 
-[widget.gap]
-type = "spacer"
-length = 16
+[widget.privacy]   # mic, camera, PipeWire screen capture (not wf-recorder)
+hide_inactive = true
 
 [widget.network]
 show_label = false
 
-[widget.sysmon]   # icon only: hover for the stats, click for the system panel
-visualization = "none"
-show_value = false
+[widget.media]
+hide_artist = true
+hide_album_art = true
+hide_when_no_media = true
+max_length = 180
+
+[widget.volume]
+show_label = false
+
+[widget.brightness]
+show_label = false
 
 [widget.workspaces]
+anchor = true
 hide_when_empty = true
+show_labels = false
+
+[widget.control-center]
+glyph = "power"

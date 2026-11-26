@@ -46,3 +46,13 @@ for f in "$dir"/*.AppImage "$dir"/*.appimage; do
     mv "$out.tmp" "$out"
     rm -rf "$tmp"
 done
+
+# appimage-run extracts to its cache by sha256 and never cleans up: drop other versions, unless running
+cache=${XDG_CACHE_HOME:-$HOME/.cache}/appimage-run
+keep=$(for f in "$dir"/*.AppImage "$dir"/*.appimage; do if [ -f "$f" ]; then sha256sum "$f"; fi; done | cut -d' ' -f1)
+for d in "$cache"/*/; do
+    [ -d "$d" ] || continue
+    grep -qxF "$(basename "$d")" <<<"$keep" && continue
+    grep -qsF "$d" /proc/[0-9]*/maps && continue
+    rm -rf "$d"
+done
