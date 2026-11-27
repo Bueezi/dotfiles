@@ -1,5 +1,37 @@
 {
   "nodes": {
+    "claude-desktop": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1795750747,
+        "narHash": "sha256-0/i074feWVAlHHuP82evKvwoCjr6jSRqe4++303D0Lo=",
+        "owner": "aaddrick",
+        "repo": "claude-desktop-debian",
+        "rev": "f043c9bf406bfcb0133367eaa555a0ec6c54ad14",
+        "type": "github"
+      },
+      "original": {
+        "owner": "aaddrick",
+        "repo": "claude-desktop-debian",
+        "type": "github"
+      }
+    },
+    "fetch": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1795722906,
+        "narHash": "sha256-nXp3Qw0TOPdMQ2DY8Evonb/MHqsYBH+kIyZTS5xS+L4=",
+        "owner": "areofyl",
+        "repo": "fetch",
+        "rev": "ce8b8dcdc62cfe552d0b810887504995daffe870",
+        "type": "github"
+      },
+      "original": {
+        "owner": "areofyl",
+        "repo": "fetch",
+        "type": "github"
+      }
+    },
     "portal": {
       "flake": false,
       "locked": {
@@ -18,6 +50,8 @@
     },
     "root": {
       "inputs": {
+        "claude-desktop": "claude-desktop",
+        "fetch": "fetch",
         "portal": "portal",
         "umbriel": "umbriel"
       }

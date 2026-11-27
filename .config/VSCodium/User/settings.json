@@ -1,10 +1,10 @@
 {
     "workbench.iconTheme": "material-icon-theme",
     "material-icon-theme.folders.color": "#9e9e9e",
-    "editor.fontFamily": "'JetBrainsMono Nerd Font', monospace",
+    "editor.fontFamily": "'Iosevka Nerd Font', monospace",
     "editor.fontSize": 14,
     "editor.fontLigatures": true,
-    "terminal.integrated.fontFamily": "'JetBrainsMono Nerd Font'",
+    "terminal.integrated.fontFamily": "'Iosevka Nerd Font'",
     "editor.minimap.enabled": false,
     "editor.renderWhitespace": "trailing",
     "files.trimTrailingWhitespace": true,
@@ -23,5 +23,6 @@
     "workbench.preferredDarkColorTheme": "Tsoding Gruber Darker",
     "workbench.preferredLightColorTheme": "Gruvbox Light Medium",
     // Lean comes from Nix, without elan: else it warns at every start
-    "lean4.showSetupWarnings": false
+    "lean4.showSetupWarnings": false,
+    "git.openRepositoryInParentFolders": "never"
 }

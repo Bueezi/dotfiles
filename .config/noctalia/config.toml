@@ -31,8 +31,8 @@ margin_ends = 0
 radius_top_left = 0
 radius_top_right = 0
 start = ["media", "audio-vis"]
-center = ["workspaces"]
-end = ["privacy", "tray", "caffeine", "notifications", "network", "bluetooth", "volume", "brightness", "nightlight", "battery", "clock", "control-center"]
+center = ["workspaces", "privacy"]
+end = ["tray", "caffeine", "notifications", "network", "volume", "battery", "clock", "control-center"]
 
 [nightlight]
 enabled = true
@@ -182,6 +182,7 @@ placement_height = 1440.0
 
 [shell]
 umbriel_audio_provider_enabled = true
+telemetry_enabled = false
 
 [shell.panel]   # menus from bar icons open under the icon
 open_near_click_control_center = true
@@ -261,4 +262,4 @@ hide_when_empty = true
 show_labels = false
 
 [widget.control-center]
-glyph = "power"
+glyph = "adjustments-horizontal"

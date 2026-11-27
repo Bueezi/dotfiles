@@ -97,7 +97,7 @@ case "$1" in
     update-off) update off; exit ;;
 esac
 
-# Only the laptop has a swap partition to resume from
+# Only the laptop has a swapfile to resume from
 hibernate=; [ -d /sys/class/power_supply/BAT0 ] && hibernate="󰋊  hibernate\n"
 choice=$(printf "${hibernate}󰜉  reboot\n󰒲  sleep\n󰐥  power off\n󰚰  update\n󰖔  update & power off\n󱄅  rebuild\n󰓦  sync" |
   noctalia dmenu -p power)

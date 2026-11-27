@@ -85,6 +85,8 @@
     enable = true;
     alsa = { enable = true; support32Bit = true; };
     pulse.enable = true;
+    # Its X11 error handler segfaults PipeWire when Xwayland goes away (apps then lose the mic)
+    extraConfig.pipewire."99-no-x11-bell"."context.properties"."module.x11.bell" = false;
   };
 
   nix = {
