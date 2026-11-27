@@ -29,6 +29,19 @@
     }))
   ];
 
+  programs.chromium = {
+    enable = true;
+    extraOpts = {
+      DefaultSearchProviderEnabled = true;
+      DefaultSearchProviderName = "DuckDuckGo";
+      DefaultSearchProviderKeyword = "duckduckgo.com";
+      DefaultSearchProviderSearchURL = "https://duckduckgo.com/?q={searchTerms}";
+      DefaultSearchProviderSuggestURL = "https://duckduckgo.com/ac/?q={searchTerms}&type=list";
+    };
+    # New profiles only: no policy exists for it
+    initialPrefs.vertical_tabs.enabled = true;
+  };
+
   # Electron doesn't know "umbriel" and falls back to basic_text: Claude signed out at every start
   environment.sessionVariables.CLAUDE_PASSWORD_STORE = "gnome-libsecret";
 }
