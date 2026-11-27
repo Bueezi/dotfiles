@@ -32,7 +32,7 @@ radius_top_left = 0
 radius_top_right = 0
 start = ["media", "audio-vis"]
 center = ["workspaces", "privacy"]
-end = ["tray", "caffeine", "notifications", "network", "volume", "battery", "clock", "control-center"]
+end = ["tray", "cpu", "network", "volume", "battery", "clock", "control-center"]
 
 [nightlight]
 enabled = true
@@ -261,5 +261,14 @@ anchor = true
 hide_when_empty = true
 show_labels = false
 
+[widget.tray]
+drawer = true
+
 [widget.control-center]
 glyph = "adjustments-horizontal"
+
+[widget.cpu]
+type = "sysmon"
+stat = "cpu_usage"
+visualization = "gauge"
+show_value = false
