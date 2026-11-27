@@ -17,7 +17,7 @@
     pciutils usbutils lm_sensors smartmontools nvme-cli
     exfatprogs
     librewolf mpv qbittorrent
-    (ungoogled-chromium.override { commandLineArgs = "--password-store=gnome-libsecret"; })
+    (ungoogled-chromium.override { commandLineArgs = "--password-store=gnome-libsecret --close-window-with-last-tab=never"; })
     libreoffice
     # Latest release, not main: built from source, so every commit would be a long rebuild
     (builtins.getFlake "github:yapfast/yapfast/${(builtins.fromJSON (builtins.readFile

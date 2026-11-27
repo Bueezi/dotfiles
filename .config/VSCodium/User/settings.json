@@ -19,5 +19,9 @@
     "extensions.autoCheckUpdates": true,
     "extensions.autoUpdate": "on",
     "chat.disableAIFeatures": true,
-    "workbench.colorTheme": "Tsoding Gruber Darker"
+    "window.autoDetectColorScheme": true,
+    "workbench.preferredDarkColorTheme": "Tsoding Gruber Darker",
+    "workbench.preferredLightColorTheme": "Gruvbox Light Medium",
+    // Lean comes from Nix, without elan: else it warns at every start
+    "lean4.showSetupWarnings": false
 }
