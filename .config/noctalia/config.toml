@@ -32,7 +32,7 @@ radius_top_left = 0
 radius_top_right = 0
 start = ["media", "audio-vis"]
 center = ["workspaces", "privacy"]
-end = ["tray", "cpu", "network", "volume", "battery", "clock", "control-center"]
+end = ["tray", "cpu", "network", "volume", "battery", "separator", "clock", "control-center"]
 
 [nightlight]
 enabled = true
@@ -255,6 +255,14 @@ show_label = false
 
 [widget.brightness]
 show_label = false
+
+[widget.battery]
+display_mode = "graphic"
+
+[widget.separator]
+type = "text"
+text = "│"
+color = "on_surface_variant"
 
 [widget.workspaces]
 anchor = true
