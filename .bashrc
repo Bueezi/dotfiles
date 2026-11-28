@@ -12,7 +12,7 @@ PS1='[\u@\h \W]\$ '
 alias con='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
 alias g="git"
 alias gu='git commit -am "update $(git diff --name-only HEAD | xargs -n1 basename | paste -sd, - | sed "s/,/, /g")" && git push'
-alias thelp='sh ~/.config/tmux/keys.sh'
+alias help='sh ~/.config/help.sh'
 alias open='setsid -f xdg-open >/dev/null 2>&1'   # xdg-open waits for the app without a full desktop
 
 # make it so after quitting yazi in a folder the terminal is in that folder

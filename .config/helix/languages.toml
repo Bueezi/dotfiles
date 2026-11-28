@@ -20,6 +20,10 @@ name = "javascript"
 auto-format = true
 formatter = { command = "node", args = ["/home/ben/.config/helix/semi.mjs"] }
 
+# Completing a function inserts only the parentheses
+[language-server.clangd]
+args = ["--function-arg-placeholders=0"]
+
 [[language]]
 name = "c"
 indent = { tab-width = 4, unit = "    " }

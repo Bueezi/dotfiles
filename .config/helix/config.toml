@@ -10,7 +10,6 @@ soft-wrap.enable = true
 bufferline = "multiple"
 end-of-line-diagnostics = "disable" #"hint"
 inline-diagnostics.cursor-line = "disable"
-lsp.display-inlay-hints = true
 indent-guides.render = true
 # cursor-shape.insert = "bar"
 line-number = "relative"
