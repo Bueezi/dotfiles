@@ -9,7 +9,30 @@ dotfiles() {
     if ! config diff --cached --quiet; then
         config commit -q -m "${1:-update: $(config diff --cached --name-only | sed 's|.*/||' | sort -u | head -6 | paste -sd ' ' -)}" || return
     fi
-    config pull --rebase origin main && config push origin main
+    { config pull --rebase origin main || locks; } && config push origin main
+}
+
+# Both machines ran rb -u: keep each input's newer lock. Anything else stays stopped for you.
+locks() {
+    local f files
+    [ -d "$HOME/.dotfiles/rebase-merge" ] || return 1
+    while [ -d "$HOME/.dotfiles/rebase-merge" ]; do
+        files=$(config diff --name-only --diff-filter=U)
+        [ -n "$files" ] && ! grep -qv 'flake\.lock$' <<<"$files" || return 1
+        while read -r f; do
+            jq -S -s '.[0] as $o | .[1] as $t | $o | .nodes = ($t.nodes + $o.nodes)
+                | .nodes |= with_entries(if ($t.nodes[.key].locked.lastModified // 0) >
+                    (.value.locked.lastModified // 0) then .value = $t.nodes[.key] else . end)' \
+                <(config show ":2:$f") <(config show ":3:$f") >"$HOME/$f.cu" &&
+                mv "$HOME/$f.cu" "$HOME/$f" && config add "$HOME/$f" || return 1
+            echo "cu: kept the newer inputs in $f"
+        done <<<"$files"
+        if config diff --cached --quiet; then
+            config rebase --skip
+        else
+            GIT_EDITOR=true config rebase --continue
+        fi
+    done
 }
 
 documents() {
