@@ -15,7 +15,7 @@
     distrobox distroshelf
     android-tools
     (texliveBasic.withPackages (ps: with ps; [ collection-latex collection-latexrecommended collection-fontsrecommended collection-fontsextra collection-latexextra collection-langeuropean latexmk ])) gdb openssl
-    lldb
+    lldb imhex dosfstools
     basedpyright clang-tools vscode-langservers-extracted typescript-language-server typescript
     tailwindcss-language-server emmet-language-server rust-analyzer bash-language-server shellcheck intelephense sqls nixd ruff
     texlab taplo yaml-language-server marksman
