@@ -103,6 +103,12 @@ match.app_id = "^yazi$"
 default_floating = true
 default_floating_size_px = { width = 1400, height = 850 }
 
+# Never gets a parent, so it would tile under the floating app that opened it
+[[window_rule]]
+match.app_id = "^xdg-desktop-portal-gtk$"
+default_floating = true
+default_floating_size_px = { width = 1100, height = 700 }
+
 [[window_rule]]   # run.sh fingers
 match.app_id = "^org.gnome.eog$"
 match.title = "^fingers.svg$"

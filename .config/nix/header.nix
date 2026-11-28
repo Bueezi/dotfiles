@@ -7,6 +7,7 @@
     ./session.nix
     ./packages.nix
     ./dev.nix
+    ./tools.nix
     ./laptop.nix
     ./desktop.nix
     ./gaming.nix

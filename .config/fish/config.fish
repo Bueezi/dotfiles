@@ -20,6 +20,7 @@ if status is-interactive
     end
 
     fish_vi_key_bindings
+    fzf --fish | source   # after the vi bindings, which reset them; Ctrl+R stays history-pager
     bind -M insert ctrl-r history-pager
     set -g fish_cursor_default block
     set -g fish_cursor_insert line
