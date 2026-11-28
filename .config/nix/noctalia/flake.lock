@@ -19,11 +19,11 @@
     "fetch": {
       "flake": false,
       "locked": {
-        "lastModified": 1795722906,
-        "narHash": "sha256-nXp3Qw0TOPdMQ2DY8Evonb/MHqsYBH+kIyZTS5xS+L4=",
+        "lastModified": 1795812422,
+        "narHash": "sha256-OjI6LFj7n5ffXiHnbSARKP/jUUK+O/fQpUHtxPsJfVc=",
         "owner": "areofyl",
         "repo": "fetch",
-        "rev": "ce8b8dcdc62cfe552d0b810887504995daffe870",
+        "rev": "590525303be9ea7cc3f163a0cf3543131e426954",
         "type": "github"
       },
       "original": {
@@ -59,11 +59,11 @@
     "umbriel": {
       "flake": false,
       "locked": {
-        "lastModified": 1795802030,
-        "narHash": "sha256-XMpbqkUQKvvmezo4cWU3eOB0Pr8fjQg6G2ELPjPY8eI=",
+        "lastModified": 1795818150,
+        "narHash": "sha256-jPsWTETNtooGOFqGZQ2AIJWw3LLluHRCPBO13AHn7Uo=",
         "owner": "noctalia-dev",
         "repo": "umbriel",
-        "rev": "f0262d47a6ca9edc64ad1c5419898dc8192a4aa3",
+        "rev": "86a49f47eb36de83cdd21e174eeb45b0d59bf451",
         "type": "github"
       },
       "original": {
