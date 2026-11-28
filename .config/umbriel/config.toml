@@ -36,6 +36,9 @@ bit_depth = 10
 scale = 1.35
 bit_depth = 10
 
+[input.cursor]   # theme/size: session.nix
+hide_when_typing = true
+
 [input.touchpad]
 tap = true
 natural_scroll = true
@@ -100,6 +103,12 @@ match.app_id = "^yazi$"
 default_floating = true
 default_floating_size_px = { width = 1400, height = 850 }
 
+[[window_rule]]   # run.sh fingers
+match.app_id = "^org.gnome.eog$"
+match.title = "^fingers.svg$"
+default_floating = true
+default_floating_size_px = { width = 1400, height = 690 }
+
 # Else gamescope stalls on a hidden workspace
 [[window_rule]]
 match.app_id = "gamescope"
@@ -148,7 +157,8 @@ default_scrolling_extent = 1.0
 "Mod+Shift+T" = { action = "spawn noctalia msg theme-mode-toggle", repeat = false }
 "Mod+Shift+I" = { action = "spawn noctalia msg caffeine-toggle", repeat = false }
 "Mod+N" = { action = "spawn noctalia msg nightlight-toggle", repeat = false }
-"Mod+Shift+H" = { action = "spawn ~/.config/umbriel/run.sh hdr", repeat = false }
+"Mod+Shift+K" = { action = "spawn ~/.config/umbriel/run.sh fingers", repeat = false }   # touch-typing chart
+"Mod+Shift+H" ={ action = "spawn ~/.config/umbriel/run.sh hdr", repeat = false }
 "Mod+Escape" = { action = "spawn noctalia msg session lock", repeat = false }
 "Mod+Shift+M" = "session-quit"
 "Print" = { action = "spawn systemctl sleep", repeat = false }

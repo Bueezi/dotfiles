@@ -17,6 +17,8 @@ line-number = "relative"
 
 [editor.auto-save]
 focus-lost = true
+after-delay.enable = true
+after-delay.timeout = 1000
 
 [keys.normal.space]
 x = ":toggle end-of-line-diagnostics hint disable"

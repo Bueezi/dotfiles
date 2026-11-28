@@ -1,5 +1,5 @@
 #!/bin/sh
-# Umbriel keybind helpers: focus <app_id> <cmd...> | toggle <app_id> <cmd...> | game | hdr | slideshow
+# Umbriel keybind helpers: focus <app_id> <cmd...> | toggle <app_id> <cmd...> | fingers | game | hdr | slideshow
 case "$1" in
 focus)
     app=$2; shift 2
@@ -11,6 +11,10 @@ toggle)
     id=$(umbriel windows --json | jq -r --arg a "$app" 'map(select(.app_id == $a and (.active | not))) | first | .id // empty')
     if [ -n "$id" ]; then exec umbriel msg window-focus "$id"; fi
     exec "$@" ;;
+fingers)
+    id=$(umbriel windows --json | jq -r 'map(select(.app_id == "org.gnome.eog" and .title == "fingers.svg")) | first | .id // empty')
+    if [ -n "$id" ]; then exec umbriel msg window-close "$id"; fi
+    exec eog ~/.config/umbriel/fingers.svg ;;
 game)
     id=$(umbriel windows --json | jq -r 'map(select(.content_type == "game"
         or (.app_id | test("^steam_app_|^[Aa]ssetto[Cc]orsa\\.exe$|gamescope")))) | first | .id // empty')
